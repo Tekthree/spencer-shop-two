@@ -7,7 +7,7 @@ A minimalist, gallery-inspired website for artist Spencer Grey to showcase and s
 ## Features
 
 ### Public-Facing Website
-- Clean, minimalist design inspired by Roburico.com
+- Clean, minimalist design
 - Gallery-style artwork presentation
 - Limited edition print purchasing
 - Artist biography and statement
@@ -74,9 +74,7 @@ Open [http://localhost:3000](http://localhost:3000) to view the website.
    node scripts/direct-content-setup.js
    ```
 
-2. Log in to the admin panel at [http://localhost:3000/admin/login](http://localhost:3000/admin/login) with:
-   - Email: `admin@spencergrey.com`
-   - Password: `SpencerGrey2025!`
+2. Log in to the admin panel at [http://localhost:3000/admin/login](http://localhost:3000/admin/login) 
 
 3. Change the default password immediately after first login.
 
