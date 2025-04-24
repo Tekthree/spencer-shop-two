@@ -38,7 +38,8 @@ This document outlines the high-level vision, architecture, constraints, and tec
 - **Database/Authentication**: Supabase
   - PostgreSQL database for storing product, page, and user data
   - Authentication system for admin access
-  - Storage for images and media assets
+  - Storage buckets for artwork images and content
+  - Row Level Security (RLS) policies for data protectionfor images and media assets
   - Edition tracking system for limited prints
   - Local development with Supabase CLI
   
@@ -61,18 +62,25 @@ This document outlines the high-level vision, architecture, constraints, and tec
 5. **About** - Artist biography and philosophy, with focus on quality and sustainability
 6. **Contact** - Simple contact form
 
-### Admin Section
-1. **Dashboard** - Overview of sales, inventory, and website statistics
-2. **Artwork Management**
-   - Upload new artwork
-   - Set edition limits
-   - Manage collections and categories
-   - Track edition numbers
-3. **Content Management**
-   - Edit about page content
-   - Update homepage featured works
-4. **Orders** - View and manage customer orders
-5. **Settings** - Site settings, user account management
+### Admin Panel
+
+The admin panel is a custom-built CMS for Spencer to manage his artwork, collections, and website content. It includes:
+
+- **Authentication**: Secure login system for admin access using Supabase Auth
+- **Artwork Management**: Add, edit, and delete artworks with edition tracking
+  - Multiple size options with separate edition limits
+  - Image management with drag-and-drop upload
+  - Featured artwork selection for homepage
+- **About Page Editor**: Update artist biography, statement, and exhibitions
+  - Rich text editing for content sections
+  - Section reordering and image upload
+- **Image Library**: Centralized management of all uploaded images
+  - Filtering by storage bucket and search
+  - Copy image URLs for reuse
+  - Bulk selection and deletion
+- **Dashboard**: Quick access to key sections and statistics
+
+The admin panel follows the same clean, minimalist design as the public-facing website, with responsive layouts using Tailwind CSS.
 
 ## Data Models
 
@@ -165,35 +173,106 @@ This document outlines the high-level vision, architecture, constraints, and tec
 }
 ```
 
-## CMS Requirements
+## Database Schema
 
-The CMS will be built as a custom admin interface with the following sections:
+### Core Tables
 
-1. **Authentication**
-   - Secure login with Supabase Auth
-   - Password reset functionality
-   - Role-based access control
+1. **artworks**
+   - id (UUID, primary key)
+   - title (text)
+   - description (text)
+   - year (integer)
+   - medium (text)
+   - collection_id (UUID, foreign key)
+   - featured (boolean)
+   - images (jsonb array) - [{url: string, alt: string}]
+   - sizes (jsonb array) - [{size: string, price: number, edition_limit: number, editions_sold: number}]
+   - created_at (timestamp)
 
-2. **Dashboard**
-   - Sales overview
-   - Edition tracking statistics
-   - Website analytics
+2. **collections**
+   - id (UUID, primary key)
+   - name (text)
+   - description (text)
+   - featured (boolean)
+   - cover_image (text)
+   - order (integer)
+   - created_at (timestamp)
 
-3. **Artwork Management**
-   - Artwork upload with image optimization
-   - Edition number tracking
-   - Collection assignment
-   - Featured artwork selection
+3. **orders**
+   - id (UUID, primary key)
+   - customer_info (jsonb) - {name, email, address, etc.}
+   - items (jsonb array) - [{artwork_id, size, price, edition_number}]
+   - total (integer) - Amount in cents
+   - status (text) - 'pending', 'paid', 'shipped', etc.
+   - payment_intent (text) - Stripe payment intent ID
+   - created_at (timestamp)
 
-4. **Content Editor**
-   - Rich text editor for about page
-   - Image upload with preview
-   - Simple section editing
+4. **page_content**
+   - id (text, primary key)
+   - page (text) - e.g., 'about', 'home'
+   - title (text)
+   - content (text)
+   - image_url (text)
+   - order (integer)
+   - created_at (timestamp)
+   - updated_at (timestamp)
 
-5. **Order Management**
-   - Order status updates
-   - Customer information
-   - Print fulfillment tracking
+5. **auth.users** (Managed by Supabase Auth)
+   - id (UUID, primary key)
+   - email (text)
+   - role (text)
+   - created_at (timestamp)
+
+## Supabase Integration
+
+The project utilizes Supabase for database, authentication, and storage:
+
+### Setup and Configuration
+
+1. **Database Migration**
+   - Created initial schema in `supabase/migrations/01_initial_schema.sql`
+   - Set up tables for artworks, collections, orders, and page content
+   - Implemented Row Level Security (RLS) policies for data protection
+   - Created storage buckets for images with appropriate access policies
+
+2. **Authentication**
+   - Email/password authentication for admin access
+   - Created admin user with service role permissions
+   - Secured admin routes with authentication checks
+
+3. **Storage**
+   - Created separate buckets for different content types:
+     - `artworks` - For artwork images
+     - `about` - For about page content images
+     - `collections` - For collection cover images
+   - Implemented public read access and authenticated write access
+
+4. **Setup Scripts**
+   - Created scripts for applying migrations and setting up admin user
+   - Implemented direct content setup without relying on exec_sql function
+   - Added initial content for the About page
+
+### Client Integration
+
+1. **Supabase Client**
+   - Configured in `lib/supabase/client.ts`
+   - Type-safe access to Supabase services
+
+2. **Authentication Utilities**
+   - Implemented in `lib/supabase/auth.ts`
+   - Functions for sign in, sign out, and session management
+
+3. **Image Upload**
+   - Created reusable `ImageUploader` component
+   - Drag-and-drop functionality with preview
+   - Direct upload to Supabase storage
+
+### Benefits
+- Serverless architecture with minimal backend maintenance
+- Real-time data capabilities for future enhancements
+- Secure authentication and authorization
+- Scalable storage for artwork images
+- PostgreSQL database with full SQL capabilities
 
 ## Technical Considerations
 
