@@ -4,8 +4,8 @@
 
 ### Environment Setup
 - [x] Create GitHub repository
-- [ ] Setup development environment with Node.js and npm
-- [ ] Initialize Next.js project with TypeScript
+- [x] Setup development environment with Node.js and npm
+- [x] Initialize Next.js project with TypeScript
   ```bash
   npx create-next-app@latest spencer-grey-art --typescript --tailwind --eslint
   ```
