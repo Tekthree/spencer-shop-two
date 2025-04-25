@@ -309,6 +309,77 @@ The project utilizes Supabase for database, authentication, and storage:
 - Sitemap generation
 - Meta tags optimization
 
+## Next.js App Router Best Practices
+
+### Handling Dynamic Route Parameters
+
+When working with dynamic routes in the App Router, follow these guidelines to avoid common issues:
+
+1. **Accessing params in Client Components**
+   - In client components, params are provided as a Promise and must be unwrapped using React's `use()` function
+   - Example implementation:
+   ```tsx
+   'use client';
+   
+   import { use } from 'react';
+   
+   type PageParams = {
+     id: string;
+   };
+   
+   export default function EditPage({ params }: { params: PageParams }) {
+     // Properly unwrap params using React.use()
+     const resolvedParams = use(params as unknown as Promise<PageParams>);
+     const { id } = resolvedParams;
+     
+     // Rest of component...
+   }
+   ```
+
+2. **Accessing params in Server Components**
+   - In server components, params can be accessed directly as they're not wrapped in a Promise
+   - Example implementation:
+   ```tsx
+   export default async function Page({ params }: { params: { id: string } }) {
+     const { id } = params;
+     // Rest of component...
+   }
+   ```
+
+### Image Component Configuration
+
+When using Next.js Image component with external domains like Supabase storage:
+
+1. **Configure allowed domains in next.config.ts**
+   ```typescript
+   const nextConfig: NextConfig = {
+     images: {
+       domains: ['udanlcylpsvxqlihcppb.supabase.co'],
+       remotePatterns: [
+         {
+           protocol: 'https',
+           hostname: 'udanlcylpsvxqlihcppb.supabase.co',
+           port: '',
+           pathname: '/storage/v1/object/public/**',
+         },
+       ],
+     },
+   };
+   ```
+
+2. **Use the Image component with proper dimensions**
+   ```tsx
+   import Image from 'next/image';
+   
+   <Image
+     src={imageUrl}
+     alt={imageAlt}
+     width={200}
+     height={200}
+     className="object-cover w-full h-full"
+   />
+   ```
+
 ## Development Workflow
 
 1. **Setup Phase**
