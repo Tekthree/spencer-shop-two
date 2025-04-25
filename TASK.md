@@ -251,6 +251,7 @@
 - [x] Admin panel implementation
 - [ ] Supabase CLI setup and local development workflow
 - [x] Edition tracking system implementation
+- [x] Collections management system implementation
 
 ## Discovered During Work
 - [x] Fix Tailwind CSS initialization issue
@@ -268,6 +269,10 @@
 - [x] Create scripts for applying migrations and setting up admin user
 - [x] Fix dependency issues with uuid package for image uploader
 - [x] Create direct content setup script for Supabase without relying on exec_sql function
+- [x] Create collections listing page with management options
+- [x] Implement new collection creation functionality
+- [x] Build edit collection page with image upload capability
+- [x] Fix image upload in collections edit page
 
 ## Notes and Decisions
 - Using Next.js App Router for improved performance and newer features
