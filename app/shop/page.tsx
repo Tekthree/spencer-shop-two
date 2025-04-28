@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import ProductCard from '@/components/artwork/product-card';
-import Image from 'next/image';
 
 interface Artwork {
   id: string;
@@ -80,14 +79,14 @@ export default function ShopAllArtPage() {
         <h1 className="text-3xl md:text-4xl font-serif mb-6 uppercase tracking-wider">SHOP ALL</h1>
         <div className="max-w-3xl mx-auto border-b border-gray-200 pb-8">
           <p className="text-gray-600 text-sm">
-            Browse Spencer Grey's complete collection of limited edition art prints. 
+            Browse Spencer Grey&apos;s complete collection of limited edition art prints. 
             Each piece is printed on archival quality paper using eco-friendly inks.
           </p>
         </div>
       </div>
 
       {/* Artwork Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-16">
         {artworks.map((artwork) => (
           <div key={artwork.id} className="artwork-item">
             <ProductCard
