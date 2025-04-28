@@ -253,6 +253,7 @@
 - [x] Edition tracking system implementation
 - [x] Collections management system implementation
 - [x] Artwork detail page implementation with scrollable images and sticky product info
+- [x] Enhanced image upload system with multiple file support and image type designation
 
 ## Discovered During Work
 - [x] Fix Tailwind CSS initialization issue
@@ -276,6 +277,11 @@
 - [x] Fix image upload in collections edit page
 - [x] Create artwork detail page with scrollable images and sticky product information
 - [x] Implement related artworks component for artwork detail page
+- [x] Implement hover image functionality for product cards in "You may also like" section
+- [x] Create "Shop All Art" page with grid layout and hover image functionality
+- [x] Enhance ImageUploader component to support multiple image uploads
+- [x] Implement main/hover image type designation in artwork management
+- [x] Fix runtime errors in image uploader component
 
 ## Notes and Decisions
 - Using Next.js App Router for improved performance and newer features
@@ -288,3 +294,5 @@
 - Created scripts for easier Supabase setup and migration
 - Implemented edition tracking system for limited prints with size options
 - Designed artwork detail page with scrollable images on the left and sticky product information on the right for optimal user experience
+- Enhanced image management with main/hover image type designation for product cards
+- Implemented batch image upload functionality for more efficient artwork management

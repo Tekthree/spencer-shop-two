@@ -3,30 +3,31 @@
 import { useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
+import Image from 'next/image';
 
 interface ImageUploaderProps {
-  /** Allow multiple image uploads */
-  multiple?: boolean;
-  /** Label for the uploader */
-  label?: string;
   /** Callback when images are uploaded successfully */
-  onUpload?: (urls: string[]) => void;
+  onUploadComplete: (urls: string[]) => void;
   /** Bucket name in Supabase storage */
-  bucket?: string;
+  bucketName: string;
+  /** Allow multiple file selection */
+  multiple?: boolean;
   /** Folder path in the bucket */
   folderPath?: string;
+  /** Additional CSS classes */
+  className?: string;
 }
 
 /**
  * Reusable image uploader component
- * Supports drag and drop, preview, and deletion
+ * Supports drag and drop and single image upload
  */
 export default function ImageUploader({
-  multiple = false,
-  label = 'Upload Images',
-  onUpload,
-  bucket = 'artworks',
+  onUploadComplete,
+  bucketName,
+  multiple = true,
   folderPath = '',
+  className = '',
 }: ImageUploaderProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -38,17 +39,12 @@ export default function ImageUploader({
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
-    if (!selectedFiles) return;
+    if (!selectedFiles || selectedFiles.length === 0) return;
 
-    processFiles(selectedFiles);
-  };
-
-  // Process selected files
-  const processFiles = (selectedFiles: FileList) => {
     const newFiles: File[] = [];
     const newPreviews: string[] = [];
 
-    // Convert FileList to array and filter for images
+    // Process each selected file
     Array.from(selectedFiles).forEach(file => {
       if (file.type.startsWith('image/')) {
         newFiles.push(file);
@@ -56,19 +52,17 @@ export default function ImageUploader({
       }
     });
 
-    if (!multiple && newFiles.length > 0) {
-      // If single file mode, replace existing files
-      setFiles([newFiles[0]]);
-      setPreviews([newPreviews[0]]);
-    } else {
-      // If multiple files mode, add to existing files
+    if (newFiles.length > 0) {
       setFiles(prev => [...prev, ...newFiles]);
       setPreviews(prev => [...prev, ...newPreviews]);
+      setError(null);
+    } else {
+      setError('Please select at least one image file');
     }
   };
 
   // Handle drag events
-  const handleDrag = (e: React.DragEvent) => {
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -80,13 +74,31 @@ export default function ImageUploader({
   };
 
   // Handle drop event
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      processFiles(e.dataTransfer.files);
+    const droppedFiles = e.dataTransfer.files;
+    if (droppedFiles.length === 0) return;
+
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+
+    // Process each dropped file
+    Array.from(droppedFiles).forEach(file => {
+      if (file.type.startsWith('image/')) {
+        newFiles.push(file);
+        newPreviews.push(URL.createObjectURL(file));
+      }
+    });
+
+    if (newFiles.length > 0) {
+      setFiles(prev => [...prev, ...newFiles]);
+      setPreviews(prev => [...prev, ...newPreviews]);
+      setError(null);
+    } else {
+      setError('Please drop at least one image file');
     }
   };
 
@@ -116,68 +128,59 @@ export default function ImageUploader({
       setError('Please select at least one image to upload');
       return;
     }
-
+    
     setUploading(true);
     setError(null);
     const uploadedUrls: string[] = [];
-
+    
     try {
       for (const file of files) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${uuidv4()}.${fileExt}`;
         const filePath = folderPath ? `${folderPath}/${fileName}` : fileName;
-
-        const { data, error } = await supabase.storage
-          .from(bucket)
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-
-        if (error) {
-          throw error;
+        
+        const { error: uploadError } = await supabase.storage
+          .from(bucketName)
+          .upload(filePath, file);
+        
+        if (uploadError) {
+          throw uploadError;
         }
-
-        if (data) {
-          const { data: urlData } = supabase.storage
-            .from(bucket)
-            .getPublicUrl(data.path);
-
-          uploadedUrls.push(urlData.publicUrl);
-        }
+        
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from(bucketName)
+          .getPublicUrl(filePath);
+        
+        uploadedUrls.push(publicUrl);
       }
-
-      // Clear files after successful upload
+      
+      // Call the callback with all URLs
+      onUploadComplete(uploadedUrls);
+      
+      // Reset state
       setFiles([]);
       setPreviews([]);
-      
-      // Call the onUpload callback with the URLs
-      if (onUpload) {
-        onUpload(uploadedUrls);
-      }
-    } catch (error) {
-      console.error('Error uploading images:', error);
-      setError('Failed to upload images. Please try again.');
+    } catch (err) {
+      console.error('Error uploading files:', err);
+      setError('Error uploading images. Please try again.');
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <div className="w-full">
-      {/* Label */}
-      <p className="text-sm font-medium text-gray-700 mb-2">{label}</p>
-      
-      {/* Drag & Drop Area */}
-      <div 
-        className={`border-2 border-dashed rounded-lg p-6 text-center ${
-          dragActive ? 'border-black bg-gray-50' : 'border-gray-300'
-        }`}
+    <div className={`${className}`}>
+      {/* Drag and Drop Area */}
+      <div
         onDragEnter={handleDrag}
-        onDragOver={handleDrag}
         onDragLeave={handleDrag}
+        onDragOver={handleDrag}
         onDrop={handleDrop}
         onClick={onButtonClick}
+        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+          dragActive ? 'border-black bg-gray-50' : 'border-gray-300 hover:border-gray-400'
+        }`}
       >
         <input
           ref={inputRef}
@@ -188,28 +191,27 @@ export default function ImageUploader({
           className="hidden"
         />
         
-        <div className="space-y-2">
-          <svg 
-            className="mx-auto h-12 w-12 text-gray-400" 
-            stroke="currentColor" 
-            fill="none" 
-            viewBox="0 0 48 48" 
-            aria-hidden="true"
-          >
-            <path 
-              d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
-              strokeWidth={2} 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-            />
-          </svg>
-          <div className="text-sm text-gray-600">
-            <p className="font-medium">
-              {uploading ? 'Uploading...' : 'Drag and drop images, or click to select'}
-            </p>
-            <p className="text-xs">PNG, JPG, GIF up to 10MB</p>
-          </div>
-        </div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="mx-auto h-12 w-12 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1}
+            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
+        </svg>
+        
+        <p className="mt-2 text-sm font-medium text-gray-900">
+          {previews.length > 0 ? 'Add more images' : 'Upload images'}
+        </p>
+        <p className="mt-1 text-xs text-gray-500">
+          Drag and drop or click to select
+        </p>
       </div>
 
       {/* Error Message */}
@@ -220,15 +222,17 @@ export default function ImageUploader({
       {/* Preview Grid */}
       {previews.length > 0 && (
         <div className="mt-4">
-          <p className="text-sm font-medium text-gray-700 mb-2">Selected Images</p>
+          <p className="text-sm font-medium text-gray-700 mb-2">Selected Images ({previews.length})</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-2">
             {previews.map((preview, index) => (
               <div key={index} className="relative group">
                 <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
-                  <img 
+                  <Image 
                     src={preview} 
-                    alt={`Preview ${index}`} 
+                    alt={`Preview ${index + 1}`} 
                     className="h-full w-full object-cover"
+                    width={200}
+                    height={200}
                   />
                 </div>
                 <button
@@ -257,7 +261,7 @@ export default function ImageUploader({
           disabled={uploading}
           className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {uploading ? 'Uploading...' : 'Upload Images'}
+          {uploading ? 'Uploading...' : `Upload ${files.length} Image${files.length !== 1 ? 's' : ''}`}
         </button>
       )}
     </div>

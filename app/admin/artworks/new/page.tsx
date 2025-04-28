@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import ImageUploader from '@/components/admin/image-uploader';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface SizeOption {
   size: string;
@@ -36,7 +37,7 @@ export default function NewArtwork() {
   const [medium, setMedium] = useState('');
   const [collectionId, setCollectionId] = useState<string>('');
   const [featured, setFeatured] = useState(false);
-  const [images, setImages] = useState<{url: string, alt: string}[]>([]);
+  const [images, setImages] = useState<{url: string, alt: string, type?: string}[]>([]);
   const [sizes, setSizes] = useState<SizeOption[]>([
     { size: 'Small', price: 17500, edition_limit: 50, editions_sold: 0 },
     { size: 'Medium', price: 25000, edition_limit: 30, editions_sold: 0 },
@@ -65,18 +66,55 @@ export default function NewArtwork() {
     fetchCollections();
   }, []);
 
-  // Handle image upload
+  // Handle image upload completion
   const handleImageUpload = (urls: string[]) => {
-    const newImages = urls.map(url => ({ url, alt: title }));
+    const newImages = urls.map((url, index) => ({
+      url,
+      alt: title,
+      type: images.length === 0 && index === 0 ? 'main' : undefined
+    }));
     setImages([...images, ...newImages]);
   };
 
-  // Remove image
-  const removeImage = (index: number) => {
-    const newImages = [...images];
-    newImages.splice(index, 1);
-    setImages(newImages);
+  // Handle image alt text change
+  const handleImageAltChange = (index: number, alt: string) => {
+    const updatedImages = [...images];
+    updatedImages[index] = { ...updatedImages[index], alt };
+    setImages(updatedImages);
   };
+
+  // Handle image type change
+  const handleImageTypeChange = (index: number, type: string | undefined) => {
+    const updatedImages = [...images];
+    
+    // If setting to 'main', remove 'main' from any other image
+    if (type === 'main') {
+      updatedImages.forEach((img, i) => {
+        if (i !== index && img.type === 'main') {
+          updatedImages[i] = { ...updatedImages[i], type: undefined };
+        }
+      });
+    }
+    
+    updatedImages[index] = { ...updatedImages[index], type };
+    setImages(updatedImages);
+  };
+
+  // Remove an image
+  const handleRemoveImage = (index: number) => {
+    const updatedImages = [...images];
+    const wasMain = images[index].type === 'main';
+    updatedImages.splice(index, 1);
+    
+    // If we removed the main image and have other images, set the first one as main
+    if (wasMain && updatedImages.length > 0) {
+      updatedImages[0] = { ...updatedImages[0], type: 'main' };
+    }
+    
+    setImages(updatedImages);
+  };
+
+  // This function is replaced by handleRemoveImage
 
   // Update size option
   const updateSize = (index: number, field: keyof SizeOption, value: string | number) => {
@@ -86,7 +124,7 @@ export default function NewArtwork() {
     if (field === 'price' || field === 'edition_limit' || field === 'editions_sold') {
       newSizes[index][field] = Number(value);
     } else {
-      // @ts-ignore - TypeScript doesn't know we're only setting string fields with string values
+      // @ts-expect-error - TypeScript doesn't know we're only setting string fields with string values
       newSizes[index][field] = value;
     }
     
@@ -106,7 +144,7 @@ export default function NewArtwork() {
   };
 
   // Form submission
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -332,54 +370,84 @@ export default function NewArtwork() {
 
         {/* Images */}
         <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
-          <h2 className="text-xl font-serif mb-6">Artwork Images</h2>
+          <h2 className="text-lg font-medium mb-4">Artwork Images</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Upload images of the artwork. The main image will be displayed as the primary image on all pages.
+            Hover images will be shown when a user hovers over the main image in product cards.
+          </p>
           
-          <ImageUploader 
-            multiple={true}
-            label="Upload Artwork Images *"
-            onUpload={handleImageUpload}
-            bucket="artworks"
+          <ImageUploader
+            bucketName="artworks"
+            onUploadComplete={handleImageUpload}
+            className="mb-4"
           />
-
-          {/* Image Preview */}
+          
           {images.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Uploaded Images</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {images.map((image, index) => (
-                  <div key={index} className="relative group">
-                    <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
-                      <img
-                        src={image.url}
-                        alt={image.alt}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                    <div className="mt-1">
-                      <input
-                        type="text"
-                        value={image.alt}
-                        onChange={(e) => {
-                          const newImages = [...images];
-                          newImages[index].alt = e.target.value;
-                          setImages(newImages);
-                        }}
-                        className="w-full text-xs px-2 py-1 border border-gray-300 rounded-md"
-                        placeholder="Alt text"
-                      />
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+              {images.map((image, index) => (
+                <div key={index} className="border rounded-md p-4 relative">
+                  <div className="relative h-40 mb-2">
+                    <Image
+                      src={image.url}
+                      alt={image.alt || 'Artwork image'}
+                      fill
+                      style={{ objectFit: 'contain' }}
+                    />
                   </div>
-                ))}
-              </div>
+                  
+                  <div className="mb-2">
+                    <label htmlFor={`alt-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
+                      Alt Text
+                    </label>
+                    <input
+                      type="text"
+                      id={`alt-${index}`}
+                      value={image.alt || ''}
+                      onChange={(e) => handleImageAltChange(index, e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      placeholder="Describe the image"
+                    />
+                  </div>
+                  
+                  <div className="mb-2">
+                    <label htmlFor={`type-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
+                      Image Type
+                    </label>
+                    <select
+                      id={`type-${index}`}
+                      value={image.type || ''}
+                      onChange={(e) => handleImageTypeChange(index, e.target.value || undefined)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                    >
+                      <option value="">Regular Image</option>
+                      <option value="main">Main Image</option>
+                      <option value="hover">Hover Image</option>
+                    </select>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-sm text-gray-400 hover:text-red-500"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                  
+                  {image.type === 'main' && (
+                    <div className="absolute top-2 left-2 bg-black text-white text-xs px-2 py-1 rounded">
+                      Main
+                    </div>
+                  )}
+                  
+                  {image.type === 'hover' && (
+                    <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                      Hover
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>

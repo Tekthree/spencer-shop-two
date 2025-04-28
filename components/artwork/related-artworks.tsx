@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import Image from 'next/image';
-import Link from 'next/link';
+import ProductCard from './product-card';
 
 interface Artwork {
   id: string;
   title: string;
   year: number;
   medium: string;
-  images: { url: string; alt: string }[];
+  images: { url: string; alt: string; type?: string }[];
   collection_id: string | null;
+  sizes?: { size: string; price: number; edition_limit: number; editions_sold: number }[];
 }
 
 interface RelatedArtworksProps {
@@ -41,7 +41,7 @@ export default function RelatedArtworks({
       try {
         let query = supabase
           .from('artworks')
-          .select('id, title, year, medium, images, collection_id')
+          .select('id, title, year, medium, images, collection_id, sizes')
           .neq('id', currentArtworkId)
           .order('created_at', { ascending: false })
           .limit(limit);
@@ -62,7 +62,7 @@ export default function RelatedArtworks({
         if (data.length < limit && collectionId) {
           const { data: moreData, error: moreError } = await supabase
             .from('artworks')
-            .select('id, title, year, medium, images, collection_id')
+            .select('id, title, year, medium, images, collection_id, sizes')
             .neq('id', currentArtworkId)
             .neq('collection_id', collectionId)
             .order('created_at', { ascending: false })
@@ -115,35 +115,14 @@ export default function RelatedArtworks({
       <h2 className="text-2xl font-serif mb-6">You may also like</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {artworks.map((artwork) => (
-          <Link 
-            key={artwork.id} 
-            href={`/artwork/${artwork.id}`}
-            className="group"
-          >
-            <div className="aspect-square overflow-hidden rounded-md mb-3">
-              {artwork.images && artwork.images.length > 0 ? (
-                <Image
-                  src={artwork.images[0].url}
-                  alt={artwork.images[0].alt || artwork.title}
-                  width={400}
-                  height={400}
-                  className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              )}
-            </div>
-            <h3 className="font-medium text-gray-900 group-hover:text-black transition-colors">
-              {artwork.title}
-            </h3>
-            <p className="text-sm text-gray-600">
-              {artwork.year} • {artwork.medium}
-            </p>
-          </Link>
+          <ProductCard
+            key={artwork.id}
+            id={artwork.id}
+            title={artwork.title}
+            images={artwork.images}
+            price={artwork.sizes && artwork.sizes.length > 0 ? artwork.sizes[0].price : undefined}
+            className="h-full"
+          />
         ))}
       </div>
     </div>

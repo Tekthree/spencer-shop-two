@@ -185,7 +185,7 @@ The admin panel follows the same clean, minimalist design as the public-facing w
    - medium (text)
    - collection_id (UUID, foreign key)
    - featured (boolean)
-   - images (jsonb array) - [{url: string, alt: string}]
+   - images (jsonb array) - [{url: string, alt: string, type?: string}]
    - sizes (jsonb array) - [{size: string, price: number, edition_limit: number, editions_sold: number}]
    - created_at (timestamp)
 
@@ -264,8 +264,10 @@ The project utilizes Supabase for database, authentication, and storage:
 
 3. **Image Upload**
    - Created reusable `ImageUploader` component
-   - Drag-and-drop functionality with preview
+   - Drag-and-drop functionality with multi-image preview grid
    - Direct upload to Supabase storage
+   - Support for main/hover image type designation
+   - Batch processing for multiple image uploads
 
 ### Benefits
 - Serverless architecture with minimal backend maintenance
