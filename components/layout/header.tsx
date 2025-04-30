@@ -36,12 +36,6 @@ export default function Header() {
             Shop All
           </Link>
           <Link 
-            href="/collections" 
-            className={`${isActive('/collections') ? 'text-black' : 'text-gray-400'} hover:text-black transition-colors`}
-          >
-            Collections
-          </Link>
-          <Link 
             href="/about" 
             className={`${isActive('/about') ? 'text-black' : 'text-gray-400'} hover:text-black transition-colors`}
           >
