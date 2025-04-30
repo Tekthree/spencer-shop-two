@@ -110,10 +110,9 @@
 ### Public Pages (Basic Structure)
 - [x] Implement core pages:
   - [x] Home page
-  - [ ] Shop page (all artworks)
-  - [ ] Collection pages
+  - [ ] Shop page (all artworks with collection filtering)
   - [x] Artwork detail page
-  - [ ] About page
+  - [x] About page
   - [x] Contact page
 - [ ] Build detailed artwork view with size selection and edition info
 - [x] Implement about page focusing on quality and sustainability

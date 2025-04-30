@@ -56,11 +56,10 @@ This document outlines the high-level vision, architecture, constraints, and tec
 
 ### Public Pages
 1. **Home** - Minimalist landing page featuring a curated selection of artwork with plenty of white space
-2. **Shop All** - Complete collection of artwork available for purchase
-3. **Collections** - Artwork organized by themed collections or series
-4. **Artwork Detail** - Individual artwork page with size options, edition information, and purchase functionality
-5. **About** - Artist biography and philosophy, with focus on quality and sustainability
-6. **Contact** - Contact page with form validation and responsive design
+2. **Shop All** - Complete collection of artwork available for purchase, including filtering by collections
+3. **Artwork Detail** - Individual artwork page with size options, edition information, and purchase functionality
+4. **About** - Artist biography and philosophy, with focus on quality and sustainability
+5. **Contact** - Contact page with form validation and responsive design
    - Two-column layout with contact information and form
    - Form validation using React Hook Form and Zod
    - Success and error state handling
