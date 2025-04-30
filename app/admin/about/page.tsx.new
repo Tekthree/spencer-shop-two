@@ -139,31 +139,16 @@ export default function AboutPageAdmin() {
         page: 'about',
       }));
 
-      console.log('Saving about page content:', upsertData);
-
-      // First delete all existing content to avoid conflicts
-      const { error: deleteError } = await supabase
+      const { error: upsertError } = await supabase
         .from('page_content')
-        .delete()
-        .eq('page', 'about');
+        .upsert(upsertData, {
+          onConflict: 'id',
+          ignoreDuplicates: false,
+        });
 
-      if (deleteError) {
-        console.error('Error deleting existing content:', deleteError);
-        throw deleteError;
+      if (upsertError) {
+        throw upsertError;
       }
-
-      // Then insert the new content
-      const { data, error: insertError } = await supabase
-        .from('page_content')
-        .insert(upsertData)
-        .select();
-
-      if (insertError) {
-        console.error('Error inserting content:', insertError);
-        throw insertError;
-      }
-
-      console.log('Successfully saved content:', data);
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
