@@ -116,7 +116,7 @@
   - [ ] About page
   - [x] Contact page
 - [ ] Build detailed artwork view with size selection and edition info
-- [ ] Implement about page focusing on quality and sustainability
+- [x] Implement about page focusing on quality and sustainability
 - [x] Set up contact page with form validation and responsive design
 - [x] Create FAQ page with accordion sections and sticky navigation
 
@@ -260,6 +260,7 @@
 - [x] Fix Tailwind CSS initialization issue
 - [x] Resolve Supabase CLI permission issues
 - [x] Create initial lib/supabase client files
+- [x] Fix About page image issues in the "Shop the art prints" section
 - [x] Create initial lib/stripe client files
 - [x] Scaffold basic component structure
 - [x] Create database migration files for core tables
@@ -297,3 +298,6 @@
 - Designed artwork detail page with scrollable images on the left and sticky product information on the right for optimal user experience
 - Enhanced image management with main/hover image type designation for product cards
 - Implemented batch image upload functionality for more efficient artwork management
+- Fixed image display issues in the About page "Shop the art prints" section by properly formatting image objects with main/hover types
+- Improved About page layout with 4-column grid for featured artworks
+- Removed unnecessary borders and tags from product cards on the About page
