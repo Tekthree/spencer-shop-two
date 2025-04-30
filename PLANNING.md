@@ -60,7 +60,16 @@ This document outlines the high-level vision, architecture, constraints, and tec
 3. **Collections** - Artwork organized by themed collections or series
 4. **Artwork Detail** - Individual artwork page with size options, edition information, and purchase functionality
 5. **About** - Artist biography and philosophy, with focus on quality and sustainability
-6. **Contact** - Simple contact form
+6. **Contact** - Contact page with form validation and responsive design
+   - Two-column layout with contact information and form
+   - Form validation using React Hook Form and Zod
+   - Success and error state handling
+   - Direct email link and FAQ reference
+7. **FAQ** - Comprehensive FAQ page with accordion sections
+   - Organized into categories (General, Shipping, Returns, Payment, Product Care)
+   - Interactive accordion interface for questions and answers
+   - Sticky sidebar with numbered navigation and active section indicator
+   - Intersection Observer API for tracking current section
 
 ### Admin Panel
 

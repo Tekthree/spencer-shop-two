@@ -114,10 +114,11 @@
   - [ ] Collection pages
   - [x] Artwork detail page
   - [ ] About page
-  - [ ] Contact page
+  - [x] Contact page
 - [ ] Build detailed artwork view with size selection and edition info
 - [ ] Implement about page focusing on quality and sustainability
-- [ ] Set up simple contact page with form
+- [x] Set up contact page with form validation and responsive design
+- [x] Create FAQ page with accordion sections and sticky navigation
 
 ### UI Components
 - [ ] Design and implement core UI components:
