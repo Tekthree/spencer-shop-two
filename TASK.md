@@ -172,6 +172,8 @@
   - [x] Implement cart drawer that slides in from the right
   - [x] Add cart icon with item count in header
   - [x] Create cart context with localStorage persistence
+  - [x] Add darkening overlay with 30% opacity when cart is open
+  - [x] Implement scroll locking for background content when cart is open
   - [x] Implement add to cart functionality on artwork detail page
   - [x] Add basic checkout page structure
 - [ ] Implement Stripe checkout process
