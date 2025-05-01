@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 // No need for useRouter here
 import RelatedArtworks from '@/components/artwork/related-artworks';
+import { useCart } from '@/context/cart-context';
 
 // Define TypeScript interfaces for our data models
 interface SizeOption {
@@ -112,11 +113,28 @@ export default function ArtworkDetailPage({ params }: { params: PageParams }) {
     setSelectedSize(size);
   };
 
+  // Get cart context
+  const { addToCart } = useCart();
+
   // Handle add to cart
   const handleAddToCart = () => {
-    // This would be implemented with your cart context/state management
-    alert(`Added ${artwork?.title} (${selectedSize?.size}) to cart`);
-    // TODO: Implement actual cart functionality
+    if (!artwork || !selectedSize) return;
+    
+    // Get the first image URL or a placeholder
+    const imageUrl = artwork.images && artwork.images.length > 0 
+      ? artwork.images[0].url 
+      : '/placeholder.jpg';
+    
+    // Add the item to the cart
+    addToCart({
+      id: artwork.id,
+      title: artwork.title,
+      size: selectedSize.size,
+      sizeDisplay: selectedSize.size, // You could enhance this with unit conversion if needed
+      price: selectedSize.price,
+      quantity: 1,
+      imageUrl: imageUrl
+    });
   };
 
   if (loading) {

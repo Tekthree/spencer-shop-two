@@ -15,6 +15,7 @@ This document outlines the high-level vision, architecture, constraints, and tec
 - **Print-on-Demand**: All prints will be made to order to minimize waste and maintain sustainability
 - **Quality Focus**: Emphasize high-quality printing materials and processes
 - **Optional NFT Integration**: Offer digital NFT versions of physical artworks as a complementary product
+- **Cart System**: Slide-in cart drawer that maintains context by keeping the main content visible
 
 ## Architecture
 
@@ -288,6 +289,8 @@ The project utilizes Supabase for database, authentication, and storage:
 
 ### State Management
 - React Context API for global state
+  - Cart context for managing cart items, quantities, and totals
+  - LocalStorage persistence for cart data between sessions
 - SWR or React Query for server state management
 - Zustand for complex state if needed
 

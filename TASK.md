@@ -168,7 +168,12 @@
 - [x] Add sustainability and quality messaging
 
 ### E-commerce Functionality
-- [ ] Create shopping cart context and minimal UI
+- [x] Create shopping cart context and minimal UI
+  - [x] Implement cart drawer that slides in from the right
+  - [x] Add cart icon with item count in header
+  - [x] Create cart context with localStorage persistence
+  - [x] Implement add to cart functionality on artwork detail page
+  - [x] Add basic checkout page structure
 - [ ] Implement Stripe checkout process
 - [ ] Build edition tracking system
 - [ ] Set up order confirmation pages with certificate preview
