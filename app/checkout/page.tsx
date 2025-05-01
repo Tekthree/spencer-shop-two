@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
+import { getStripe } from '@/lib/stripe/client';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -12,6 +13,18 @@ import Link from 'next/link';
 export default function CheckoutPage() {
   const { cartItems, subtotal, updateQuantity, removeFromCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    email: '',
+    address: {
+      line1: '',
+      line2: '',
+      city: '',
+      state: '',
+      postal_code: '',
+      country: 'US',
+    },
+  });
 
   // Format price from cents to dollars
   const formatPrice = (cents: number) => {
@@ -21,17 +34,66 @@ export default function CheckoutPage() {
     }).format(cents / 100);
   };
 
+  // Handle input changes for customer information
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    if (name.includes('.')) {
+      // Handle nested properties (e.g., address.line1)
+      const [parent, child] = name.split('.');
+      setCustomerInfo(prev => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent as keyof typeof prev],
+          [child]: value,
+        },
+      }));
+    } else {
+      // Handle top-level properties
+      setCustomerInfo(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
   // Handle checkout process
   const handleCheckout = async () => {
-    setIsLoading(true);
-    
-    // TODO: Implement Stripe checkout process
-    // This would connect to your Stripe API to create a checkout session
-    
-    setTimeout(() => {
+    try {
+      setIsLoading(true);
+      
+      // Create a checkout session through the API
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: cartItems,
+          customerInfo,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
+      }
+      
+      const { sessionId, url } = await response.json();
+      
+      // Redirect to Stripe Checkout
+      if (url) {
+        window.location.href = url;
+      } else {
+        // If no URL is returned, use the client-side redirect
+        const stripe = await getStripe();
+        await stripe?.redirectToCheckout({ sessionId });
+      }
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      alert(error.message || 'An error occurred during checkout');
       setIsLoading(false);
-      alert('Checkout functionality will be implemented in a future update.');
-    }, 1000);
+    }
   };
 
   // If cart is empty, show a message
@@ -141,9 +203,49 @@ export default function CheckoutPage() {
               </div>
             </div>
             
+            {/* Customer Information */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium mb-3">Contact Information</h3>
+              <div className="space-y-3">
+                <div>
+                  <label htmlFor="name" className="block text-sm text-gray-600 mb-1">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={customerInfo.name}
+                    onChange={handleInputChange}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
+                    placeholder="Your full name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm text-gray-600 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={customerInfo.email}
+                    onChange={handleInputChange}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Shipping address will be collected during payment.
+              </p>
+            </div>
+            
             <button
               onClick={handleCheckout}
-              disabled={isLoading}
+              disabled={isLoading || !customerInfo.name || !customerInfo.email}
               className="w-full bg-black text-white py-3 px-6 rounded-md hover:bg-gray-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Processing...' : 'Proceed to Payment'}
