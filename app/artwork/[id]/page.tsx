@@ -8,6 +8,7 @@ import Link from 'next/link';
 // No need for useRouter here
 import RelatedArtworks from '@/components/artwork/related-artworks';
 import { useCart } from '@/context/cart-context';
+import { ArtworkDetailSkeleton } from '@/components/ui/skeleton';
 
 // Define TypeScript interfaces for our data models
 interface SizeOption {
@@ -138,22 +139,7 @@ export default function ArtworkDetailPage({ params }: { params: PageParams }) {
   };
 
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="animate-pulse">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="aspect-square bg-gray-200 rounded-md"></div>
-            <div className="space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-32 bg-gray-200 rounded w-full"></div>
-              <div className="h-10 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-12 bg-gray-200 rounded w-full"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <ArtworkDetailSkeleton />;
   }
 
   if (error || !artwork) {

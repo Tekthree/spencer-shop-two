@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import ProductCard from '@/components/artwork/product-card';
+import { ShopSkeleton } from '@/components/ui/skeleton';
 
 interface Artwork {
   id: string;
@@ -49,19 +50,7 @@ export default function ShopAllArtPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="animate-pulse">
-              <div className="aspect-square bg-gray-200 rounded-md mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-1"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return <ShopSkeleton />;
   }
 
   if (error) {
