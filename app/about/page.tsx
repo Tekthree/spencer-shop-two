@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 import ProductCard from '@/components/artwork/product-card';
+import { ArtworkImage } from '@/types/artwork';
 
 // Define types for the content sections
 interface ContentSection {
@@ -13,16 +14,16 @@ interface ContentSection {
   order: number;
 }
 
-interface ArtworkImage {
-  url: string;
-  alt: string;
-  type?: string;
-}
+// Using ArtworkImage from types/artwork.ts
 
-interface Artwork {
+interface AboutPageArtwork {
   id: string;
   title: string;
-  images: ArtworkImage[];
+  images: {
+    url: string;
+    alt: string;
+    type: string;
+  }[];
   price?: number;
   featured?: boolean;
   tag?: string;
@@ -74,7 +75,7 @@ const getFeaturedArtworks = async () => {
     }
 
     // Format artworks for ProductCard component
-    return data.map((artwork: any, index: number) => {
+    return data.map((artwork, index: number) => {
       // Set fixed prices that match the screenshot
       const prices = [125, 150, 175, 200, 225];
       
@@ -87,7 +88,7 @@ const getFeaturedArtworks = async () => {
         if (Array.isArray(artwork.images)) {
           // If images is an array of objects with url property
           if (typeof artwork.images[0] === 'object' && artwork.images[0].url) {
-            formattedImages = artwork.images.map((img: any) => ({
+            formattedImages = artwork.images.map((img) => ({
               url: img.url,
               alt: img.alt || artwork.title || `Artwork ${index + 1}`,
               type: img.type || 'main'
@@ -132,7 +133,7 @@ const getFeaturedArtworks = async () => {
           
           // If no specific main/hover, try to use any string values
           if (formattedImages.length === 0) {
-            Object.entries(artwork.images).forEach(([key, value]: [string, any]) => {
+            Object.entries(artwork.images).forEach(([key, value]: [string, string | unknown]) => {
               if (typeof value === 'string') {
                 formattedImages.push({
                   url: value,
@@ -435,7 +436,7 @@ export default async function AboutPage() {
       <div className="mb-16">
         <h2 className="text-lg font-light mb-4 border-t pt-4">Shop the art prints</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-8">
-          {featuredArtworks && featuredArtworks.map((artwork: Artwork) => {
+          {featuredArtworks && featuredArtworks.map((artwork: AboutPageArtwork) => {
             // Ensure we have a valid artwork with required properties
             if (!artwork || !artwork.id) return null;
             

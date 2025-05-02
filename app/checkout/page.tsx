@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useCart } from '@/context/cart-context';
 import { getStripe } from '@/lib/stripe/client';
 import Image from 'next/image';
@@ -41,13 +41,15 @@ export default function CheckoutPage() {
     if (name.includes('.')) {
       // Handle nested properties (e.g., address.line1)
       const [parent, child] = name.split('.');
-      setCustomerInfo(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent as keyof typeof prev],
-          [child]: value,
-        },
-      }));
+      if (parent === 'address') {
+        setCustomerInfo(prev => ({
+          ...prev,
+          address: {
+            ...prev.address,
+            [child]: value,
+          },
+        }));
+      }
     } else {
       // Handle top-level properties
       setCustomerInfo(prev => ({
@@ -89,9 +91,10 @@ export default function CheckoutPage() {
         const stripe = await getStripe();
         await stripe?.redirectToCheckout({ sessionId });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred during checkout';
       console.error('Checkout error:', error);
-      alert(error.message || 'An error occurred during checkout');
+      alert(errorMessage);
       setIsLoading(false);
     }
   };
@@ -103,7 +106,7 @@ export default function CheckoutPage() {
         <div className="text-center">
           <h1 className="text-3xl font-serif mb-6">Your Cart is Empty</h1>
           <p className="text-gray-500 mb-8">
-            Looks like you haven't added any artwork to your cart yet.
+            Looks like you haven&apos;t added any artwork to your cart yet.
           </p>
           <Link 
             href="/shop" 

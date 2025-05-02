@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import ImageUploader from '@/components/admin/image-uploader';
+import Image from 'next/image';
 
 interface ImageFile {
   id: string;
@@ -32,7 +33,7 @@ export default function ImageLibrary() {
   const [sortBy, setSortBy] = useState<string>('newest');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [buckets, setBuckets] = useState<string[]>(['artworks', 'about', 'collections']);
+  const [buckets] = useState<string[]>(['artworks', 'about', 'collections']);
 
   // Fetch images from Supabase Storage
   useEffect(() => {
@@ -92,7 +93,7 @@ export default function ImageLibrary() {
   }, [buckets]);
 
   // Handle image upload
-  const handleImageUpload = (urls: string[]) => {
+  const handleImageUpload = () => {
     // Refresh the image list after upload
     const fetchImages = async () => {
       setLoading(true);
@@ -253,9 +254,12 @@ export default function ImageLibrary() {
           <div>
             <ImageUploader 
               multiple={true}
-              label="Upload Images"
-              onUpload={handleImageUpload}
-              bucket={selectedBucket === 'all' ? 'artworks' : selectedBucket}
+              onUploadComplete={(urls) => {
+                console.log('Uploaded images:', urls);
+                handleImageUpload();
+              }}
+              bucketName={selectedBucket === 'all' ? 'artworks' : selectedBucket}
+              className="w-full"
             />
           </div>
           
@@ -421,11 +425,13 @@ export default function ImageLibrary() {
                   </button>
                 </div>
                 
-                <div className="aspect-square w-full overflow-hidden bg-gray-100">
-                  <img
+                <div className="aspect-square w-full overflow-hidden bg-gray-100 relative">
+                  <Image
                     src={image.url}
                     alt={image.name}
-                    className="h-full w-full object-cover"
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                    className="object-cover"
                     loading="lazy"
                   />
                 </div>

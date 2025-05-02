@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
+import { Order } from '@/types/artwork';
 
 /**
  * Admin Orders Page
  * Displays all orders and allows for order management
  */
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -20,9 +21,42 @@ export default function AdminOrdersPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
   
+  /**
+   * Fetch orders from Supabase
+   */
+  const fetchOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      let query = supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      // Apply status filter if not 'all'
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        throw error;
+      }
+      
+      setOrders(data || []);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch orders';
+      console.error('Error fetching orders:', err);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter, supabase]);
+  
   useEffect(() => {
     fetchOrders();
-  }, [statusFilter]);
+  }, [fetchOrders]);
   
   /**
    * Format price from cents to dollars
@@ -48,37 +82,7 @@ export default function AdminOrdersPage() {
     }).format(date);
   };
   
-  /**
-   * Fetch orders from Supabase
-   */
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      
-      let query = supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      // Apply status filter if not 'all'
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        throw error;
-      }
-      
-      setOrders(data || []);
-    } catch (err: any) {
-      console.error('Error fetching orders:', err);
-      setError(err.message || 'Failed to fetch orders');
-    } finally {
-      setLoading(false);
-    }
-  };
+
   
   /**
    * Update order status
@@ -98,9 +102,10 @@ export default function AdminOrdersPage() {
       setOrders(orders.map(order => 
         order.id === orderId ? { ...order, status: newStatus } : order
       ));
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update order status';
       console.error('Error updating order status:', err);
-      alert(err.message || 'Failed to update order status');
+      alert(errorMessage);
     }
   };
   

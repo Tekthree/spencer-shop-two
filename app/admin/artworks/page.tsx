@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Artwork {
   id: string;
@@ -142,12 +143,14 @@ export default function ArtworksAdmin() {
                   <tr key={artwork.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0 rounded bg-gray-100 overflow-hidden">
+                        <div className="h-10 w-10 flex-shrink-0 rounded bg-gray-100 overflow-hidden relative">
                           {artwork.images && artwork.images.length > 0 ? (
-                            <img
+                            <Image
                               src={artwork.images[0].url}
                               alt={artwork.images[0].alt || artwork.title}
-                              className="h-10 w-10 object-cover"
+                              fill
+                              sizes="40px"
+                              className="object-cover"
                             />
                           ) : (
                             <div className="h-10 w-10 flex items-center justify-center text-gray-400">

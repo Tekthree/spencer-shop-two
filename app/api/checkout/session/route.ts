@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     
     // Check if there's an order in the database for this session
     const supabase = createClient();
-    const { data: order, error } = await supabase
+    const { data: order } = await supabase
       .from('orders')
       .select('*')
       .eq('payment_intent', session.payment_intent as string)
@@ -44,10 +44,11 @@ export async function GET(request: NextRequest) {
       items: order?.items || [],
       created_at: order?.created_at || new Date().toISOString(),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to retrieve session';
     console.error('Error retrieving session:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to retrieve session' },
+      { error: errorMessage },
       { status: 400 }
     );
   }

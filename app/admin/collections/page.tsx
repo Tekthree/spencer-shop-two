@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Collection {
   id: string;
@@ -31,7 +32,7 @@ export default function CollectionsAdmin() {
         const { data: collectionsData, error: collectionsError } = await supabase
           .from('collections')
           .select('*')
-          .order('order', { ascending: true, nullsLast: true })
+          .order('order', { ascending: true })
           .order('name', { ascending: true });
 
         if (collectionsError) {
@@ -156,12 +157,14 @@ export default function CollectionsAdmin() {
                 <tr key={collection.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0 rounded bg-gray-100 overflow-hidden">
+                      <div className="h-10 w-10 flex-shrink-0 rounded bg-gray-100 overflow-hidden relative">
                         {collection.cover_image ? (
-                          <img
+                          <Image
                             src={collection.cover_image}
                             alt={collection.name}
-                            className="h-10 w-10 object-cover"
+                            fill
+                            sizes="40px"
+                            className="object-cover"
                           />
                         ) : (
                           <div className="h-10 w-10 flex items-center justify-center text-gray-400">

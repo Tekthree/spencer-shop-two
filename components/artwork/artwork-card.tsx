@@ -3,20 +3,19 @@
  * Displays a preview of an artwork with title, year, and edition information
  */
 import Link from 'next/link';
-// Image is imported for future use when real artwork images are available
-// eslint-disable-next-line no-unused-vars
-import Image from 'next/image';
+// Note: Image component will be needed when real artwork images are available
 
 interface ArtworkCardProps {
   id: string;
   title: string;
-  image: string;
+  // image parameter is defined but not used yet - will be used when real images are available
+  // image: string;
   year: number;
   editions: number;
   editionsSold: number;
 }
 
-export default function ArtworkCard({ id, title, image, year, editions, editionsSold }: ArtworkCardProps) {
+export default function ArtworkCard({ id, title, year, editions, editionsSold }: ArtworkCardProps) {
   // Reason: Using placeholder div for now, will use image parameter with Image component when real images are available
   return (
     <Link href={`/artwork/${id}`} className="group block">

@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { use } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import Image from 'next/image';
 import Link from 'next/link';
-// No need for useRouter here
+import { useParams } from 'next/navigation';
 import RelatedArtworks from '@/components/artwork/related-artworks';
 import { useCart } from '@/context/cart-context';
 import { ArtworkDetailSkeleton } from '@/components/ui/skeleton';
@@ -32,19 +31,15 @@ interface Artwork {
   created_at: string;
 }
 
-type PageParams = {
-  id: string;
-};
-
 /**
  * Artwork Detail Page
  * Displays detailed information about a specific artwork with scrollable images
  * and sticky product information for purchasing
  */
-export default function ArtworkDetailPage({ params }: { params: PageParams }) {
-  // Properly unwrap params using React.use() as recommended by Next.js
-  const resolvedParams = use(params as unknown as Promise<PageParams>);
-  const { id } = resolvedParams;
+export default function ArtworkDetailPage() {
+  // Get the id from the URL params using the useParams hook
+  const params = useParams();
+  const id = params.id as string;
 
   // State variables
   const [artwork, setArtwork] = useState<Artwork | null>(null);

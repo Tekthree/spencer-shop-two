@@ -68,9 +68,9 @@ export default function ContactPage() {
           {/* Left Column - Contact Info */}
           <div>
             <p className="text-base leading-relaxed mb-12">
-              We're here as guides on your journey. Whether you seek knowledge about our creations, 
+              We&apos;re here as guides on your journey. Whether you seek knowledge about our creations, 
               wish to share your experience, or need assistance with your chosen treasures, 
-              we're present and attentive.
+              we&apos;re present and attentive.
             </p>
 
             <div className="mb-16">
@@ -91,7 +91,7 @@ export default function ContactPage() {
             <div>
               <h2 className="font-serif text-2xl mb-4">Check out the FAQs</h2>
               <p className="text-base mb-4">
-                I've woven a tapestry of wisdom addressing questions about our offerings, 
+                I&apos;ve woven a tapestry of wisdom addressing questions about our offerings, 
                 the journey of shipments, the cycle of returns, and the spaces between.
               </p>
               <Link 
@@ -108,13 +108,13 @@ export default function ContactPage() {
             <h2 className="font-serif text-2xl mb-4">Fill out the form</h2>
             <p className="text-base mb-8">
               Our contact vessel offers the clearest pathway for connection. 
-              Please infuse the form below with your essence, and we'll respond as the moments unfold.
+              Please infuse the form below with your essence, and we&apos;ll respond as the moments unfold.
             </p>
 
             {isSuccess ? (
               <div className="bg-green-50 border border-green-200 p-6 rounded">
                 <p className="text-green-800">
-                  Thank you for your message. We'll respond as soon as possible.
+                  Thank you for your message. We&apos;ll respond as soon as possible.
                 </p>
               </div>
             ) : (

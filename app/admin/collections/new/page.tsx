@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -51,7 +52,7 @@ export default function NewCollection() {
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('collections')
         .upload(filePath, file);
 
@@ -65,8 +66,10 @@ export default function NewCollection() {
         .getPublicUrl(filePath);
 
       return publicUrl;
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Error uploading image';
       console.error('Error uploading image:', error);
+      setError(errorMessage);
       return null;
     }
   };
@@ -107,9 +110,10 @@ export default function NewCollection() {
       // Redirect to collections list
       router.push('/admin/collections');
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create collection. Please try again.';
       console.error('Error creating collection:', err);
-      setError(err.message || 'Failed to create collection. Please try again.');
+      setError(errorMessage);
       setLoading(false);
     }
   };
@@ -206,12 +210,14 @@ export default function NewCollection() {
               Cover Image
             </label>
             <div className="mt-1 flex items-center space-x-4">
-              <div className="flex-shrink-0 h-24 w-24 border border-gray-200 rounded-md overflow-hidden bg-gray-50">
+              <div className="flex-shrink-0 h-24 w-24 border border-gray-200 rounded-md overflow-hidden bg-gray-50 relative">
                 {coverImagePreview ? (
-                  <img
+                  <Image
                     src={coverImagePreview}
                     alt="Cover preview"
-                    className="h-24 w-24 object-cover"
+                    fill
+                    sizes="96px"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="h-24 w-24 flex items-center justify-center text-gray-400">
