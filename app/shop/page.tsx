@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import ProductCard from '@/components/artwork/product-card';
 import { ShopSkeleton } from '@/components/ui/skeleton';
+import ShopPageClient from './shop-page-client';
 
 interface Artwork {
   id: string;
@@ -53,64 +53,6 @@ export default function ShopAllArtPage() {
     return <ShopSkeleton />;
   }
 
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <p className="text-red-500">Something went wrong. Please try again later.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-8 md:py-16 max-w-7xl">
-      {/* Hero Section */}
-      <div className="mb-16 text-center">
-        <h1 className="text-3xl md:text-4xl font-serif mb-6 uppercase tracking-wider">SHOP ALL</h1>
-        <div className="max-w-3xl mx-auto border-b border-gray-200 pb-8">
-          <p className="text-gray-600 text-sm">
-            Browse Spencer Grey&apos;s complete collection of limited edition art prints. 
-            Each piece is printed on archival quality paper using eco-friendly inks.
-          </p>
-        </div>
-      </div>
-
-      {/* Artwork Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-16">
-        {artworks.map((artwork) => (
-          <div key={artwork.id} className="artwork-item">
-            <ProductCard
-              id={artwork.id}
-              title={artwork.title}
-              images={artwork.images}
-              price={artwork.sizes && artwork.sizes.length > 0 ? artwork.sizes[0].price : undefined}
-              className="h-full"
-            />
-            <div className="mt-2 flex justify-between items-center">
-              <p className="text-sm font-light">{artwork.title}</p>
-              <p className="text-sm text-gray-500 font-light">
-                {artwork.sizes && artwork.sizes.length > 0 && 
-                  `from $${(artwork.sizes[0].price / 100).toFixed(2)}`}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Value Proposition Section */}
-      <div className="mt-20 grid grid-cols-1 md:grid-cols-4 gap-4 text-center border-t border-b border-gray-200 py-8">
-        <div className="flex flex-col items-center p-4">
-          <p className="text-xs uppercase tracking-wider">Certificate of Authenticity</p>
-        </div>
-        <div className="flex flex-col items-center p-4">
-          <p className="text-xs uppercase tracking-wider">Cultural context included</p>
-        </div>
-        <div className="flex flex-col items-center p-4">
-          <p className="text-xs uppercase tracking-wider">All prints are securely packaged</p>
-        </div>
-        <div className="flex flex-col items-center p-4">
-          <p className="text-xs uppercase tracking-wider">Limited edition prints</p>
-        </div>
-      </div>
-    </div>
-  );
+  // Use the client component to handle animations
+  return <ShopPageClient artworks={artworks} error={error} />;
 }

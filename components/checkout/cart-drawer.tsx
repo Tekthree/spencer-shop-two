@@ -4,6 +4,7 @@ import React from 'react';
 import { useCart } from '@/context/cart-context';
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 /**
  * Cart Drawer Component
@@ -28,12 +29,23 @@ export default function CartDrawer() {
   };
   
   return (
-    <div 
-      className={`fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
-      aria-hidden={!isOpen}
-      role="dialog"
-      aria-modal="true"
-    >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50"
+          initial={{ x: '100%' }}
+          animate={{ x: 0 }}
+          exit={{ x: '100%' }}
+          transition={{ 
+            type: 'spring', 
+            stiffness: 300, 
+            damping: 30,
+            mass: 1
+          }}
+          aria-hidden={!isOpen}
+          role="dialog"
+          aria-modal="true"
+        >
         <div className="flex flex-col h-full">
           {/* Cart Header */}
           <div className="flex justify-between items-center p-6 border-b border-gray-100">
@@ -62,9 +74,16 @@ export default function CartDrawer() {
                 </button>
               </div>
             ) : (
-              <ul className="space-y-6">
+              <motion.ul className="space-y-6">
                 {cartItems.map((item) => (
-                  <li key={`${item.id}-${item.size}`} className="flex border-b border-gray-100 pb-6">
+                  <motion.li 
+                    key={`${item.id}-${item.size}`} 
+                    className="flex border-b border-gray-100 pb-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
                     {/* Product Image */}
                     <div className="w-24 h-24 relative flex-shrink-0 border border-gray-100">
                       <Image
@@ -83,37 +102,46 @@ export default function CartDrawer() {
                       
                       {/* Quantity Controls */}
                       <div className="flex items-center mt-2">
-                        <button
+                        <motion.button
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
                           className="w-8 h-8 flex items-center justify-center border border-gray-300 text-gray-500 hover:bg-gray-100"
                           aria-label="Decrease quantity"
                         >
                           −
-                        </button>
-                        <span className="w-8 h-8 flex items-center justify-center border-t border-b border-gray-300">
+                        </motion.button>
+                        <motion.span 
+                          key={item.quantity}
+                          initial={{ opacity: 0.8, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="w-8 h-8 flex items-center justify-center border-t border-b border-gray-300"
+                        >
                           {item.quantity}
-                        </span>
-                        <button
+                        </motion.span>
+                        <motion.button
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
                           className="w-8 h-8 flex items-center justify-center border border-gray-300 text-gray-500 hover:bg-gray-100"
                           aria-label="Increase quantity"
                         >
                           +
-                        </button>
+                        </motion.button>
                         
                         {/* Remove Button */}
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => removeFromCart(item.id, item.size)}
                           className="ml-auto text-sm text-gray-500 hover:text-black underline"
                           aria-label="Remove item"
                         >
                           REMOVE
-                        </button>
+                        </motion.button>
                       </div>
                     </div>
-                  </li>
+                  </motion.li>
                 ))}
-              </ul>
+              </motion.ul>
             )}
           </div>
 
@@ -130,12 +158,18 @@ export default function CartDrawer() {
               </p>
 
               {/* Checkout Button */}
-              <Link 
-                href="/checkout"
-                className="block w-full bg-black text-white py-3 px-6 text-center uppercase tracking-wide hover:bg-gray-800 transition-colors"
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
               >
-                GO TO CHECKOUT
-              </Link>
+                <Link 
+                  href="/checkout"
+                  className="block w-full bg-black text-white py-3 px-6 text-center uppercase tracking-wide hover:bg-gray-800 transition-colors"
+                >
+                  GO TO CHECKOUT
+                </Link>
+              </motion.div>
 
               {/* Trust Badges */}
               <div className="mt-6 grid grid-cols-3 gap-4">
@@ -161,6 +195,8 @@ export default function CartDrawer() {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

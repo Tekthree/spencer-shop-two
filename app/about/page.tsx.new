@@ -43,76 +43,14 @@ async function getAboutContent() {
 
     if (error) {
       console.error('Error fetching about page content:', error);
-      return getFallbackContentSections();
-    }
-    
-    if (!data || data.length === 0) {
-      console.log('No about page content found, using fallback content');
-      return getFallbackContentSections();
+      return null;
     }
 
     return data as ContentSection[];
   } catch (err) {
     console.error('Error connecting to Supabase:', err);
-    return getFallbackContentSections();
+    return null;
   }
-}
-
-/**
- * Returns fallback content sections when the database is not available
- */
-const getFallbackContentSections = (): ContentSection[] => {
-  return [
-    {
-      id: 'hero-1',
-      title: 'Hero',
-      content: "Hi, I'm Spencer Grey. I create vibrant, expressive artwork that captures the essence of emotion through color and form.",
-      image_url: '/images/about/spencer-studio.jpg',
-      order: 1
-    },
-    {
-      id: 'artist-bio-1',
-      title: 'Artist Bio',
-      content: "My journey as an artist began over a decade ago, exploring the boundaries between abstract expressionism and figurative art. I draw inspiration from the natural world, human emotions, and the interplay of light and shadow. Each piece I create is a conversation between color, texture, and form—inviting viewers to find their own meaning within the layers.",
-      image_url: '/images/about/artist-portrait.jpg',
-      order: 2
-    },
-    {
-      id: 'gallery-image-1',
-      title: 'Gallery Image 1',
-      content: '',
-      image_url: '/images/about/gallery1.jpg',
-      order: 3
-    },
-    {
-      id: 'gallery-image-2',
-      title: 'Gallery Image 2',
-      content: '',
-      image_url: '/images/about/gallery2.jpg',
-      order: 4
-    },
-    {
-      id: 'gallery-image-3',
-      title: 'Gallery Image 3',
-      content: '',
-      image_url: '/images/about/gallery3.jpg',
-      order: 5
-    },
-    {
-      id: 'secondary-desc-1',
-      title: 'Secondary Description',
-      content: "My studio is located in the Pacific Northwest, where the ever-changing landscape and light inform my work. I believe art should be accessible and meaningful to everyone, which is why I offer limited edition prints alongside my original pieces.",
-      image_url: '',
-      order: 6
-    },
-    {
-      id: 'signature-1',
-      title: 'Signature',
-      content: '',
-      image_url: '/images/signature.png',
-      order: 7
-    }
-  ];
 }
 
 /**
@@ -249,8 +187,6 @@ const getFallbackArtworks = () => {
 export default async function AboutPage() {
   // Fetch about page content
   const contentSections = await getAboutContent();
-  
-  // Content sections fetched successfully
 
   // Fetch featured artworks
   const featuredArtworks = await getFeaturedArtworks();
