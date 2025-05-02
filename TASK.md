@@ -302,6 +302,18 @@
 - [x] Implement main/hover image type designation in artwork management
 - [x] Fix runtime errors in image uploader component
 
+## Deployment and Optimization
+- [x] Fixed ESLint error in About page preventing Vercel deployment (unused interface warning)
+- [ ] Configure environment variables in Vercel project settings:
+  - NEXT_PUBLIC_SUPABASE_URL
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY
+  - SUPABASE_SERVICE_ROLE_KEY
+  - NEXT_PUBLIC_APP_URL
+  - Stripe-related environment variables
+- [ ] Set up proper error handling for missing environment variables
+- [ ] Implement health check endpoint to verify API connectivity
+- [ ] Add deployment documentation to README.md
+
 ## Notes and Decisions
 - Using Next.js App Router for improved performance and newer features
 - Implementing a custom CMS rather than using a headless CMS to maintain full control
@@ -321,3 +333,4 @@
 - Fixed About page content rendering to correctly display Artist Statement, Main Artist Image, and Main Description from the CMS
 - Updated About page layout to use a full-width hero banner for the main artist image with centered description below it
 - Removed paragraph titles from About page for cleaner presentation
+- Fixed TypeScript ESLint error in About page by changing unused interface to a type and updating return type annotations
