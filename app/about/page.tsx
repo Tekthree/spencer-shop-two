@@ -12,7 +12,8 @@ interface ContentSection {
   order: number;
 }
 
-interface AboutPageArtwork {
+// Define the return type for featured artworks
+type FeaturedArtwork = {
   id: string;
   title: string;
   images: {
@@ -118,7 +119,7 @@ const getFallbackContentSections = (): ContentSection[] => {
 /**
  * Fetches featured artworks for the shop section
  */
-const getFeaturedArtworks = async (): Promise<AboutPageArtwork[]> => {
+const getFeaturedArtworks = async (): Promise<FeaturedArtwork[]> => {
   try {
     // Get all artworks instead of just featured ones to display more in the Shop section
     const { data, error } = await supabase
@@ -229,7 +230,7 @@ const getFeaturedArtworks = async (): Promise<AboutPageArtwork[]> => {
 /**
  * Returns fallback artwork data when the database is not available
  */
-const getFallbackArtworks = (): AboutPageArtwork[] => {
+const getFallbackArtworks = (): FeaturedArtwork[] => {
   // Create some placeholder artworks
   return Array(4).fill(null).map((_, index) => ({
     id: `fallback-${index + 1}`,
