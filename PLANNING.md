@@ -328,30 +328,42 @@ The project utilizes Supabase for database, authentication, and storage:
 
 ### Handling Dynamic Route Parameters
 
-When working with dynamic routes in the App Router, follow these guidelines to avoid common issues:
+When working with dynamic routes in the Next.js 15 App Router, follow these guidelines to avoid common issues:
 
-1. **Accessing params in Client Components**
-   - In client components, params are provided as a Promise and must be unwrapped using React's `use()` function
+1. **Client Component Pattern with useParams**
+   - For client components in Next.js 15, use the `useParams` hook instead of receiving params as props
    - Example implementation:
    ```tsx
    'use client';
    
-   import { use } from 'react';
+   import { useParams } from 'next/navigation';
    
-   type PageParams = {
-     id: string;
-   };
-   
-   export default function EditPage({ params }: { params: PageParams }) {
-     // Properly unwrap params using React.use()
-     const resolvedParams = use(params as unknown as Promise<PageParams>);
-     const { id } = resolvedParams;
+   export default function EditPage() {
+     const params = useParams();
+     const id = params.id as string;
      
      // Rest of component...
    }
    ```
 
-2. **Accessing params in Server Components**
+2. **Server Component Wrapper with Suspense**
+   - For pages that use client-side navigation hooks like `useSearchParams`, wrap them in a Suspense boundary
+   - Example implementation:
+   ```tsx
+   // Server component (page.tsx)
+   import { Suspense } from 'react';
+   import { ClientComponent } from './client-component';
+   
+   export default function Page() {
+     return (
+       <Suspense fallback={<LoadingUI />}>
+         <ClientComponent />
+       </Suspense>
+     );
+   }
+   ```
+
+3. **Accessing params in Server Components**
    - In server components, params can be accessed directly as they're not wrapped in a Promise
    - Example implementation:
    ```tsx

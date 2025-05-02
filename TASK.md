@@ -76,11 +76,12 @@
   ```
 
 ### Stripe Setup
-- [ ] Create Stripe account
-- [ ] Configure Stripe products/prices structure for variable print sizes
-- [ ] Set up webhook endpoints
-- [ ] Implement edition tracking in purchase process
-- [ ] Generate and store API keys securely
+- [x] Create Stripe account
+- [x] Configure Stripe products/prices structure for variable print sizes
+- [x] Set up webhook endpoints
+- [x] Implement edition tracking in purchase process
+- [x] Generate and store API keys securely
+- [x] Update Stripe API version to '2025-04-30.basil' for Next.js 15 compatibility
 
 ## Core Development Phase
 
@@ -176,12 +177,22 @@
   - [x] Implement scroll locking for background content when cart is open
   - [x] Implement add to cart functionality on artwork detail page
   - [x] Add basic checkout page structure
-- [ ] Implement Stripe checkout process
-- [ ] Build edition tracking system
-- [ ] Set up order confirmation pages with certificate preview
-- [ ] Create order history for customers
-- [ ] Implement inventory/edition management logic
+- [x] Implement Stripe checkout process
+  - [x] Create checkout API endpoint
+  - [x] Handle Stripe session creation
+  - [x] Process webhook events
+- [x] Build edition tracking system
+- [x] Set up order confirmation pages with certificate preview
+- [x] Create order history for customers
+- [x] Implement inventory/edition management logic
 - [ ] Add email notifications for orders
+
+### Next.js 15 Compatibility Fixes
+- [x] Fix TypeScript errors in dynamic route pages
+  - [x] Convert server components to client components using useParams hook
+  - [x] Implement proper Suspense boundaries for client-side navigation hooks
+- [x] Update type definitions for artwork images
+- [x] Fix Stripe API version compatibility
 
 ### CMS Implementation
 - [ ] Create artwork management interface
