@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/components/artwork/product-card";
+import { ensureNumericPrice } from "@/components/artwork/price-helper";
 
 // Define types for artwork data
 type ArtworkImage = {
@@ -21,7 +22,7 @@ type ArtworkSize = {
 type Artwork = {
   id: string;
   title: string;
-  price: string;
+  price: string | number;
   images: ArtworkImage[];
   sizes: ArtworkSize[];
   tag?: string;
@@ -132,50 +133,159 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
               className="max-w-3xl mx-auto text-center"
               variants={itemVariants}
             >
-              <p className="font-serif text-lg md:text-xl leading-relaxed text-gray-700">
-                Spencer Grey creates minimalist art that explores the beauty of negative space. 
-                Each limited edition print is crafted with museum-quality materials, 
-                bringing gallery-worthy art into your home.
+              <p className="font-serif text-lg md:text-xl leading-relaxed">
+                I create art that captures the essence of emotion through vibrant colors and expressive forms. 
+                Each piece is a journey into the interplay between light, shadow, and the human experience.
               </p>
             </motion.div>
           </motion.div>
-          
-          {/* Featured Artworks */}
+        </div>
+      </section>
+      
+      {/* Featured Artworks Section */}
+      <section className="py-16 md:py-24 px-6 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
           <motion.div 
-            className="mb-20"
+            className="mb-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="font-serif text-3xl md:text-4xl mb-4">Featured Artworks</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Explore my latest creations, each one telling its own unique story through color and form.
+            </p>
+          </motion.div>
+          
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12"
             variants={containerVariants}
             initial="hidden"
-            animate="visible"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
           >
-            <motion.h2 
-              className="font-serif text-2xl mb-8"
-              variants={itemVariants}
+            {featuredArtworks.map((artwork, index) => (
+              <motion.div 
+                key={artwork.id}
+                variants={itemVariants}
+                custom={index as number}
+              >
+                <ProductCard 
+                  id={artwork.id}
+                  title={artwork.title}
+                  price={ensureNumericPrice(artwork.price)}
+                  images={artwork.images}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+          
+          <motion.div 
+            className="text-center"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <Link 
+              href="/shop"
+              className="inline-block border border-black px-6 py-3 hover:bg-black hover:text-white transition-colors"
             >
-              Featured Works
-            </motion.h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {featuredArtworks.map((artwork, index) => (
-                <motion.div 
-                  key={artwork.id}
-                  variants={itemVariants}
-                  custom={index as number}
-                >
-                  <ProductCard 
-                    id={artwork.id}
-                    title={artwork.title}
-                    price={artwork.price}
-                    images={artwork.images}
-                    sizes={artwork.sizes}
-                  />
-                </motion.div>
-              ))}
-            </div>
-            
-            <motion.div 
-              className="mt-10 text-center"
-              variants={itemVariants}
-            >
+              View All Artworks
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+      
+      {/* Recent Artworks Section */}
+      <section className="py-16 md:py-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            className="mb-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="font-serif text-3xl md:text-4xl mb-4">Latest Releases</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Discover my most recent work, fresh from the studio and ready to transform your space.
+            </p>
+          </motion.div>
+          
+          <motion.div 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            {recentArtworks.map((artwork, index) => (
+              <motion.div 
+                key={artwork.id}
+                variants={itemVariants}
+                custom={index as number}
+                className="relative"
+              >
+                <ProductCard 
+                  id={artwork.id}
+                  title={artwork.title}
+                  price={ensureNumericPrice(artwork.price)}
+                  images={artwork.images}
+                />
+                {artwork.tag && (
+                  <motion.div 
+                    className="absolute top-4 left-4 bg-white px-3 py-1 text-xs font-medium"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.5 + (index * 0.1) }}
+                  >
+                    {artwork.tag}
+                  </motion.div>
+                )}
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+      
+      {/* Three Column Feature Section */}
+      <section className="py-16 md:py-24 px-6 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            className="mb-16 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="font-serif text-3xl md:text-4xl mb-4">Why Collect My Art</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Each piece is crafted with care and attention to detail, ensuring you receive a work of art that will be treasured for generations.
+            </p>
+          </motion.div>
+          
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-3 gap-12"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            <motion.div className="space-y-6" variants={itemVariants}>
+              <motion.div 
+                className="inline-flex items-center justify-center w-10 h-10 border border-black rounded-full"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ duration: 0.3 }}
+              >
+                <span className="font-serif">1</span>
+              </motion.div>
+              <h3 className="font-serif text-xl">Limited Editions</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                All prints are produced in limited quantities, ensuring the value and exclusivity of your artwork. 
+                Each piece is numbered and accompanied by a certificate of authenticity.
+              </p>
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
@@ -184,151 +294,68 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
               >
                 <Link 
                   href="/shop"
-                  className="border border-black px-6 py-3 inline-block hover:bg-black hover:text-white transition-colors"
+                  className="inline-block border border-black px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
                 >
-                  View All Artworks
+                  Shop Now
+                </Link>
+              </motion.div>
+            </motion.div>
+            <motion.div className="space-y-6" variants={itemVariants}>
+              <motion.div 
+                className="inline-flex items-center justify-center w-10 h-10 border border-black rounded-full"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ duration: 0.3 }}
+              >
+                <span className="font-serif">2</span>
+              </motion.div>
+              <h3 className="font-serif text-xl">Museum Quality</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Each print is crafted with the highest quality in mind. Using premium paper and the giclée printing process, 
+                we guarantee rich, vibrant colors and a level of detail that will last for generations.
+              </p>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+                className="inline-block"
+              >
+                <Link 
+                  href="/shop"
+                  className="inline-block border border-black px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
+                >
+                  Shop Now
+                </Link>
+              </motion.div>
+            </motion.div>
+            <motion.div className="space-y-6" variants={itemVariants}>
+              <motion.div 
+                className="inline-flex items-center justify-center w-10 h-10 border border-black rounded-full"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ duration: 0.3 }}
+              >
+                <span className="font-serif">3</span>
+              </motion.div>
+              <h3 className="font-serif text-xl">Print To Order</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Every print is made-to-order, meaning it&apos;s freshly printed once you place your order. 
+                This allows us to minimize waste and stay true to our commitment to sustainability.
+              </p>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+                className="inline-block"
+              >
+                <Link 
+                  href="/shop"
+                  className="inline-block border border-black px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
+                >
+                  Shop Now
                 </Link>
               </motion.div>
             </motion.div>
           </motion.div>
-          
-          {/* Recent Artworks */}
-          <motion.div 
-            className="mb-20"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <motion.h2 
-              className="font-serif text-2xl mb-8"
-              variants={itemVariants}
-            >
-              Recent Additions
-            </motion.h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {recentArtworks.map((artwork, index) => (
-                <motion.div 
-                  key={artwork.id} 
-                  className="relative"
-                  variants={itemVariants}
-                  custom={index as number}
-                >
-                  <ProductCard 
-                    id={artwork.id}
-                    title={artwork.title}
-                    price={artwork.price}
-                    images={artwork.images}
-                    sizes={artwork.sizes}
-                    hidePrice={artwork.hidePrice}
-                  />
-                  {artwork.tag && (
-                    <motion.div 
-                      className="absolute top-4 left-4 bg-white px-3 py-1 text-xs font-medium"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.5 + (index * 0.1) }}
-                    >
-                      {artwork.tag}
-                    </motion.div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
         </div>
-      </section>
-
-      {/* Three Value Propositions */}
-      <section className="py-20 md:py-32 px-6 bg-white">
-        <motion.div 
-          className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.div className="space-y-6" variants={itemVariants}>
-            <motion.div 
-              className="inline-flex items-center justify-center w-10 h-10 border border-black rounded-full"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ duration: 0.3 }}
-            >
-              <span className="font-serif">1</span>
-            </motion.div>
-            <h3 className="font-serif text-xl">Limited Prints</h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Each piece of art is part of an exclusive, limited edition collection. 
-              Once sold out, they will never be printed again, making every print a rare addition to your collection.
-            </p>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-              className="inline-block"
-            >
-              <Link 
-                href="/shop"
-                className="inline-block border border-black px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
-              >
-                Shop Now
-              </Link>
-            </motion.div>
-          </motion.div>
-          <motion.div className="space-y-6" variants={itemVariants}>
-            <motion.div 
-              className="inline-flex items-center justify-center w-10 h-10 border border-black rounded-full"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ duration: 0.3 }}
-            >
-              <span className="font-serif">2</span>
-            </motion.div>
-            <h3 className="font-serif text-xl">Museum Quality</h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Each print is crafted with the highest quality in mind. Using premium paper and the giclée printing process, 
-              we guarantee rich, vibrant colors and a level of detail that will last for generations.
-            </p>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-              className="inline-block"
-            >
-              <Link 
-                href="/shop"
-                className="inline-block border border-black px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
-              >
-                Shop Now
-              </Link>
-            </motion.div>
-          </motion.div>
-          <motion.div className="space-y-6" variants={itemVariants}>
-            <motion.div 
-              className="inline-flex items-center justify-center w-10 h-10 border border-black rounded-full"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ duration: 0.3 }}
-            >
-              <span className="font-serif">3</span>
-            </motion.div>
-            <h3 className="font-serif text-xl">Print To Order</h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Every print is made-to-order, meaning it&apos;s freshly printed once you place your order. 
-              This allows us to minimize waste and stay true to our commitment to sustainability.
-            </p>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-              className="inline-block"
-            >
-              <Link 
-                href="/shop"
-                className="inline-block border border-black px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
-              >
-                Shop Now
-              </Link>
-            </motion.div>
-          </motion.div>
-        </motion.div>
       </section>
 
       {/* Artist Quote */}

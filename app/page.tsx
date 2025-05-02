@@ -36,9 +36,11 @@ interface Artwork {
 interface FormattedArtwork {
   id: string;
   title: string;
-  price: string;
+  price: number;
   images: ArtworkImage[];
   sizes: ArtworkSize[];
+  tag?: string;
+  hidePrice?: boolean;
 }
 
 export default async function Home() {
@@ -63,11 +65,8 @@ export default async function Home() {
       id: artwork.id,
       title: artwork.title,
       price: artwork.sizes && artwork.sizes.length > 0 
-        ? `from ${new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-          }).format(artwork.sizes[0].price / 100)}` 
-        : 'Price on request',
+        ? artwork.sizes[0].price
+        : 0,
       // Ensure all images have an alt text to match ProductCard expectations
       images: (artwork.images || []).map(img => ({
         url: img.url,
@@ -84,6 +83,10 @@ export default async function Home() {
     const formattedRecentArtworks = recentArtworksData?.map((artwork: Artwork, index) => ({
       id: artwork.id,
       title: artwork.title,
+      // Add price property (required by Artwork type)
+      price: artwork.sizes && artwork.sizes.length > 0 
+        ? artwork.sizes[0].price
+        : 0,
       // Ensure all images have an alt text to match ProductCard expectations
       images: (artwork.images || []).map(img => ({
         url: img.url,

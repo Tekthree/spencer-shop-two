@@ -118,7 +118,7 @@ const getFallbackContentSections = (): ContentSection[] => {
 /**
  * Fetches featured artworks for the shop section
  */
-const getFeaturedArtworks = async () => {
+const getFeaturedArtworks = async (): Promise<AboutPageArtwork[]> => {
   try {
     // Get all artworks instead of just featured ones to display more in the Shop section
     const { data, error } = await supabase
@@ -229,7 +229,7 @@ const getFeaturedArtworks = async () => {
 /**
  * Returns fallback artwork data when the database is not available
  */
-const getFallbackArtworks = () => {
+const getFallbackArtworks = (): AboutPageArtwork[] => {
   // Create some placeholder artworks
   return Array(4).fill(null).map((_, index) => ({
     id: `fallback-${index + 1}`,
