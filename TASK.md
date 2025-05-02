@@ -318,3 +318,6 @@
 - Fixed image display issues in the About page "Shop the art prints" section by properly formatting image objects with main/hover types
 - Improved About page layout with 4-column grid for featured artworks
 - Removed unnecessary borders and tags from product cards on the About page
+- Fixed About page content rendering to correctly display Artist Statement, Main Artist Image, and Main Description from the CMS
+- Updated About page layout to use a full-width hero banner for the main artist image with centered description below it
+- Removed paragraph titles from About page for cleaner presentation

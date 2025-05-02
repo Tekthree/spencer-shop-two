@@ -164,6 +164,66 @@ type FormValues = z.infer<typeof formSchema>;
 
 This ensures type safety and validation for form inputs.
 
+## About Page Content Rendering Fix (May 2025)
+
+### 1. CMS Content ID Mapping
+
+Fixed the about page content rendering to correctly display content from the CMS by properly mapping content sections by their IDs:
+
+```tsx
+// Before - Content sections were found by title or order
+const heroSection = contentSections?.find(section => section.title === 'Hero') || fallbackHero;
+const artistBio = contentSections?.find(section => section.title === 'Artist Bio') || fallbackArtistBio;
+
+// After - Content sections are found by ID first, then by title as fallback
+const artistStatement = contentSections?.find(section => section.id === 'statement') || 
+                       contentSections?.find(section => section.title === 'Artist Statement') || 
+                       fallbackArtistStatement;
+                     
+const mainArtistImage = contentSections?.find(section => section.id === 'main_image') || 
+                       contentSections?.find(section => section.title === 'Main Artist Image') || 
+                       fallbackMainArtistImage;
+```
+
+### 2. Layout Improvements
+
+Updated the about page layout to follow the minimalist aesthetic:
+
+1. Changed the main artist image to be full-width like a hero banner
+2. Moved the main description below the image and centered it
+3. Removed paragraph titles from the display for a cleaner presentation
+
+```tsx
+// Before - Two-column layout with image and text side by side
+<motion.div className="mb-16 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+  {/* Image and text side by side */}
+</motion.div>
+
+// After - Full-width image with centered text below
+<motion.div className="mb-12 w-full">
+  {/* Full-width hero image */}
+</motion.div>
+<motion.div className="mb-16 max-w-3xl mx-auto text-center">
+  {/* Centered description text */}
+</motion.div>
+```
+
+### 3. Removed Debug Logging
+
+Removed console.log statements from both client and server components to keep the browser console clean:
+
+```tsx
+// Before - Debug logging in client component
+console.log('Content Sections:', contentSections);
+console.log('Artist Statement Section:', contentSections?.find(section => section.id === 'statement'));
+
+// Before - Debug logging in server component
+console.log('Server Component - Content Sections:', contentSections);
+
+// After - Clean code without debug logging
+// Content sections are now properly mapped to their respective display areas
+```
+
 ## Remaining Issues
 
 Some TypeScript errors persist in dynamic route pages related to the params property. These are likely due to specific type constraints in the Next.js App Router implementation and may require further investigation.
