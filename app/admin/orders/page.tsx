@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
+import { useSupabaseClient } from '@/lib/hooks/useSupabaseClient';
 import { Order } from '@/types/artwork';
 
 /**
@@ -15,17 +15,16 @@ export default function AdminOrdersPage() {
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   
-  // Create Supabase client
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  // Get Supabase client from hook
+  const { client: supabase, error: supabaseError } = useSupabaseClient();
   
   /**
    * Fetch orders from Supabase
    */
   const fetchOrders = useCallback(async () => {
     try {
+      if (!supabase) return;
+      
       setLoading(true);
       
       let query = supabase
@@ -55,8 +54,18 @@ export default function AdminOrdersPage() {
   }, [statusFilter, supabase]);
   
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    // Check for Supabase client errors
+    if (supabaseError) {
+      setError(supabaseError.message);
+      setLoading(false);
+      return;
+    }
+    
+    // Only fetch orders when Supabase client is available
+    if (supabase) {
+      fetchOrders();
+    }
+  }, [fetchOrders, supabase, supabaseError]);
   
   /**
    * Format price from cents to dollars
@@ -89,6 +98,10 @@ export default function AdminOrdersPage() {
    */
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
+      if (!supabase) {
+        throw new Error('Supabase client not available');
+      }
+      
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
@@ -98,14 +111,16 @@ export default function AdminOrdersPage() {
         throw error;
       }
       
-      // Update local state
-      setOrders(orders.map(order => 
-        order.id === orderId ? { ...order, status: newStatus } : order
-      ));
+      // Update the order in the local state
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update order status';
       console.error('Error updating order status:', err);
-      alert(errorMessage);
+      setError(errorMessage);
     }
   };
   
