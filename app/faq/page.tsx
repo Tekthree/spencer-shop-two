@@ -127,7 +127,7 @@ export default function FAQPage() {
       items: [
         {
           question: "What is your return policy?",
-          answer: "We accept returns within 30 days of delivery if the print is in its original condition. Please contact us before initiating a return."
+          answer: "We don&apos;t accept returns of custom framed prints unless there&apos;s damage during shipping. We accept returns within 30 days of delivery if the print is in its original condition. Please contact us before initiating a return."
         },
         {
           question: "What if my print arrives damaged?",
@@ -184,30 +184,34 @@ export default function FAQPage() {
     );
   };
 
-  // Set up intersection observer for section tracking
+  // Set up intersection observer to detect active section
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
+            // Get the section ID from the element
+            const id = entry.target.id;
+            setActiveSection(id);
           }
         });
       },
-      { rootMargin: "-20% 0px -80% 0px" }
+      { threshold: 0.5 } // Trigger when 50% of the section is visible
     );
 
     // Observe all section elements
-    Object.values(sectionRefs.current).forEach(
-      (el) => el && observer.observe(el)
-    );
+    const currentRefs = sectionRefs.current;
+    Object.values(currentRefs).forEach((el) => {
+      if (el) observer.observe(el);
+    });
 
     return () => {
-      Object.values(sectionRefs.current).forEach(
-        (el) => el && observer.unobserve(el)
-      );
+      // Cleanup: unobserve all sections
+      Object.values(currentRefs).forEach((el) => {
+        if (el) observer.unobserve(el);
+      });
     };
-  }, []);
+  }, [setActiveSection, sectionRefs]);
 
   // Flatten all FAQ items for structured data
   const allFAQs = faqSections.flatMap(section => 
@@ -247,7 +251,7 @@ export default function FAQPage() {
           <div className="mt-12 p-6 bg-gray-50">
             <h3 className="text-sm font-medium mb-4">Still have questions?</h3>
             <p className="text-sm text-gray-600 mb-4">
-              We're here to help. Contact us directly for any questions not covered in our FAQ.
+              We&apos;re here to help. Contact us directly for any questions not covered in our FAQ.
             </p>
             <Link 
               href="/contact" 

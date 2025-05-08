@@ -79,13 +79,6 @@ export default function ArtworkDetailClient({
     };
   }, []);
 
-  // Animation variants
-  const pageVariants = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
-  };
-
   // Handle errors
   if (error) {
     return (
@@ -104,7 +97,7 @@ export default function ArtworkDetailClient({
     return (
       <div className="container mx-auto px-4 py-12 text-center">
         <h1 className="text-2xl font-medium mb-4">Artwork Not Found</h1>
-        <p className="text-gray-600 mb-8">The artwork you're looking for could not be found.</p>
+        <p className="text-gray-600 mb-8">The artwork you&apos;re looking for could not be found.</p>
         <Link href="/shop" className="inline-block bg-black text-white px-6 py-3">
           Return to Shop
         </Link>
@@ -121,13 +114,11 @@ export default function ArtworkDetailClient({
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + artwork.images.length) % artwork.images.length);
   };
-
+  
   // Determine if the artwork was recently added (within the last 30 days)
-  const isRecentlyAdded = () => {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    return new Date(artwork.created_at) > thirtyDaysAgo;
-  };
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const wasRecentlyAdded = new Date(artwork.created_at) > thirtyDaysAgo;
 
   return (
     <motion.div
@@ -267,7 +258,10 @@ export default function ArtworkDetailClient({
             
             {/* Title and Price */}
             <div className="flex justify-between items-baseline mb-4 pb-4 border-b border-gray-200">
-              <h1 className="text-3xl font-medium">{artwork.title}</h1>
+              <h1 className="text-2xl font-medium mb-2">
+                {artwork.title}
+                {wasRecentlyAdded && <span className="ml-2 text-xs bg-black text-white px-2 py-1 inline-block">JUST DROPPED</span>}
+              </h1>
               <div className="text-2xl">
                 {selectedSize ? (
                   formatPrice(selectedSize.price)
@@ -477,7 +471,7 @@ export default function ArtworkDetailClient({
                   <div className="pt-4 prose prose-sm max-w-none space-y-2">
                     <p><span className="font-medium">Print quality:</span> Museum-quality giclée print on 100% cotton rag archival paper.</p>
                     <p><span className="font-medium">Finish:</span> Matte finish with a slightly textured surface.</p>
-                    <p><span className="font-medium">Editions:</span> Limited edition, numbered and signed by the artist.</p>
+                    <p>Spencer Grey&apos;s work is known for its unique blend of abstract and figurative elements. Each limited edition print is carefully produced to capture the essence of the original artwork.</p>
                     <p><span className="font-medium">Framing:</span> Ships unframed, ready to be framed to your preference.</p>
                     <p><span className="font-medium">Certificate:</span> Includes a certificate of authenticity.</p>
                   </div>

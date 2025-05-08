@@ -56,22 +56,44 @@ export function generateOrganizationSchema() {
  * @param artwork - The artwork data
  * @returns JSON-LD data for the product
  */
-export function generateProductSchema(artwork: any) {
+// Define a type for artwork data
+type ArtworkData = {
+  id: string;
+  title: string;
+  description?: string;
+  images?: Array<{ url: string }> | { url: string }[] | string[] | string;
+  sizes?: Array<{ price: number }>;
+};
+
+export function generateProductSchema(artwork: ArtworkData) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
   
   // Get the first image URL or a placeholder
-  const imageUrl = artwork.images && artwork.images.length > 0 
-    ? artwork.images[0].url 
-    : `${baseUrl}/images/og-image.jpg`;
+  let imageUrl = `${baseUrl}/images/og-image.jpg`;
+  
+  if (artwork.images) {
+    if (Array.isArray(artwork.images) && artwork.images.length > 0) {
+      const firstImage = artwork.images[0];
+      if (typeof firstImage === 'string') {
+        imageUrl = firstImage;
+      } else if (typeof firstImage === 'object' && 'url' in firstImage) {
+        imageUrl = firstImage.url;
+      }
+    } else if (typeof artwork.images === 'string') {
+      imageUrl = artwork.images;
+    } else if (typeof artwork.images === 'object' && 'url' in artwork.images && typeof artwork.images.url === 'string') {
+      imageUrl = artwork.images.url;
+    }
+  }
   
   // Format the absolute image URL
-  const absoluteImageUrl = imageUrl.startsWith('http') 
+  const absoluteImageUrl = typeof imageUrl === 'string' && imageUrl.startsWith('http') 
     ? imageUrl 
     : `${baseUrl}${imageUrl}`;
   
   // Get the lowest price from available sizes
   const lowestPrice = artwork.sizes && artwork.sizes.length > 0
-    ? Math.min(...artwork.sizes.map((size: any) => size.price))
+    ? Math.min(...artwork.sizes.map((size: { price: number }) => size.price))
     : 0;
   
   // Format price from cents to dollars
@@ -94,7 +116,7 @@ export function generateProductSchema(artwork: any) {
       "priceCurrency": "USD",
       "lowPrice": formattedPrice,
       "highPrice": artwork.sizes && artwork.sizes.length > 0
-        ? ((Math.max(...artwork.sizes.map((size: any) => size.price))) / 100).toFixed(2)
+        ? ((Math.max(...artwork.sizes.map((size) => size.price))) / 100).toFixed(2)
         : formattedPrice,
       "offerCount": artwork.sizes ? artwork.sizes.length : 1,
       "availability": "https://schema.org/InStock"
@@ -107,7 +129,7 @@ export function generateProductSchema(artwork: any) {
  * @param items - The breadcrumb items
  * @returns JSON-LD data for breadcrumbs
  */
-export function generateBreadcrumbSchema(items: { name: string; url: string }[]) {
+export function generateBreadcrumbSchema(items: Array<{ name: string; url: string }>) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
   
   return {
@@ -147,15 +169,25 @@ export function generateFAQSchema(questions: { question: string; answer: string 
  * @param article - The article data
  * @returns JSON-LD data for the article
  */
-export function generateArticleSchema(article: {
+/**
+ * Article data type
+ */
+type ArticleData = {
   title: string;
   description: string;
+  url: string;
   image: string;
   publishedAt: string;
   modifiedAt?: string;
   authorName: string;
-  url: string;
-}) {
+};
+
+/**
+ * Creates article structured data
+ * @param article - The article data
+ * @returns JSON-LD data for the article
+ */
+export function generateArticleSchema(article: ArticleData) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
   
   // Format the absolute image URL

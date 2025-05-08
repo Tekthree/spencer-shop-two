@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from 'next/navigation';
 import JsonLd, { websiteJsonLd, organizationJsonLd } from './json-ld';
 
 /**
@@ -9,8 +8,8 @@ import JsonLd, { websiteJsonLd, organizationJsonLd } from './json-ld';
  * @returns Default JSON-LD structured data components
  */
 export default function DefaultJsonLd() {
-  const pathname = usePathname();
-  const isHomePage = pathname === '/';
+  // We can use pathname to determine page context if needed in the future
+  // const pathname = usePathname();
   
   return (
     <>

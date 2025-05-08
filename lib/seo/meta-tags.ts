@@ -24,7 +24,7 @@ export function generateMetaTags({
   path?: string;
   images?: string[];
   keywords?: string[];
-  type?: 'website' | 'article' | 'product' | 'profile';
+  type?: 'website' | 'article' | 'profile';
   noIndex?: boolean;
 }): Metadata {
   // Base URL from environment variable or default

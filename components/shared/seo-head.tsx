@@ -1,42 +1,21 @@
 "use client";
 
 import { useEffect } from 'react';
-import Head from 'next/head';
 import { usePathname } from 'next/navigation';
 
-interface SEOHeadProps {
-  title?: string;
-  description?: string;
-  canonicalUrl?: string;
-  ogType?: string;
-  ogImage?: string;
-  twitterCard?: string;
-}
+// No props needed for this component
 
 /**
  * Component for adding additional SEO elements that can't be handled by Next.js metadata
  * @param props - SEO properties
  * @returns Head component with SEO elements
  */
-export default function SEOHead({
-  title,
-  description,
-  canonicalUrl,
-  ogType = 'website',
-  ogImage,
-  twitterCard = 'summary_large_image',
-}: SEOHeadProps) {
+export default function SEOHead() {
   const pathname = usePathname();
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
   
-  // Default OG image
+  // Default OG image for structured data
   const defaultOgImage = `${baseUrl}/images/og-image.jpg`;
-  
-  // Format canonical URL
-  const canonical = canonicalUrl || `${baseUrl}${pathname}`;
-  
-  // Format OG image URL
-  const formattedOgImage = ogImage ? (ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`) : defaultOgImage;
   
   // Add structured data for local business
   const localBusinessStructuredData = {

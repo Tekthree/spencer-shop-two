@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     
     // Format price from cents to dollars
     const lowestPrice = artwork.sizes && artwork.sizes.length > 0
-      ? Math.min(...artwork.sizes.map((size: any) => size.price))
+      ? Math.min(...artwork.sizes.map((size: { price: number }) => size.price))
       : 0;
     
     const formattedPrice = (lowestPrice / 100).toFixed(2);
@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
           alt: artwork.title,
         }],
         locale: 'en_US',
-        type: 'product',
+        type: 'website',
       },
       twitter: {
         card: 'summary_large_image',

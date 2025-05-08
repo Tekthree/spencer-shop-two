@@ -7,7 +7,10 @@ import { useEffect, useState } from 'react';
  * @param data - The structured data to render
  * @returns Script element with JSON-LD data
  */
-export default function JsonLd({ data }: { data: any }) {
+// Define a type for JSON-LD structured data
+type JsonLdData = Record<string, unknown>;
+
+export default function JsonLd({ data }: { data: JsonLdData }) {
   // Use state to ensure this only runs on the client
   const [mounted, setMounted] = useState(false);
 
@@ -77,22 +80,47 @@ export function organizationJsonLd() {
  * @param artwork - The artwork data
  * @returns JSON-LD data for the product
  */
-export function productJsonLd(artwork: any) {
+// Define a type for artwork data
+type ArtworkData = {
+  id: string;
+  title: string;
+  description?: string;
+  images?: Array<{ url: string }> | { url: string }[] | string[] | string;
+  sizes?: Array<{ price: number }>;
+};
+
+export function productJsonLd(artwork: ArtworkData) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
   
   // Get the first image URL or a placeholder
-  const imageUrl = artwork.images && artwork.images.length > 0 
-    ? artwork.images[0].url 
-    : `${baseUrl}/images/og-image.jpg`;
+  let imageUrl = `${baseUrl}/images/og-image.jpg`;
+  
+  if (artwork.images) {
+    if (Array.isArray(artwork.images) && artwork.images.length > 0) {
+      const firstImage = artwork.images[0];
+      if (typeof firstImage === 'string') {
+        imageUrl = firstImage;
+      } else if (typeof firstImage === 'object' && 'url' in firstImage) {
+        imageUrl = firstImage.url;
+      }
+    } else if (typeof artwork.images === 'string') {
+      imageUrl = artwork.images;
+    } else if (typeof artwork.images === 'object' && 'url' in artwork.images) {
+      const url = artwork.images.url;
+      if (typeof url === 'string') {
+        imageUrl = url;
+      }
+    }
+  }
   
   // Format the absolute image URL
-  const absoluteImageUrl = imageUrl.startsWith('http') 
+  const absoluteImageUrl = typeof imageUrl === 'string' && imageUrl.startsWith('http') 
     ? imageUrl 
     : `${baseUrl}${imageUrl}`;
   
   // Get the lowest price from available sizes
   const lowestPrice = artwork.sizes && artwork.sizes.length > 0
-    ? Math.min(...artwork.sizes.map((size: any) => size.price))
+    ? Math.min(...artwork.sizes.map((size) => size.price))
     : 0;
   
   // Format price from cents to dollars
@@ -114,7 +142,7 @@ export function productJsonLd(artwork: any) {
       "priceCurrency": "USD",
       "lowPrice": formattedPrice,
       "highPrice": artwork.sizes && artwork.sizes.length > 0
-        ? ((Math.max(...artwork.sizes.map((size: any) => size.price))) / 100).toFixed(2)
+        ? ((Math.max(...artwork.sizes.map((size: { price: number }) => size.price))) / 100).toFixed(2)
         : formattedPrice,
       "offerCount": artwork.sizes ? artwork.sizes.length : 1,
       "availability": "https://schema.org/InStock"
@@ -127,7 +155,7 @@ export function productJsonLd(artwork: any) {
  * @param items - The breadcrumb items
  * @returns JSON-LD data for breadcrumbs
  */
-export function breadcrumbJsonLd(items: { name: string; url: string }[]) {
+export function breadcrumbJsonLd(items: Array<{ name: string; url: string }>) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
   
   return {

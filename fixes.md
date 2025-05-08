@@ -1,6 +1,6 @@
-# TypeScript Fixes for Spencer Grey Artist Website
+# TypeScript and ESLint Fixes for Spencer Grey Artist Website
 
-This document outlines the TypeScript fixes that have been implemented in the Spencer Grey artist website project.
+This document outlines the TypeScript and ESLint fixes that have been implemented in the Spencer Grey artist website project.
 
 ## Next.js 15 Build Fixes (May 2025)
 
@@ -274,6 +274,116 @@ Redesigned the artwork detail page to match the Roburico.com example with the fo
 
 This redesign improves the shopping experience by making all product images easily viewable while keeping the purchase options always accessible as the user scrolls. The mobile-optimized carousel provides a better experience on smaller screens, matching the Roburico.com example.
 
-## Remaining Issues
+## ESLint and TypeScript Fixes (May 2025)
 
-Some TypeScript errors persist in dynamic route pages related to the params property. These are likely due to specific type constraints in the Next.js App Router implementation and may require further investigation.
+### 1. Fixed Unused Variables and Unescaped Apostrophes
+
+Fixed several ESLint errors related to unused variables and unescaped apostrophes across multiple files:
+
+```typescript
+// Fixed unused variables in artwork-detail-client.tsx
+// Before
+const pageVariants = { /* ... */ };
+const isRecentlyAdded = () => { /* ... */ };
+
+// After
+// Removed unused variables and converted isRecentlyAdded to a used variable
+const wasRecentlyAdded = new Date(artwork.created_at) > thirtyDaysAgo;
+```
+
+```jsx
+// Fixed unescaped apostrophes
+// Before
+Spencer Grey's work is known for its unique blend...
+
+// After
+Spencer Grey&apos;s work is known for its unique blend...
+```
+
+### 2. Fixed 'any' Type Usage
+
+Replaced `any` types with proper TypeScript types in multiple files:
+
+```typescript
+// Before
+export function productJsonLd(artwork: any) { /* ... */ }
+
+// After
+type ArtworkData = {
+  id: string;
+  title: string;
+  description?: string;
+  images?: Array<{ url: string }> | { url: string }[] | string[] | string;
+  sizes?: Array<{ price: number }>;
+};
+
+export function productJsonLd(artwork: ArtworkData) { /* ... */ }
+```
+
+### 3. Fixed Client-Side Browser API Usage
+
+Fixed issues with direct browser API access in server components:
+
+```typescript
+// Before - Direct navigator access in JSX
+{navigator.share ? "SHARE" : "SHARE WITH A FRIEND"}
+
+// After - Using state to safely handle browser APIs
+const [canNativeShare, setCanNativeShare] = useState(false);
+
+useEffect(() => {
+  setCanNativeShare(typeof navigator !== 'undefined' && !!navigator.share);
+}, []);
+
+// In JSX
+{canNativeShare ? "SHARE" : "SHARE WITH A FRIEND"}
+```
+
+### 4. Fixed OpenGraph Type Constraints
+
+Fixed issues with OpenGraph type constraints in Next.js metadata:
+
+```typescript
+// Before
+type?: 'website' | 'article' | 'product' | 'profile';
+
+// After - Removed 'product' which is not supported by Next.js
+type?: 'website' | 'article' | 'profile';
+```
+
+### 5. Fixed React Hooks Exhaustive Dependencies
+
+Fixed React hooks exhaustive dependencies warning in the FAQ page:
+
+```typescript
+// Before - Using sectionRefs.current directly in cleanup
+useEffect(() => {
+  // ...
+  Object.values(sectionRefs.current).forEach((el) => {
+    if (el) observer.observe(el);
+  });
+
+  return () => {
+    Object.values(sectionRefs.current).forEach((el) => {
+      if (el) observer.unobserve(el);
+    });
+  };
+}, []);
+
+// After - Capturing the current value in a variable
+useEffect(() => {
+  // ...
+  const currentRefs = sectionRefs.current;
+  Object.values(currentRefs).forEach((el) => {
+    if (el) observer.observe(el);
+  });
+
+  return () => {
+    Object.values(currentRefs).forEach((el) => {
+      if (el) observer.unobserve(el);
+    });
+  };
+}, []);
+```
+
+These fixes address all the ESLint and TypeScript errors that were preventing successful builds in Next.js 15.

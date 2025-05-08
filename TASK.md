@@ -8,6 +8,14 @@
   - [ ] Improve size selection UI
   - [ ] Add "JUST DROPPED" label for new releases
 
+- [x] Fix ESLint and TypeScript build errors (2025-05-08)
+  - [x] Fix unused variables in artwork-detail-client.tsx, default-json-ld.tsx, and seo-head.tsx
+  - [x] Fix unescaped apostrophes in artwork-detail-client.tsx and faq/page.tsx
+  - [x] Replace 'any' types with proper TypeScript types in metadata.ts, json-ld.tsx, and schema.ts
+  - [x] Fix React hooks exhaustive dependencies warning in faq/page.tsx
+  - [x] Fix client-side browser API usage in social-share.tsx
+  - [x] Fix OpenGraph type constraints in meta-tags.ts
+
 ## Project Setup Phase
 
 ### Environment Setup
@@ -342,3 +350,4 @@
 - Updated About page layout to use a full-width hero banner for the main artist image with centered description below it
 - Removed paragraph titles from About page for cleaner presentation
 - Fixed TypeScript ESLint error in About page by changing unused interface to a type and updating return type annotations
+- Fixed multiple ESLint and TypeScript errors across the codebase to ensure successful builds in Next.js 15
