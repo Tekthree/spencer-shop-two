@@ -26,9 +26,46 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Spencer Grey | Limited Edition Fine Art Prints",
+  title: {
+    default: "Spencer Grey | Limited Edition Fine Art Prints",
+    template: "%s | Spencer Grey Art"
+  },
   description: "Discover limited edition fine art prints by Spencer Grey. Clean, minimalist artwork with a focus on quality and sustainability.",
-  keywords: ["Spencer Grey", "fine art", "limited edition prints", "art prints", "minimalist art"],
+  keywords: ["Spencer Grey", "fine art", "limited edition prints", "art prints", "minimalist art", "contemporary artist", "gallery prints", "art collection"],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com'),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "Spencer Grey Art",
+    title: "Spencer Grey | Limited Edition Fine Art Prints",
+    description: "Discover limited edition fine art prints by Spencer Grey. Clean, minimalist artwork with a focus on quality and sustainability.",
+    images: [{
+      url: "/images/og-image.jpg",
+      width: 1200,
+      height: 630,
+      alt: "Spencer Grey Art"
+    }]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Spencer Grey | Limited Edition Fine Art Prints",
+    description: "Discover limited edition fine art prints by Spencer Grey. Clean, minimalist artwork with a focus on quality and sustainability.",
+    creator: "@spencergreyart",
+    images: ["/images/og-image.jpg"]
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    }
+  },
+  alternates: {
+    canonical: "/"
+  }
 };
 
 export default function RootLayout({

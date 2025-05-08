@@ -109,13 +109,8 @@ export default function ArtworkDetailPage() {
   // Get cart context
   const { addToCart } = useCart();
 
-  // Check if artwork is a new release (within last 30 days)
-  const isNewRelease = artwork ? (
-    new Date().getTime() - new Date(artwork.created_at).getTime() < 30 * 24 * 60 * 60 * 1000
-  ) : false;
-
   // Handle add to cart
-  const handleAddToCart = () => {
+  const handleAddToCart = (quantity: number = 1) => {
     if (!artwork || !selectedSize) return;
     
     // Get the first image URL or a placeholder
@@ -130,7 +125,7 @@ export default function ArtworkDetailPage() {
       size: selectedSize.size,
       sizeDisplay: selectedSize.size, // You could enhance this with unit conversion if needed
       price: selectedSize.price,
-      quantity: 1,
+      quantity: quantity,
       imageUrl: imageUrl
     });
   };
@@ -149,7 +144,6 @@ export default function ArtworkDetailPage() {
       handleSizeSelect={handleSizeSelect}
       handleAddToCart={handleAddToCart}
       selectedSize={selectedSize}
-      isNewRelease={isNewRelease}
     />
   );
 }
