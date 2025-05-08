@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import FAQSchema from './faq-schema';
 
 // FAQ item type definition
 type FAQItem = {
@@ -74,8 +75,105 @@ export default function FAQPage() {
   const [openItems, setOpenItems] = useState<string[]>([]);
   // State to track active section
   const [activeSection, setActiveSection] = useState<string>("");
-  // Refs for section elements
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  // Refs for intersection observer
+  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  
+  // FAQ data
+  const faqSections: FAQSectionData[] = [
+    {
+      title: "General FAQs",
+      items: [
+        {
+          question: "What makes Spencer Grey's art prints special?",
+          answer: "Spencer Grey's art prints are limited edition, museum-quality giclée prints on 100% cotton rag archival paper. Each print is numbered and signed by the artist, making it a unique collectible piece."
+        },
+        {
+          question: "Are these prints really limited edition?",
+          answer: "Yes, all prints are strictly limited edition. Once an edition sells out, it will never be reprinted in that size again. This ensures the value and exclusivity of your artwork."
+        },
+        {
+          question: "Do prints come framed?",
+          answer: "Our prints are sold unframed to allow you to select framing that matches your space and style. We can recommend professional framers if needed."
+        },
+        {
+          question: "How do I know my print is authentic?",
+          answer: "Each print comes with a signed certificate of authenticity that includes the edition number, title, and artist signature."
+        }
+      ]
+    },
+    {
+      title: "Shipping & Delivery",
+      items: [
+        {
+          question: "How long will it take to receive my order?",
+          answer: "Most orders ship within 5-7 business days. Delivery typically takes an additional 3-5 business days for domestic orders and 7-14 days for international orders."
+        },
+        {
+          question: "Do you ship internationally?",
+          answer: "Yes, we ship worldwide. International shipping rates are calculated at checkout based on destination and package dimensions."
+        },
+        {
+          question: "How are prints packaged for shipping?",
+          answer: "Prints are carefully rolled in acid-free tissue paper, placed in a protective tube, and shipped in a sturdy outer box to ensure they arrive in perfect condition."
+        },
+        {
+          question: "Can I track my order?",
+          answer: "Yes, you'll receive a tracking number via email once your order ships."
+        }
+      ]
+    },
+    {
+      title: "Returns",
+      items: [
+        {
+          question: "What is your return policy?",
+          answer: "We accept returns within 30 days of delivery if the print is in its original condition. Please contact us before initiating a return."
+        },
+        {
+          question: "What if my print arrives damaged?",
+          answer: "In the rare event that your print arrives damaged, please take photos of the damage and contact us within 48 hours of delivery. We'll arrange a replacement at no additional cost."
+        },
+        {
+          question: "Can I exchange my print for a different size?",
+          answer: "Size exchanges are possible within 14 days of delivery, subject to availability. Please note that there may be a price difference if exchanging for a larger size."
+        }
+      ]
+    },
+    {
+      title: "Payment",
+      items: [
+        {
+          question: "What payment methods do you accept?",
+          answer: "We accept all major credit cards, PayPal, and Apple Pay."
+        },
+        {
+          question: "Is my payment information secure?",
+          answer: "Yes, all payments are processed through Stripe, a PCI-compliant payment processor with bank-level encryption."
+        },
+        {
+          question: "Do you offer payment plans?",
+          answer: "Yes, we offer interest-free payment plans through Affirm for orders over $200. You can select this option at checkout."
+        }
+      ]
+    },
+    {
+      title: "Product Care",
+      items: [
+        {
+          question: "How should I care for my print?",
+          answer: "To preserve your print, avoid hanging it in direct sunlight or areas with high humidity. Use acid-free materials for framing and handle prints with clean hands or cotton gloves."
+        },
+        {
+          question: "How long will my print last?",
+          answer: "Our archival-quality prints are rated to last 100+ years without fading when properly displayed and cared for."
+        },
+        {
+          question: "What's the best way to frame my print?",
+          answer: "We recommend using UV-protective glass or acrylic, acid-free matting, and archival backing when framing your print. A professional framer can help you select the best options."
+        }
+      ]
+    }
+  ];
 
   // Toggle FAQ item open/closed
   const toggleItem = (id: string) => {
@@ -85,166 +183,50 @@ export default function FAQPage() {
         : [...prev, id]
     );
   };
-  
-  // Set up intersection observer to detect which section is in view
+
+  // Set up intersection observer for section tracking
   useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: "-100px 0px -70% 0px", // Adjust this to control when the active section changes
-      threshold: 0
-    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: "-20% 0px -80% 0px" }
+    );
 
-    const observerCallback: IntersectionObserverCallback = (entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-    
     // Observe all section elements
-    Object.values(sectionRefs.current).forEach(ref => {
-      if (ref) observer.observe(ref);
-    });
+    Object.values(sectionRefs.current).forEach(
+      (el) => el && observer.observe(el)
+    );
 
     return () => {
-      observer.disconnect();
+      Object.values(sectionRefs.current).forEach(
+        (el) => el && observer.unobserve(el)
+      );
     };
   }, []);
 
-  // FAQ data organized by sections
-  const faqSections: FAQSectionData[] = [
-    {
-      title: "GENERAL FAQS",
-      items: [
-        {
-          question: "What materials are used in your art prints?",
-          answer: "Our prints emerge from a harmonious fusion of archival-grade papers and vibrant pigment inks that dance with light. We select only premium materials that ensure your artwork maintains its radiance and essence for generations, with each piece carrying the energetic quality of museum-standard presentation."
-        },
-        {
-          question: "Are the prints limited editions?",
-          answer: "Yes, our prints exist as finite expressions in the material realm. Each edition is mindfully limited to preserve its uniqueness and value, with each print individually numbered and accompanied by a certificate of authenticity that validates its place in the cosmic sequence."
-        },
-        {
-          question: "Can I purchase a digital version of the artwork?",
-          answer: "Currently, we offer only physical manifestations of our creative expressions. The tangible presence of art creates a different resonance within your space than digital forms, though we're exploring future possibilities for digital editions."
-        },
-        {
-          question: "Do you offer custom sizes for the prints?",
-          answer: "Yes, we can accommodate your spatial requirements. Please contact us with your desired dimensions, and we'll create a personalized quote for your custom-sized print that aligns perfectly with your environment."
-        },
-        {
-          question: "Are the colors on the print exactly as shown on the website?",
-          answer: "While we strive for precise representation, the digital realm and physical world sometimes interpret colors differently. Our professional calibration minimizes these variations, but subtle differences may occur due to screen settings and the natural properties of pigment on paper."
-        },
-        {
-          question: "How are the prints packaged to ensure they arrive safely?",
-          answer: "Each print undertakes its journey to you in protective materials - acid-free tissue, rigid cardboard backing, water-resistant outer packaging, and reinforced corners. We treat each shipment as a sacred vessel carrying creative energy to your doorstep."
-        }
-      ]
-    },
-    {
-      title: "SHIPPING & DELIVERY",
-      items: [
-        {
-          question: "Do you offer free shipping?",
-          answer: "Yes, we offer free standard shipping on all orders within the USA, EU and UK regions. This offering allows the art to flow freely to you without additional barriers."
-        },
-        {
-          question: "Do you ship internationally?",
-          answer: "Yes, our art travels across boundaries and borders. International shipping is available to most countries, with costs calculated based on destination and package dimensions at checkout."
-        },
-        {
-          question: "When will my order ship?",
-          answer: "Most orders begin their journey within 3-5 business days. Limited editions and custom sizes may require 7-10 days of preparation before embarking to your space."
-        },
-        {
-          question: "Will I get a tracking number?",
-          answer: "Yes, you'll receive a digital thread to follow your art's journey. Once your order ships, we'll send tracking information to your email address, allowing you to witness its progress toward you."
-        },
-        {
-          question: "How long does shipping take?",
-          answer: "Shipping times vary by destination. Domestic deliveries typically arrive within 3-7 business days after shipping, while international journeys may require 7-21 days depending on customs processing and local delivery services."
-        },
-        {
-          question: "What shipping carriers do you use?",
-          answer: "We partner with respected carriers including FedEx, UPS, and DHL for international shipments, selecting the most reliable option for your specific location to ensure safe passage of your artwork."
-        }
-      ]
-    },
-    {
-      title: "RETURNS",
-      items: [
-        {
-          question: "What is your return policy?",
-          answer: "We honor your right to return prints in pristine condition within 30 days of their arrival in your realm. Please note that custom-sized prints and commissioned works exist in a different category and cannot be returned unless damaged during transit."
-        },
-        {
-          question: "Can I exchange a print for a different artwork?",
-          answer: "Yes, exchanges are possible within our 30-day return window. Contact us to initiate the exchange process, and we'll guide you through returning your current print and selecting your new artistic connection."
-        },
-        {
-          question: "How do I initiate a return?",
-          answer: "The return journey begins by contacting us through our online form. Once approved, we'll provide instructions for safe return packaging and the destination address for your shipment."
-        },
-        {
-          question: "Will I receive a refund for the shipping costs?",
-          answer: "Original shipping costs are non-refundable unless the return is due to our error or damaged goods. We believe in transparent energy exchange throughout our relationship."
-        }
-      ]
-    },
-    {
-      title: "PAYMENT",
-      items: [
-        {
-          question: "What payment methods do you accept?",
-          answer: "We welcome various forms of energy exchange including major credit cards (Visa, Mastercard, American Express), PayPal, and Apple Pay, ensuring secure and convenient transactions."
-        },
-        {
-          question: "Is my payment information secure?",
-          answer: "Absolutely. Your financial information travels through encrypted pathways and secure processing systems. We never store your complete card details in our database, honoring both your trust and privacy."
-        },
-        {
-          question: "Can I pay in installments or use a payment plan?",
-          answer: "Yes, we offer installment options through Affirm for orders over $200, allowing you to bring artwork into your space while spreading the financial commitment across time in a way that honors your resources."
-        },
-        {
-          question: "How do I apply a discount code?",
-          answer: "During the checkout journey, you'll find a field labeled 'Discount Code' where you can enter your code. The system will automatically adjust your total to reflect the appropriate discount before finalizing your purchase."
-        }
-      ]
-    },
-    {
-      title: "PRODUCT CARE",
-      items: [
-        {
-          question: "How do I care for my art print?",
-          answer: "Treat your print as a living entity deserving mindful attention. Display away from direct sunlight, extreme temperature fluctuations, and moisture. When handling, touch only the edges with clean hands, acknowledging the sensitive nature of fine art papers."
-        },
-        {
-          question: "What is the best way to frame the prints?",
-          answer: "We recommend professional framing with acid-free mats and UV-protective glass to preserve the print's vibrancy. This creates both physical protection and an energetic boundary that honors the artwork's presence in your space."
-        },
-        {
-          question: "Will the colors fade over time?",
-          answer: "Our archival pigment inks are designed to resist fading for many cycles of the sun. Under proper care and display conditions, the prints will maintain their vivid essence for 80-100 years, allowing generations to experience their beauty."
-        },
-        {
-          question: "How should I clean the print if it becomes dusty?",
-          answer: "For framed prints behind glass, simply use a lint-free cloth with glass cleaner applied to the cloth (never directly to the glass). For unframed prints, gently dust using a clean, soft brush designed for artwork, always moving from the center outward with minimal pressure."
-        }
-      ]
-    }
-  ];
+  // Flatten all FAQ items for structured data
+  const allFAQs = faqSections.flatMap(section => 
+    section.items.map(item => ({
+      question: item.question,
+      answer: item.answer
+    }))
+  );
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-16 md:py-24">
+    <main className="container mx-auto px-4 py-12 max-w-7xl">
+      {/* Add structured data for FAQs */}
+      <FAQSchema faqs={allFAQs} />
+      
+      <h1 className="text-3xl font-normal mb-8">Frequently Asked Questions</h1>
+      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-24">
         {/* Sidebar - Sticky Navigation */}
         <div className="md:col-span-1 md:sticky md:top-8 md:self-start h-fit">
-          <h1 className="font-serif text-2xl mb-10">Frequently Asked Questions</h1>
           <nav className="space-y-5">
             {faqSections.map((section, index) => {
               const sectionId = section.title.toLowerCase().replace(/\s+/g, '-');
@@ -262,10 +244,11 @@ export default function FAQPage() {
             })}
           </nav>
           
-          <div className="mt-12 pt-12 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-4">
-                Can&apos;t find what you&apos;re looking for?
-              </p>
+          <div className="mt-12 p-6 bg-gray-50">
+            <h3 className="text-sm font-medium mb-4">Still have questions?</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              We're here to help. Contact us directly for any questions not covered in our FAQ.
+            </p>
             <Link 
               href="/contact" 
               className="text-sm text-black underline hover:no-underline"

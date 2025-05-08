@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
+import RelatedArtworks from '@/components/artwork/related-artworks';
 import JsonLd, { productJsonLd, breadcrumbJsonLd } from '@/components/shared/json-ld';
 import SocialShare from '@/components/shared/social-share';
-import RelatedArtworks from '@/components/artwork/related-artworks';
 
 // Define TypeScript interfaces for our data models
 interface SizeOption {
@@ -81,234 +81,267 @@ export default function ArtworkDetailClient({
 
   // Animation variants
   const pageVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        duration: 0.7,
-        ease: [0.22, 1, 0.36, 1]
-      }
-    }
-  };
-  
-  // Staggered animation variants for child elements
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.3
-      }
-    }
-  };
-  
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number = 0) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: [0.22, 1, 0.36, 1],
-        delay: i * 0.08
-      }
-    })
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
   };
 
-  // If there's an error, display it
+  // Handle errors
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8">
-          <p className="text-red-700">{error}</p>
-          <Link href="/" className="text-red-700 underline mt-2 inline-block">
-            Return to homepage
-          </Link>
-        </div>
+      <div className="container mx-auto px-4 py-12 text-center">
+        <h1 className="text-2xl font-medium mb-4">Error Loading Artwork</h1>
+        <p className="text-gray-600 mb-8">{error}</p>
+        <Link href="/shop" className="inline-block bg-black text-white px-6 py-3">
+          Return to Shop
+        </Link>
       </div>
     );
   }
 
-  // If artwork is null (shouldn't happen with the loading state), return nothing
+  // Handle case where artwork is null
   if (!artwork) {
-    return null;
+    return (
+      <div className="container mx-auto px-4 py-12 text-center">
+        <h1 className="text-2xl font-medium mb-4">Artwork Not Found</h1>
+        <p className="text-gray-600 mb-8">The artwork you're looking for could not be found.</p>
+        <Link href="/shop" className="inline-block bg-black text-white px-6 py-3">
+          Return to Shop
+        </Link>
+      </div>
+    );
   }
 
-  // Function to handle next image in carousel
+  // Handle next image in mobile carousel
   const nextImage = () => {
-    if (artwork && currentImageIndex < artwork.images.length - 1) {
-      setCurrentImageIndex(currentImageIndex + 1);
-    }
+    setCurrentImageIndex((prev) => (prev + 1) % artwork.images.length);
   };
-  
-  // Function to handle previous image in carousel
+
+  // Handle previous image in mobile carousel
   const prevImage = () => {
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex(currentImageIndex - 1);
-    }
+    setCurrentImageIndex((prev) => (prev - 1 + artwork.images.length) % artwork.images.length);
+  };
+
+  // Determine if the artwork was recently added (within the last 30 days)
+  const isRecentlyAdded = () => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return new Date(artwork.created_at) > thirtyDaysAgo;
   };
 
   return (
     <motion.div
-      className="container mx-auto px-4 py-12"
-      initial="hidden"
-      animate="visible"
-      variants={pageVariants}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+      className="container mx-auto px-4 py-12 max-w-7xl"
     >
+      {/* Add JSON-LD structured data for rich search results */}
+      <JsonLd data={productJsonLd(artwork)} />
+      <JsonLd data={breadcrumbJsonLd([
+        { name: 'Home', url: '/' },
+        { name: 'Shop', url: '/shop' },
+        { name: artwork.collection_name || 'Artworks', url: artwork.collection_id ? `/collections/${artwork.collection_id}` : '/shop' },
+        { name: artwork.title, url: `/artwork/${artwork.id}` },
+      ])} />
+
+      {/* Breadcrumb Navigation */}
+      <nav className="mb-8 text-sm">
+        <ol className="flex flex-wrap items-center space-x-2">
+          <li>
+            <Link href="/" className="text-gray-500 hover:text-black">
+              Home
+            </Link>
+          </li>
+          <li className="text-gray-400">/</li>
+          <li>
+            <Link href="/shop" className="text-gray-500 hover:text-black">
+              Shop
+            </Link>
+          </li>
+          {artwork.collection_name && (
+            <>
+              <li className="text-gray-400">/</li>
+              <li>
+                <Link 
+                  href={artwork.collection_id ? `/collections/${artwork.collection_id}` : '/shop'} 
+                  className="text-gray-500 hover:text-black"
+                >
+                  {artwork.collection_name}
+                </Link>
+              </li>
+            </>
+          )}
+          <li className="text-gray-400">/</li>
+          <li className="text-gray-900 font-medium">{artwork.title}</li>
+        </ol>
+      </nav>
+
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Left Column - Mobile: Horizontal Scrolling, Desktop: Stacked Artwork Images */}
-        <div>
-          {/* Mobile Carousel View (visible on small screens) */}
-          <div className="block lg:hidden">
-            <div className="relative">
-              {/* Current Image */}
-              <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-                {artwork.images.length > 0 && (
-                  <Image
-                    src={artwork.images[currentImageIndex].url}
-                    alt={artwork.images[currentImageIndex].alt || `${artwork.title} - Image ${currentImageIndex + 1}`}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    priority
-                  />
-                )}
-              </div>
-              
-              {/* Navigation Arrows */}
-              {artwork.images.length > 1 && (
-                <>
-                  <button 
-                    onClick={prevImage} 
-                    disabled={currentImageIndex === 0}
-                    className={`absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full ${currentImageIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    aria-label="Previous image"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button 
-                    onClick={nextImage} 
-                    disabled={artwork && currentImageIndex === artwork.images.length - 1}
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full ${artwork && currentImageIndex === artwork.images.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    aria-label="Next image"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </>
-              )}
+        {/* Left Column - Stacked Images */}
+        <div className="space-y-8">
+          {/* Mobile Carousel - Only visible on small screens */}
+          <div className="relative lg:hidden">
+            <div className="relative aspect-square overflow-hidden bg-gray-100">
+              <Image
+                src={artwork.images[currentImageIndex].url}
+                alt={artwork.images[currentImageIndex].alt || artwork.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+                priority
+              />
             </div>
             
-            {/* Scroll Indicator */}
-            {artwork.images.length > 1 && (
-              <div className="flex justify-center mt-4 space-x-2">
-                {artwork.images.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`h-2 w-2 rounded-full ${currentImageIndex === index ? 'bg-black' : 'bg-gray-300'}`}
-                    aria-label={`Go to image ${index + 1}`}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Navigation Arrows */}
+            <button 
+              onClick={prevImage}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md"
+              aria-label="Previous image"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button 
+              onClick={nextImage}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md"
+              aria-label="Next image"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            
+            {/* Dot Indicators */}
+            <div className="flex justify-center space-x-2 mt-4">
+              {artwork.images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`h-2 w-2 rounded-full ${
+                    index === currentImageIndex ? 'bg-black' : 'bg-gray-300'
+                  }`}
+                  aria-label={`View image ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
           
-          {/* Desktop Stacked View (visible on large screens) */}
+          {/* Desktop Stacked Images - Hidden on mobile */}
           <div className="hidden lg:block space-y-8">
             {artwork.images.map((image, index) => (
-              <div 
-                key={index} 
-                className="relative aspect-square w-full overflow-hidden rounded-lg"
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true, margin: "-100px" }}
+                className="relative aspect-square overflow-hidden bg-gray-100"
               >
                 <Image
                   src={image.url}
-                  alt={image.alt || `${artwork.title} - Image ${index + 1}`}
+                  alt={image.alt || artwork.title}
                   fill
                   sizes="50vw"
                   className="object-cover"
                   priority={index === 0}
                 />
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
         
-        {/* Right Column - Sticky Product Info */}
+        {/* Right Column - Sticky Product Information */}
         <div className="relative">
           <motion.div 
             ref={productInfoRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
             className="sticky top-24 space-y-6"
-            variants={containerVariants}
           >
-            {/* Title and Price */}
-            <motion.div variants={itemVariants} className="border-b border-gray-200 pb-4">
-              <div className="flex justify-between items-baseline">
-                <h1 className="text-3xl font-medium">{artwork.title}</h1>
-                <p className="text-2xl">{formatPrice(selectedSize?.price || artwork.sizes[0]?.price)}</p>
+            {/* Just Dropped Label */}
+            {isRecentlyAdded() && (
+              <div className="inline-block bg-black text-white text-xs px-3 py-1 mb-2">
+                JUST DROPPED
               </div>
-            </motion.div>
+            )}
+            
+            {/* Title and Price */}
+            <div className="flex justify-between items-baseline mb-4">
+              <h1 className="text-3xl font-medium">{artwork.title}</h1>
+              <div className="text-2xl">
+                {selectedSize ? (
+                  formatPrice(selectedSize.price)
+                ) : (
+                  artwork.sizes && artwork.sizes.length > 0 ? formatPrice(artwork.sizes[0].price) : "Price unavailable"
+                )}
+              </div>
+            </div>
             
             {/* Selling Points */}
-            <motion.div variants={containerVariants} className="space-y-3 py-4 border-b border-gray-200">
-              <motion.div className="flex items-start" variants={itemVariants}>
+            <div className="space-y-3 py-4 border-b border-gray-200 mb-6">
+              <div className="flex items-start">
                 <svg className="h-5 w-5 text-indigo-500 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <p className="text-sm"><span className="font-bold">Limited edition</span> — Only {artwork.sizes[0]?.edition_limit || 150} prints available. No restocks, ever.</p>
-              </motion.div>
+              </div>
               
-              <motion.div className="flex items-start" variants={itemVariants}>
+              <div className="flex items-start">
                 <svg className="h-5 w-5 text-indigo-500 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <p className="text-sm"><span className="font-bold">Signed and Numbered</span> — Own a truly exclusive piece.</p>
-              </motion.div>
+              </div>
               
-              <motion.div className="flex items-start" variants={itemVariants}>
+              <div className="flex items-start">
                 <svg className="h-5 w-5 text-indigo-500 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <p className="text-sm"><span className="font-bold">Certificate of Authenticity included</span> — Proof that your artwork is an original from the artist.</p>
-              </motion.div>
+              </div>
               
-              <motion.div className="flex items-start" variants={itemVariants}>
+              <div className="flex items-start">
                 <svg className="h-5 w-5 text-indigo-500 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <p className="text-sm"><span className="font-bold">Handcrafted Art</span> — No AI, just 40+ hours of passion in every detail.</p>
-              </motion.div>
+              </div>
               
-              <motion.div className="flex items-start" variants={itemVariants}>
+              <div className="flex items-start">
                 <svg className="h-5 w-5 text-indigo-500 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <p className="text-sm"><span className="font-bold">Museum-Grade Prints</span> — Built to last 100+ years. HD Giclée print on 310 g/m2 Hahnemühle German Etching paper.</p>
-              </motion.div>
+              </div>
               
-              <motion.div className="flex items-start" variants={itemVariants}>
+              <div className="flex items-start">
                 <svg className="h-5 w-5 text-indigo-500 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <p className="text-sm"><span className="font-bold">Ready to frame, no matting needed</span> — Each print includes a white border, perfectly centering the artwork to stand out more prominently.</p>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
+            
+            {/* Description */}
+            <div className="prose prose-sm max-w-none mb-6">
+              <p>{artwork.description}</p>
+            </div>
             
             {/* Size Selection */}
-            <motion.div variants={itemVariants} className="py-4">
+            <div className="py-4">
               <div className="flex justify-between items-center mb-2">
                 <p className="text-sm">Size: {selectedSize?.size || 'Select a size'}</p>
                 <button className="text-sm underline">SIZE GUIDE</button>
               </div>
               <div className="grid grid-cols-3 gap-2 mb-4">
-                {artwork.sizes.map((size, index) => (
+                {artwork.sizes.map((size) => (
                   <button
-                    key={index}
+                    key={size.size}
                     className={`border py-2 px-1 text-sm ${selectedSize?.size === size.size ? 'border-black' : 'border-gray-300'} ${!isAvailable(size) ? 'opacity-50 cursor-not-allowed' : 'hover:border-black'}`}
                     onClick={() => isAvailable(size) && handleSizeSelect(size)}
                     disabled={!isAvailable(size)}
@@ -318,6 +351,15 @@ export default function ArtworkDetailClient({
                   </button>
                 ))}
               </div>
+              
+              {/* Edition Information */}
+              {selectedSize && (
+                <div className="text-sm text-gray-500 mb-4">
+                  <p>
+                    Edition {selectedSize.editions_sold + 1} of {selectedSize.edition_limit} available
+                  </p>
+                </div>
+              )}
               
               {/* Quantity and Add to Cart */}
               <div className="flex items-center mb-4">
@@ -364,11 +406,11 @@ export default function ArtworkDetailClient({
                   <span className="font-bold">Venmo</span>
                 </button>
               </div>
-            </motion.div>
+            </div>
             
             {/* Shipping Information Icons */}
-            <motion.div variants={containerVariants} className="grid grid-cols-4 gap-2 text-center py-4">
-              <motion.div variants={itemVariants} className="flex flex-col items-center">
+            <div className="grid grid-cols-4 gap-2 text-center py-4 border-t border-gray-200 mb-6">
+              <div className="flex flex-col items-center">
                 <div className="bg-gray-100 p-2 rounded-full mb-2">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
@@ -376,9 +418,9 @@ export default function ArtworkDetailClient({
                 </div>
                 <p className="text-xs">Museum quality print.</p>
                 <p className="text-xs">100 year guarantee.</p>
-              </motion.div>
+              </div>
               
-              <motion.div variants={itemVariants} className="flex flex-col items-center">
+              <div className="flex flex-col items-center">
                 <div className="bg-gray-100 p-2 rounded-full mb-2">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -386,9 +428,9 @@ export default function ArtworkDetailClient({
                 </div>
                 <p className="text-xs">Every print is</p>
                 <p className="text-xs">made-to-order.</p>
-              </motion.div>
+              </div>
               
-              <motion.div variants={itemVariants} className="flex flex-col items-center">
+              <div className="flex flex-col items-center">
                 <div className="bg-gray-100 p-2 rounded-full mb-2">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -396,9 +438,9 @@ export default function ArtworkDetailClient({
                 </div>
                 <p className="text-xs">No import</p>
                 <p className="text-xs">fees for USA, UK, and EU.</p>
-              </motion.div>
+              </div>
               
-              <motion.div variants={itemVariants} className="flex flex-col items-center">
+              <div className="flex flex-col items-center">
                 <div className="bg-gray-100 p-2 rounded-full mb-2">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -406,11 +448,11 @@ export default function ArtworkDetailClient({
                 </div>
                 <p className="text-xs">Shipped in 5-7</p>
                 <p className="text-xs">business days.</p>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
             
             {/* Expandable Sections */}
-            <div className="space-y-4 pt-6">
+            <div className="space-y-4 mt-8">
               {/* About the Piece */}
               <div className="border-t border-gray-200 pt-4">
                 <button 
@@ -421,13 +463,11 @@ export default function ArtworkDetailClient({
                   <span>{expandedSection === 'about' ? '−' : '+'}</span>
                 </button>
                 {expandedSection === 'about' && (
-                  <div className="pt-4 prose prose-sm max-w-none">
+                  <div className="pt-4 prose prose-sm max-w-none space-y-2">
+                    <p><span className="font-medium">Year:</span> {artwork.year}</p>
+                    <p><span className="font-medium">Medium:</span> {artwork.medium}</p>
+                    <p><span className="font-medium">Collection:</span> {artwork.collection_name || 'Uncategorized'}</p>
                     <p>{artwork.description}</p>
-                    {artwork.collection_name && (
-                      <p className="text-sm text-gray-500 mt-2">
-                        From the <Link href={`/collections/${artwork.collection_id}`} className="underline">{artwork.collection_name}</Link> collection
-                      </p>
-                    )}
                   </div>
                 )}
               </div>
@@ -443,11 +483,11 @@ export default function ArtworkDetailClient({
                 </button>
                 {expandedSection === 'details' && (
                   <div className="pt-4 prose prose-sm max-w-none space-y-2">
-                    <p><span className="font-medium">Medium:</span> {artwork.medium}</p>
-                    <p><span className="font-medium">Year:</span> {artwork.year}</p>
-                    <p><span className="font-medium">Handcrafted Art:</span> No AI, just 40+ hours of painting in every detail.</p>
-                    <p><span className="font-medium">Museum-Grade Prints:</span> Built to last 100+ years. HD Giclée print on 310 g/m2 Hahnemühle German Etching paper.</p>
-                    <p><span className="font-medium">Ready to frame, no matting needed:</span> Each print includes a white border, perfectly centering the artwork to stand out more prominently.</p>
+                    <p><span className="font-medium">Print quality:</span> Museum-quality giclée print on 100% cotton rag archival paper.</p>
+                    <p><span className="font-medium">Finish:</span> Matte finish with a slightly textured surface.</p>
+                    <p><span className="font-medium">Editions:</span> Limited edition, numbered and signed by the artist.</p>
+                    <p><span className="font-medium">Framing:</span> Ships unframed, ready to be framed to your preference.</p>
+                    <p><span className="font-medium">Certificate:</span> Includes a certificate of authenticity.</p>
                   </div>
                 )}
               </div>
@@ -496,6 +536,22 @@ export default function ArtworkDetailClient({
                 description={`Check out ${artwork.title} by Spencer Grey - Limited edition fine art print.`}
               />
             </div>
+          </motion.div>
+        </div>
+      </div>
+      
+      {/* Related Artworks */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        viewport={{ once: true, margin: "-100px" }}
+        className="mt-24"
+      >
+        <RelatedArtworks 
+          currentArtworkId={artwork.id} 
+          collectionId={artwork.collection_id} 
+          limit={4}
         />
       </motion.div>
     </motion.div>

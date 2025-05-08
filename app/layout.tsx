@@ -12,6 +12,10 @@ import { CartProvider } from "@/context/cart-context";
 import CartDrawer from "@/components/checkout/cart-drawer";
 import CartOverlay from "@/components/checkout/cart-overlay";
 
+// Import SEO components
+import DefaultJsonLd from "@/components/shared/default-json-ld";
+import SEOHead from "@/components/shared/seo-head";
+
 // Sans-serif font for UI elements
 const geistSans = Geist({
   variable: "--font-sans",
@@ -79,6 +83,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${playfair.variable} antialiased min-h-screen flex flex-col bg-white`}
       >
         <CartProvider>
+          <DefaultJsonLd />
+          <SEOHead />
           <Header />
           <CartOverlay />
           <CartDrawer />
