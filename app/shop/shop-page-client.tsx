@@ -142,18 +142,6 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
               price={artwork.sizes && artwork.sizes.length > 0 ? artwork.sizes[0].price : undefined}
               className="h-full"
             />
-            <motion.div 
-              className="mt-2 flex justify-between items-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 + (index * 0.1) }}
-            >
-              <p className="text-sm font-light">{artwork.title}</p>
-              <p className="text-sm text-gray-500 font-light">
-                {artwork.sizes && artwork.sizes.length > 0 && 
-                  `from $${(artwork.sizes[0].price / 100).toFixed(2)}`}
-              </p>
-            </motion.div>
           </motion.div>
         ))}
       </motion.div>

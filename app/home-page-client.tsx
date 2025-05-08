@@ -497,16 +497,6 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
                   price={ensureNumericPrice(artwork.price)}
                   images={artwork.images}
                 />
-                {artwork.tag && (
-                  <motion.div 
-                    className="absolute top-4 left-4 bg-white px-3 py-1 text-xs font-medium"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 + (index * 0.1) }}
-                  >
-                    {artwork.tag}
-                  </motion.div>
-                )}
               </motion.div>
             ))}
           </motion.div>

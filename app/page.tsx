@@ -76,11 +76,10 @@ export default async function Home() {
       sizes: artwork.sizes || []
     })) || [];
 
-    // Tags for recent artworks
-    const tags = ["Just Dropped", "Newest Addition", "Most Popular", "Must-Have"];
+    // Recent artworks don't need tags anymore
 
     // Format the recent artworks data
-    const formattedRecentArtworks = recentArtworksData?.map((artwork: Artwork, index) => ({
+    const formattedRecentArtworks = recentArtworksData?.map((artwork: Artwork) => ({
       id: artwork.id,
       title: artwork.title,
       // Add price property (required by Artwork type)
@@ -94,7 +93,6 @@ export default async function Home() {
         type: img.type
       })),
       sizes: artwork.sizes || [],
-      tag: tags[index % tags.length],
       hidePrice: true
     })) || [];
 
