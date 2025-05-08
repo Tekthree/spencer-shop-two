@@ -1,5 +1,13 @@
 # Spencer Grey Artist Website Tasks
 
+## Current Tasks
+- [ ] Redesign artwork detail page to match Roburico.com example (2025-05-08)
+  - [ ] Implement stacked images on the left side
+  - [ ] Create sticky product information panel on the right
+  - [ ] Add expandable sections for artwork details
+  - [ ] Improve size selection UI
+  - [ ] Add "JUST DROPPED" label for new releases
+
 ## Project Setup Phase
 
 ### Environment Setup

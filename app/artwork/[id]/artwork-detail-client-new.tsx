@@ -64,9 +64,6 @@ export default function ArtworkDetailClient({
   
   // State for expandable sections
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  
-  // State for tracking current image in mobile carousel
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Use useEffect to handle any side effects
   useEffect(() => {
@@ -133,20 +130,6 @@ export default function ArtworkDetailClient({
     return null;
   }
 
-  // Function to handle next image in carousel
-  const nextImage = () => {
-    if (artwork && currentImageIndex < artwork.images.length - 1) {
-      setCurrentImageIndex(currentImageIndex + 1);
-    }
-  };
-  
-  // Function to handle previous image in carousel
-  const prevImage = () => {
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex(currentImageIndex - 1);
-    }
-  };
-
   return (
     <motion.div
       className="container mx-auto px-4 py-12"
@@ -155,85 +138,23 @@ export default function ArtworkDetailClient({
       variants={pageVariants}
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Left Column - Mobile: Horizontal Scrolling, Desktop: Stacked Artwork Images */}
-        <div>
-          {/* Mobile Carousel View (visible on small screens) */}
-          <div className="block lg:hidden">
-            <div className="relative">
-              {/* Current Image */}
-              <div className="relative aspect-square w-full overflow-hidden rounded-lg">
-                {artwork.images.length > 0 && (
-                  <Image
-                    src={artwork.images[currentImageIndex].url}
-                    alt={artwork.images[currentImageIndex].alt || `${artwork.title} - Image ${currentImageIndex + 1}`}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    priority
-                  />
-                )}
-              </div>
-              
-              {/* Navigation Arrows */}
-              {artwork.images.length > 1 && (
-                <>
-                  <button 
-                    onClick={prevImage} 
-                    disabled={currentImageIndex === 0}
-                    className={`absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full ${currentImageIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    aria-label="Previous image"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button 
-                    onClick={nextImage} 
-                    disabled={artwork && currentImageIndex === artwork.images.length - 1}
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full ${artwork && currentImageIndex === artwork.images.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    aria-label="Next image"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </>
-              )}
+        {/* Left Column - Stacked Artwork Images */}
+        <div className="space-y-8">
+          {artwork.images.map((image, index) => (
+            <div 
+              key={index} 
+              className="relative aspect-square w-full overflow-hidden rounded-lg"
+            >
+              <Image
+                src={image.url}
+                alt={image.alt || `${artwork.title} - Image ${index + 1}`}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+                priority={index === 0}
+              />
             </div>
-            
-            {/* Scroll Indicator */}
-            {artwork.images.length > 1 && (
-              <div className="flex justify-center mt-4 space-x-2">
-                {artwork.images.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`h-2 w-2 rounded-full ${currentImageIndex === index ? 'bg-black' : 'bg-gray-300'}`}
-                    aria-label={`Go to image ${index + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-          
-          {/* Desktop Stacked View (visible on large screens) */}
-          <div className="hidden lg:block space-y-8">
-            {artwork.images.map((image, index) => (
-              <div 
-                key={index} 
-                className="relative aspect-square w-full overflow-hidden rounded-lg"
-              >
-                <Image
-                  src={image.url}
-                  alt={image.alt || `${artwork.title} - Image ${index + 1}`}
-                  fill
-                  sizes="50vw"
-                  className="object-cover"
-                  priority={index === 0}
-                />
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
         
         {/* Right Column - Sticky Product Info */}

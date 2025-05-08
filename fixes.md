@@ -224,6 +224,56 @@ console.log('Server Component - Content Sections:', contentSections);
 // Content sections are now properly mapped to their respective display areas
 ```
 
+## UI Improvements (May 2025)
+
+### 1. Artwork Detail Page Redesign
+
+Redesigned the artwork detail page to match the Roburico.com example with the following improvements:
+
+1. Changed the layout to have stacked images on the left and sticky product information on the right:
+```tsx
+// Before - Grid layout with thumbnails and main image
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <div className="flex flex-col md:flex-row gap-4">
+    {/* Thumbnails and main image */}
+  </div>
+</div>
+
+// After - Stacked images with sticky product info
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+  <div className="space-y-8">
+    {/* Stacked full-size images */}
+  </div>
+  <div className="relative">
+    <div ref={productInfoRef} className="sticky top-24 space-y-6">
+      {/* Sticky product information */}
+    </div>
+  </div>
+</div>
+```
+
+2. Added expandable sections for product details using disclosure components:
+   - About the Piece
+   - Details & Specs
+   - Shipping & Returns
+   - Customer Care
+
+3. Enhanced the user experience with:
+   - "JUST DROPPED" label for new releases
+   - Improved size selection UI
+   - More detailed product specifications
+   - Share button
+
+4. Implemented proper sticky behavior for the product information panel during scroll
+
+5. Added responsive mobile design with horizontal image carousel:
+   - Created a swipeable image carousel for mobile devices
+   - Added navigation arrows and dot indicators for easy browsing
+   - Maintained the stacked image layout for desktop views
+   - Ensured smooth transitions between mobile and desktop layouts
+
+This redesign improves the shopping experience by making all product images easily viewable while keeping the purchase options always accessible as the user scrolls. The mobile-optimized carousel provides a better experience on smaller screens, matching the Roburico.com example.
+
 ## Remaining Issues
 
 Some TypeScript errors persist in dynamic route pages related to the params property. These are likely due to specific type constraints in the Next.js App Router implementation and may require further investigation.
