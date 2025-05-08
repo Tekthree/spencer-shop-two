@@ -179,11 +179,11 @@ export default function ArtworkDetailClient({
       </nav>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* Left Column - Stacked Images */}
         <div className="space-y-8">
           {/* Mobile Carousel - Only visible on small screens */}
-          <div className="relative lg:hidden">
+          <div className="relative md:hidden">
             <div className="relative aspect-square overflow-hidden bg-gray-100">
               <Image
                 src={artwork.images[currentImageIndex].url}
@@ -231,7 +231,7 @@ export default function ArtworkDetailClient({
           </div>
           
           {/* Desktop Stacked Images - Hidden on mobile */}
-          <div className="hidden lg:block space-y-8">
+          <div className="hidden md:block space-y-8">
             {artwork.images.map((image, index) => (
               <motion.div
                 key={index}
@@ -263,15 +263,10 @@ export default function ArtworkDetailClient({
             transition={{ duration: 0.5, delay: 0.2 }}
             className="sticky top-24 space-y-6"
           >
-            {/* Just Dropped Label */}
-            {isRecentlyAdded() && (
-              <div className="inline-block bg-black text-white text-xs px-3 py-1 mb-2">
-                JUST DROPPED
-              </div>
-            )}
+
             
             {/* Title and Price */}
-            <div className="flex justify-between items-baseline mb-4">
+            <div className="flex justify-between items-baseline mb-4 pb-4 border-b border-gray-200">
               <h1 className="text-3xl font-medium">{artwork.title}</h1>
               <div className="text-2xl">
                 {selectedSize ? (
@@ -327,10 +322,7 @@ export default function ArtworkDetailClient({
               </div>
             </div>
             
-            {/* Description */}
-            <div className="prose prose-sm max-w-none mb-6">
-              <p>{artwork.description}</p>
-            </div>
+
             
             {/* Size Selection */}
             <div className="py-4">
