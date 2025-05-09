@@ -73,7 +73,7 @@ function TabInterface() {
             className={`flex flex-col items-center space-y-2 ${activeTab === 'limited' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
             onClick={() => setActiveTab('limited')}
           >
-            <div className="flex items-center justify-center w-10 h-10 border border-black rounded-full">
+            <div className="flex items-center justify-center w-10 h-10 border border-[#020312]/10 rounded-full">
               <span className="font-serif">1</span>
             </div>
             <h3 className={`font-serif text-base md:text-xl ${activeTab === 'limited' ? 'underline font-medium' : ''}`}>
@@ -87,7 +87,7 @@ function TabInterface() {
             className={`flex flex-col items-center space-y-2 ${activeTab === 'museum' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
             onClick={() => setActiveTab('museum')}
           >
-            <div className="flex items-center justify-center w-10 h-10 border border-black rounded-full">
+            <div className="flex items-center justify-center w-10 h-10 border border-[#020312]/10 rounded-full">
               <span className="font-serif">2</span>
             </div>
             <h3 className={`font-serif text-base md:text-xl ${activeTab === 'museum' ? 'underline font-medium' : ''}`}>
@@ -101,7 +101,7 @@ function TabInterface() {
             className={`flex flex-col items-center space-y-2 ${activeTab === 'order' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
             onClick={() => setActiveTab('order')}
           >
-            <div className="flex items-center justify-center w-10 h-10 border border-black rounded-full">
+            <div className="flex items-center justify-center w-10 h-10 border border-[#020312]/10 rounded-full">
               <span className="font-serif">3</span>
             </div>
             <h3 className={`font-serif text-base md:text-xl ${activeTab === 'order' ? 'underline font-medium' : ''}`}>
@@ -126,7 +126,7 @@ function TabInterface() {
               animate="visible"
               exit="exit"
             >
-              <div className="w-full h-full bg-gray-100 overflow-hidden rounded-lg">
+              <div className="w-full h-full bg-[#F6F4F0]/50 overflow-hidden rounded-lg">
                 <video 
                   className="w-full h-full object-cover"
                   autoPlay 
@@ -150,10 +150,10 @@ function TabInterface() {
               exit="exit"
             >
               <h3 className="font-serif text-2xl md:text-3xl mb-4">Limited Edition Prints</h3>
-              <p className="text-gray-800 leading-relaxed">
+              <p className="text-[#020312] leading-relaxed">
                 Each piece of art is part of an exclusive, limited edition collection. Depending on the size, only a specific number of prints are available, and once a total of 150 prints of each artwork are sold, they will never be printed again. This makes every print a rare and special addition to your collection.
               </p>
-              <p className="text-gray-800 leading-relaxed">
+              <p className="text-[#020312] leading-relaxed">
                 Every print is numbered and accompanied by a certificate of authenticity, ensuring the value and exclusivity of your artwork.
               </p>
               <motion.div
@@ -164,7 +164,7 @@ function TabInterface() {
               >
                 <Link 
                   href="/shop"
-                  className="inline-block border border-black px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
+                  className="inline-block border border-[#020312]/10 rounded px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
                 >
                   SHOP NOW
                 </Link>
@@ -185,7 +185,7 @@ function TabInterface() {
               animate="visible"
               exit="exit"
             >
-              <div className="w-full h-full bg-gray-100 overflow-hidden rounded-lg">
+              <div className="w-full h-full bg-[#F6F4F0]/50 overflow-hidden rounded-lg">
                 <video 
                   className="w-full h-full object-cover"
                   autoPlay 
@@ -209,13 +209,13 @@ function TabInterface() {
               exit="exit"
             >
               <h3 className="font-serif text-2xl md:text-3xl mb-4">Museum Quality Materials</h3>
-              <p className="text-gray-800 leading-relaxed">
+              <p className="text-[#020312] leading-relaxed">
                 All prints are crafted using museum-quality materials and giclée printing techniques to ensure vibrant colors and exceptional detail that will last for generations.
               </p>
-              <p className="text-gray-800 leading-relaxed">
+              <p className="text-[#020312] leading-relaxed">
                 We use only premium archival papers and pigment-based inks that resist fading for over 100 years when properly displayed, ensuring your investment maintains its beauty and value over time.
               </p>
-              <p className="text-gray-800 leading-relaxed">
+              <p className="text-[#020312] leading-relaxed">
                 Each print undergoes a rigorous quality control process before shipping to ensure perfect color reproduction and flawless presentation.
               </p>
               <motion.div
@@ -226,7 +226,7 @@ function TabInterface() {
               >
                 <Link 
                   href="/shop"
-                  className="inline-block border border-black px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
+                  className="inline-block border border-[#020312]/10 rounded px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
                 >
                   SHOP NOW
                 </Link>
@@ -247,7 +247,7 @@ function TabInterface() {
               animate="visible"
               exit="exit"
             >
-              <div className="w-full h-full bg-gray-100 overflow-hidden rounded-lg">
+              <div className="w-full h-full bg-[#F6F4F0]/50 overflow-hidden rounded-lg">
                 <Image
                   src="/hero-spencer.jpg"
                   alt="Print to order process"
@@ -273,13 +273,13 @@ function TabInterface() {
               exit="exit"
             >
               <h3 className="font-serif text-2xl md:text-3xl mb-4">Print to Order Process</h3>
-              <p className="text-gray-800 leading-relaxed">
+              <p className="text-[#020312] leading-relaxed">
                 Every print is made-to-order, meaning it&apos;s freshly printed once you place your order, allowing us to minimize waste and maintain our commitment to sustainability.
               </p>
-              <p className="text-gray-800 leading-relaxed">
+              <p className="text-[#020312] leading-relaxed">
                 This approach ensures that each artwork receives individual attention and care during production, resulting in the highest quality final piece.
               </p>
-              <p className="text-gray-800 leading-relaxed">
+              <p className="text-[#020312] leading-relaxed">
                 Your print will be carefully packaged and shipped directly to your door, typically within 5-7 business days of your order.
               </p>
               <motion.div
@@ -290,7 +290,7 @@ function TabInterface() {
               >
                 <Link 
                   href="/shop"
-                  className="inline-block border border-black px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
+                  className="inline-block border border-[#020312]/10 rounded px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
                 >
                   SHOP NOW
                 </Link>
@@ -347,12 +347,12 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       initial="hidden"
       animate="visible"
       variants={pageVariants}
-      className="min-h-screen"
+      className="min-h-screen bg-[#F6F4F0]"
     >
       {/* Minimal Hero Section - "gallery vibes. at home." */}
       <section className="pt-20 pb-16 md:pt-32 md:pb-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="font-serif text-5xl md:text-7xl mb-10 max-w-3xl">
+          <h1 className="font-serif text-5xl md:text-7xl mb-10 max-w-3xl text-[#020312]">
             gallery vibes. at home.
           </h1>
           
@@ -367,7 +367,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
               className="relative w-full aspect-[16/9] mb-10 overflow-hidden"
               variants={itemVariants}
             >
-              <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+              <div className="absolute inset-0 bg-[#F6F4F0]/50 flex items-center justify-center">
                 <div className="w-full h-full relative">
                   <Image
                     src="/hero-spencer.jpg"
@@ -376,11 +376,11 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
                     className="object-cover"
                   />
                   <motion.div 
-                    className="absolute top-4 right-4 bg-white px-4 py-2 rounded-md shadow-sm"
+                    className="absolute top-4 right-4 bg-[#F6F4F0] px-4 py-2 rounded-md shadow-sm"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <Link href="/shop" className="text-sm font-medium flex items-center">
+                    <Link href="/shop" className="text-sm font-medium flex items-center text-[#020312]">
                       Shop the Art Prints
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -396,7 +396,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
               className="max-w-3xl mx-auto text-center"
               variants={itemVariants}
             >
-              <p className="font-serif text-lg md:text-xl leading-relaxed">
+              <p className="font-serif text-lg md:text-xl leading-relaxed text-[#020312]">
                 I create art that captures the essence of emotion through vibrant colors and expressive forms. 
                 Each piece is a journey into the interplay between light, shadow, and the human experience.
               </p>
@@ -406,18 +406,18 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       </section>
       
       {/* Featured Artworks Section */}
-      <section className="py-16 md:py-24 px-6 bg-gray-50">
+      <section className="py-24 md:py-32 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div 
-            className="mb-12 text-center"
+            className="mb-16 text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-serif text-3xl md:text-4xl mb-4">Featured Artworks</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Explore my latest creations, each one telling its own unique story through color and form.
+            <h2 className="font-serif text-3xl md:text-4xl mb-6 text-[#020312]">Featured Artworks</h2>
+            <p className="text-[#020312]/70 max-w-2xl mx-auto">
+              Discover my most popular limited edition prints, each one meticulously crafted and individually numbered.
             </p>
           </motion.div>
           
@@ -453,7 +453,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           >
             <Link 
               href="/shop"
-              className="inline-block border border-black px-6 py-3 hover:bg-black hover:text-white transition-colors"
+              className="inline-block border-2 border-[#020312]/10 rounded px-8 py-4 hover:bg-black hover:text-white transition-colors uppercase font-medium tracking-wide text-[#020312]"
             >
               View All Artworks
             </Link>
@@ -462,17 +462,17 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       </section>
       
       {/* Recent Artworks Section */}
-      <section className="py-16 md:py-24 px-6">
+      <section className="py-24 md:py-32 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div 
-            className="mb-12 text-center"
+            className="mb-16 text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-serif text-3xl md:text-4xl mb-4">Latest Releases</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <h2 className="font-serif text-3xl md:text-4xl mb-6 text-[#020312]">Latest Releases</h2>
+            <p className="text-[#020312]/70 max-w-2xl mx-auto">
               Discover my most recent work, fresh from the studio and ready to transform your space.
             </p>
           </motion.div>
@@ -504,7 +504,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       </section>
       
       {/* Art Collection Features Section - Tabbed Interface */}
-      <section className="py-16 md:py-24 px-6 bg-gray-100">
+      <section className="py-24 md:py-32 px-6 bg-[#F6F4F0]/50">
         <div className="max-w-7xl mx-auto">
           {/* Tabbed Interface */}
           <TabInterface />
@@ -512,7 +512,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       </section>
 
       {/* Artist Quote */}
-      <section className="py-20 md:py-32 px-6">
+      <section className="py-24 md:py-40 px-6">
         <motion.div 
           className="max-w-3xl mx-auto text-center"
           initial={{ opacity: 0, y: 30 }}
@@ -520,13 +520,11 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           viewport={{ once: true, margin: "-100px" }}
         >
-          <blockquote className="font-serif text-2xl md:text-3xl leading-relaxed mb-6">
-            &ldquo;My works explore the beauty of simplicity and the power of negative space. 
-            I believe that art should create a moment of pause in our busy lives—a chance to 
-            breathe and reflect on what truly matters.&rdquo;
+          <blockquote className="font-serif text-2xl md:text-3xl leading-relaxed mb-8 text-[#020312]">
+            &ldquo;My work explores the delicate balance between chaos and order, finding beauty in the spaces between. Each piece is a meditation on form, color, and texture—an invitation to pause and reflect.&rdquo;
           </blockquote>
           <motion.cite 
-            className="text-sm font-medium not-italic"
+            className="text-sm font-medium not-italic text-[#020312]/70"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}

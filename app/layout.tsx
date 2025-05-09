@@ -80,7 +80,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${playfair.variable} antialiased min-h-screen flex flex-col bg-white`}
+        className={`${geistSans.variable} ${playfair.variable} antialiased min-h-screen flex flex-col bg-[#F6F4F0]`}
       >
         <CartProvider>
           <DefaultJsonLd />

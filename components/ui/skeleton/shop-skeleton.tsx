@@ -9,7 +9,7 @@ import { ArtworkGridSkeleton } from './artwork-card-skeleton';
  */
 export function ShopSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-12 md:py-24 bg-[#F6F4F0]">
       {/* Page title */}
       <div className="text-center mb-8">
         <SkeletonBase 

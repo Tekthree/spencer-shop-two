@@ -78,7 +78,7 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
   if (error) {
     return (
       <motion.div 
-        className="container mx-auto px-4 py-16 text-center"
+        className="container mx-auto px-4 py-16 text-center bg-[#F6F4F0]"
         initial="hidden"
         animate="visible"
         variants={pageVariants}
@@ -90,33 +90,30 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
 
   return (
     <motion.div 
-      className="container mx-auto px-4 py-8 md:py-16 max-w-7xl"
+      className="container mx-auto px-4 py-12 md:py-24 max-w-7xl bg-[#F6F4F0]"
       initial="hidden"
       animate="visible"
       variants={pageVariants}
     >
       {/* Hero Section */}
       <motion.div 
-        className="mb-16 text-center"
+        className="mb-20 text-center"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         <motion.h1 
-          className="text-3xl md:text-4xl font-serif mb-6 uppercase tracking-wider"
+          className="text-4xl md:text-5xl font-serif mb-6 text-[#020312]"
           variants={itemVariants}
         >
-          SHOP ALL
+          Art Prints
         </motion.h1>
-        <motion.div 
-          className="max-w-3xl mx-auto border-b border-gray-200 pb-8"
+        <motion.p 
+          className="text-[#020312]/70 max-w-2xl mx-auto"
           variants={itemVariants}
         >
-          <p className="text-gray-600 text-sm">
-            Browse Spencer Grey&apos;s complete collection of limited edition art prints. 
-            Each piece is printed on archival quality paper using eco-friendly inks.
-          </p>
-        </motion.div>
+          Explore my collection of limited edition fine art prints. Each piece is meticulously crafted and individually numbered.
+        </motion.p>
       </motion.div>
 
       {/* Artwork Grid */}
@@ -148,7 +145,7 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
 
       {/* Value Proposition Section */}
       <motion.div 
-        className="mt-20 grid grid-cols-1 md:grid-cols-4 gap-4 text-center border-t border-b border-gray-200 py-8"
+        className="mt-24 grid grid-cols-1 md:grid-cols-4 gap-6 text-center border-t border-b border-[#020312]/10 py-12"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -161,7 +158,7 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
           transition={{ delay: 0.2, duration: 0.5 }}
           viewport={{ once: true }}
         >
-          <p className="text-xs uppercase tracking-wider">Certificate of Authenticity</p>
+          <p className="text-xs uppercase tracking-wider font-medium text-[#020312]/80">Certificate of Authenticity</p>
         </motion.div>
         <motion.div 
           className="flex flex-col items-center p-4"
@@ -170,7 +167,7 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
           transition={{ delay: 0.4, duration: 0.5 }}
           viewport={{ once: true }}
         >
-          <p className="text-xs uppercase tracking-wider">Cultural context included</p>
+          <p className="text-xs uppercase tracking-wider font-medium text-[#020312]/80">Cultural context included</p>
         </motion.div>
         <motion.div 
           className="flex flex-col items-center p-4"
@@ -179,7 +176,7 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
           transition={{ delay: 0.6, duration: 0.5 }}
           viewport={{ once: true }}
         >
-          <p className="text-xs uppercase tracking-wider">All prints are securely packaged</p>
+          <p className="text-xs uppercase tracking-wider font-medium text-[#020312]/80">All prints are securely packaged</p>
         </motion.div>
         <motion.div 
           className="flex flex-col items-center p-4"
@@ -188,7 +185,7 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
           transition={{ delay: 0.8, duration: 0.5 }}
           viewport={{ once: true }}
         >
-          <p className="text-xs uppercase tracking-wider">Limited edition prints</p>
+          <p className="text-xs uppercase tracking-wider font-medium text-[#020312]/80">Limited edition prints</p>
         </motion.div>
       </motion.div>
     </motion.div>

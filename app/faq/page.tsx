@@ -32,17 +32,17 @@ const FAQAccordionItem = ({ question, answer, isOpen, onClick }: {
   onClick: () => void;
 }) => {
   return (
-    <div className="border-b border-gray-200">
+    <div className="border-b border-[#020312]/10">
       <button
         className="w-full py-4 flex justify-between items-center text-left focus:outline-none"
         onClick={onClick}
         aria-expanded={isOpen}
       >
-        <span className="text-sm">{question}</span>
-        <span className="ml-4 text-gray-400">{isOpen ? '−' : '+'}</span>
+        <span className="text-sm text-[#020312]">{question}</span>
+        <span className="ml-4 text-[#020312]/60">{isOpen ? '−' : '+'}</span>
       </button>
       {isOpen && (
-        <div className="pb-4 text-sm text-gray-600 leading-relaxed">
+        <div className="pb-4 text-sm text-[#020312]/70 leading-relaxed">
           <p>{answer}</p>
         </div>
       )}
@@ -54,7 +54,7 @@ const FAQAccordionItem = ({ question, answer, isOpen, onClick }: {
 const FAQSection = ({ title, items, openItems, toggleItem }: FAQSectionProps) => {
   return (
     <div className="mb-12">
-      <h2 className="text-lg font-normal mb-6">{title}</h2>
+      <h2 className="text-lg font-medium mb-6 text-[#020312]">{title}</h2>
       <div className="space-y-0">
         {items.map((item, index) => (
           <FAQAccordionItem
@@ -222,24 +222,26 @@ export default function FAQPage() {
   );
 
   return (
-    <main className="container mx-auto px-4 py-12 max-w-7xl">
+    <main className="max-w-7xl mx-auto px-6 py-16 md:py-24 bg-[#F6F4F0]">
       {/* Add structured data for FAQs */}
       <FAQSchema faqs={allFAQs} />
       
-      <h1 className="text-3xl font-normal mb-8">Frequently Asked Questions</h1>
+      <h1 className="font-serif text-5xl md:text-6xl mb-12 text-[#020312]">FREQUENTLY ASKED QUESTIONS</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-24">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16">
         {/* Sidebar - Sticky Navigation */}
-        <div className="md:col-span-1 md:sticky md:top-8 md:self-start h-fit">
+        <div className="md:sticky md:top-24 self-start h-fit bg-[#F6F4F0]">
           <nav className="space-y-5">
             {faqSections.map((section, index) => {
               const sectionId = section.title.toLowerCase().replace(/\s+/g, '-');
               return (
                 <div key={index} className="flex items-start group">
-                  <span className="font-serif text-sm text-gray-400 mr-3">{index + 1}</span>
+                  <span className="inline-block w-5 h-5 rounded-full border border-[#020312]/30 flex items-center justify-center mr-3 text-xs ${activeSection === sectionId ? 'bg-[#020312] text-white border-[#020312]' : ''}">
+                    {index + 1}
+                  </span>
                   <Link 
                     href={`#${sectionId}`}
-                    className={`block text-sm transition-colors ${activeSection === sectionId ? 'text-black' : 'text-gray-500 group-hover:text-gray-800'}`}
+                    className={`flex items-center py-2 text-sm hover:text-[#020312] transition-colors ${activeSection === sectionId ? 'text-[#020312] font-medium' : 'text-[#020312]/60'}`}
                   >
                     {section.title}
                   </Link>
@@ -248,14 +250,14 @@ export default function FAQPage() {
             })}
           </nav>
           
-          <div className="mt-12 p-6 bg-gray-50">
-            <h3 className="text-sm font-medium mb-4">Still have questions?</h3>
+          <div className="mb-10 space-y-4">
+            <h2 className="text-lg font-medium text-[#020312]">FAQ Sections</h2>
             <p className="text-sm text-gray-600 mb-4">
               We&apos;re here to help. Contact us directly for any questions not covered in our FAQ.
             </p>
             <Link 
               href="/contact" 
-              className="text-sm text-black underline hover:no-underline"
+              className="text-sm text-[#020312] underline hover:no-underline"
             >
               Contact us directly
             </Link>
@@ -283,22 +285,22 @@ export default function FAQPage() {
           })}
           
           {/* Footer links */}
-          <div className="mt-16 pt-8 border-t border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="mt-16 pt-8 border-t border-[#020312]/10 grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="text-xs">
-              <p className="mb-2 text-gray-500">Certificate of Authenticity</p>
-              <Link href="/certificate" className="text-black hover:underline">Learn more</Link>
+              <p className="mb-2 text-[#020312]/60">Certificate of Authenticity</p>
+              <Link href="/certificate" className="text-[#020312] hover:underline">Learn more</Link>
             </div>
             <div className="text-xs">
-              <p className="mb-2 text-gray-500">Quality materials and sustainable printing</p>
-              <Link href="/quality" className="text-black hover:underline">Learn more</Link>
+              <p className="mb-2 text-[#020312]/60">Quality materials and sustainable printing</p>
+              <Link href="/quality" className="text-[#020312] hover:underline">Learn more</Link>
             </div>
             <div className="text-xs">
-              <p className="mb-2 text-gray-500">Customers are our priority</p>
-              <Link href="/about" className="text-black hover:underline">Learn more</Link>
+              <p className="mb-2 text-[#020312]/60">Customers are our priority</p>
+              <Link href="/about" className="text-[#020312] hover:underline">Learn more</Link>
             </div>
             <div className="text-xs">
-              <p className="mb-2 text-gray-500">Limited edition prints, No reproductions</p>
-              <Link href="/limited-editions" className="text-black hover:underline">Learn more</Link>
+              <p className="mb-2 text-[#020312]/60">Limited edition prints, No reproductions</p>
+              <Link href="/limited-editions" className="text-[#020312] hover:underline">Learn more</Link>
             </div>
           </div>
         </div>

@@ -81,24 +81,18 @@ export default function AboutPageClient({
     order: 4
   };
 
-  const fallbackGalleryImage3 = {
-    id: 'gallery-image-3-fallback',
-    title: 'Gallery Image 3',
-    content: "",
-    image_url: '/images/about/gallery-3.jpg',
-    order: 5
-  };
+
 
   const fallbackSecondaryDescription = {
-    id: 'secondary-desc-fallback',
+    id: 'secondary_description-fallback',
     title: 'Secondary Description',
     content: "All of my prints are produced using archival-quality materials, ensuring that each piece will maintain its vibrancy and integrity for generations. I believe in sustainable art practices and work with eco-conscious print partners who share my commitment to environmental responsibility.",
     order: 6
   };
 
-  const fallbackSignature = {
+  const fallbackArtistSignature = {
     id: 'signature-fallback',
-    title: 'Signature',
+    title: 'Artist Signature',
     content: "Spencer Grey",
     image_url: '/images/about/signature.png',
     order: 7
@@ -120,9 +114,9 @@ export default function AboutPageClient({
                               
   const galleryImage1 = contentSections?.find(section => section.title === 'Gallery Image 1') || fallbackGalleryImage1;
   const galleryImage2 = contentSections?.find(section => section.title === 'Gallery Image 2') || fallbackGalleryImage2;
-  const galleryImage3 = contentSections?.find(section => section.title === 'Gallery Image 3') || fallbackGalleryImage3;
+
   const secondaryDescription = contentSections?.find(section => section.title === 'Secondary Description') || fallbackSecondaryDescription;
-  const signature = contentSections?.find(section => section.title === 'Signature') || fallbackSignature;
+  const signature = contentSections?.find(section => section.title === 'Signature') || fallbackArtistSignature;
 
   // Animation variants
   const containerVariants = {
@@ -159,25 +153,33 @@ export default function AboutPageClient({
     }
   };
 
+
   return (
-    <motion.main 
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-    >
+    <div className="container mx-auto px-4 py-16 md:py-24 max-w-6xl">
       {/* Artist Statement Section */}
       <motion.div 
-        className="mb-16 text-center"
-        variants={itemVariants}
+        className="text-center mb-20"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
       >
-        <motion.p 
-          className="text-lg md:text-xl max-w-3xl mx-auto font-serif"
+        <motion.h1 
+          className="text-3xl md:text-4xl font-serif mb-8 uppercase tracking-wider text-[#020312]"
           variants={itemVariants}
         >
-          {artistStatement.content}
-        </motion.p>
+          ABOUT SPENCER GREY
+        </motion.h1>
+        <motion.div 
+          className="max-w-3xl mx-auto border-b border-[#020312]/10 pb-10"
+          variants={itemVariants}
+        >
+          <p className="text-[#020312]/80 text-lg italic">
+            {artistStatement.content}
+          </p>
+        </motion.div>
       </motion.div>
+
+
 
       {/* Main Artist Image - Full Width Hero Banner */}
       <motion.div 
@@ -203,25 +205,25 @@ export default function AboutPageClient({
       
       {/* Main Description - Centered Below Image */}
       <motion.div 
-        className="mb-16 max-w-3xl mx-auto text-center"
+        className="mb-16"
         variants={itemVariants}
       >
-        <motion.p 
-          className="text-base md:text-lg leading-relaxed"
-          variants={itemVariants}
-        >
-          {mainDescription.content}
-        </motion.p>
+        <div className="flex flex-col justify-center max-w-3xl mx-auto text-center">
+          <h2 className="text-2xl font-serif mb-6 text-[#020312]">The Artist</h2>
+          <p className="text-[#020312]/80 mb-6 leading-relaxed">
+            {mainDescription.content}
+          </p>
+        </div>
       </motion.div>
 
       {/* Gallery Images Section */}
       <motion.div 
-        className="mb-16 grid grid-cols-1 md:grid-cols-3 gap-4"
+        className="mb-16 grid grid-cols-1 md:grid-cols-3 gap-6"
         variants={itemVariants}
       >
         {galleryImage1 && galleryImage1.image_url && (
           <motion.div 
-            className="relative h-[300px] w-full overflow-hidden"
+            className="relative aspect-square w-full overflow-hidden"
             variants={imageVariants}
           >
             <Image
@@ -229,13 +231,12 @@ export default function AboutPageClient({
               alt={galleryImage1.title}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, 33vw"
             />
           </motion.div>
         )}
         {galleryImage2 && galleryImage2.image_url && (
           <motion.div 
-            className="relative h-[300px] w-full overflow-hidden"
+            className="relative aspect-square w-full overflow-hidden"
             variants={imageVariants}
           >
             <Image
@@ -243,21 +244,6 @@ export default function AboutPageClient({
               alt={galleryImage2.title}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, 33vw"
-            />
-          </motion.div>
-        )}
-        {galleryImage3 && galleryImage3.image_url && (
-          <motion.div 
-            className="relative h-[300px] w-full overflow-hidden"
-            variants={imageVariants}
-          >
-            <Image
-              src={galleryImage3.image_url}
-              alt={galleryImage3.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 33vw"
             />
           </motion.div>
         )}
@@ -268,25 +254,20 @@ export default function AboutPageClient({
         className="mb-16 max-w-3xl mx-auto text-center"
         variants={itemVariants}
       >
-        <motion.p 
-          className="text-lg leading-relaxed"
-          variants={itemVariants}
-        >
+        <p className="text-[#020312]/80 mb-10 leading-relaxed">
           {secondaryDescription.content}
-        </motion.p>
+        </p>
         {signature && signature.image_url && (
-          <motion.div 
-            className="mt-8 flex justify-center"
-            variants={itemVariants}
-          >
-            <Image
-              src={signature.image_url}
-              alt="Spencer Grey Signature"
-              width={200}
-              height={80}
-              className="object-contain"
-            />
-          </motion.div>
+          <div className="flex justify-center">
+            <div className="relative h-16 w-40">
+              <Image 
+                src={signature.image_url}
+                alt="Spencer Grey signature"
+                fill 
+                className="object-contain opacity-90"
+              />
+            </div>
+          </div>
         )}
       </motion.div>
 
@@ -296,7 +277,7 @@ export default function AboutPageClient({
         variants={itemVariants}
       >
         <motion.h2 
-          className="text-2xl font-serif mb-8 text-center"
+          className="text-2xl font-serif mb-10 text-center text-[#020312]"
           variants={itemVariants}
         >
           Shop the Art Prints
@@ -328,26 +309,17 @@ export default function AboutPageClient({
       {/* Contact Section */}
       <motion.div 
         className="text-center mb-16"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        viewport={{ once: true, margin: "-100px" }}
+        variants={itemVariants}
       >
         <motion.p 
-          className="text-sm mb-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          viewport={{ once: true }}
+          className="text-sm mb-6 text-[#020312]/80"
+          variants={itemVariants}
         >
           If you have any questions or comments, please don&apos;t hesitate to get in touch with me. I look forward to hearing from you!
         </motion.p>
         <motion.div 
-          className="flex justify-center gap-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          viewport={{ once: true }}
+          className="flex justify-center gap-6"
+          variants={itemVariants}
         >
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -356,11 +328,12 @@ export default function AboutPageClient({
           >
             <Link 
               href="/faq" 
-              className="inline-block px-6 py-2 border border-black text-sm hover:bg-black hover:text-white transition-colors duration-300"
+              className="inline-block px-6 py-3 border border-[#000000] text-sm font-medium text-[#020312] hover:bg-[#000000] hover:text-white transition-colors duration-300"
             >
               JUMP TO FAQ
             </Link>
           </motion.div>
+          
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.98 }}
@@ -368,13 +341,13 @@ export default function AboutPageClient({
           >
             <Link 
               href="/contact" 
-              className="inline-block px-6 py-2 border border-black text-sm hover:bg-black hover:text-white transition-colors duration-300"
+              className="inline-block px-6 py-3 border border-[#000000] text-sm font-medium text-[#020312] hover:bg-[#000000] hover:text-white transition-colors duration-300"
             >
               CONTACT ME
             </Link>
           </motion.div>
         </motion.div>
       </motion.div>
-    </motion.main>
+    </div>
   );
 }
