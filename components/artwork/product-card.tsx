@@ -40,7 +40,7 @@ export default function ProductCard({ id, title, images, price, className = '' }
         onMouseLeave={() => setIsHovering(false)}
       >
         {/* Image container with hover effect */}
-        <div className="relative aspect-square w-full overflow-hidden rounded-md bg-gray-100">
+        <div className="relative aspect-square w-full overflow-hidden bg-[#F6F4F0]">
           {/* Main Image */}
           {mainImage && (
             <div className={`absolute inset-0 transition-opacity duration-300 ${isHovering && hoverImage ? 'opacity-0' : 'opacity-100'}`}>
@@ -69,10 +69,10 @@ export default function ProductCard({ id, title, images, price, className = '' }
         </div>
         
         {/* Title and price */}
-        <div className="mt-2">
-          <h3 className="text-sm font-medium text-gray-900">{title}</h3>
+        <div className="mt-3">
+          <h3 className="text-sm font-medium text-[#020312]">{title}</h3>
           {formattedPrice && (
-            <p className="mt-1 text-sm text-gray-500">{formattedPrice}</p>
+            <p className="mt-1 text-sm text-[#020312]/70">{formattedPrice}</p>
           )}
         </div>
       </div>

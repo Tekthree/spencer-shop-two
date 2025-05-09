@@ -44,72 +44,94 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Border radius */
+  --radius: 0rem; /* Flat design for UI elements */
+  
+  /* Spencer Grey Color Palette */
+  --background: #F6F4F0; /* Light cream/off-white - Creates a warm, gallery-like space */
+  --foreground: #020312; /* Deep navy/almost black - Provides strong contrast for readability */
+  
+  /* UI Colors */
+  --card: #FFFFFF;
+  --card-foreground: #020312;
+  --popover: #FFFFFF;
+  --popover-foreground: #020312;
+  --primary: #000000; /* Black - Used for buttons, borders, and UI elements */
+  --primary-foreground: #FFFFFF;
+  --secondary: #F6F4F0;
+  --secondary-foreground: #020312;
+  --muted: #f1f1f1;
+  --muted-foreground: #737373;
+  --accent: #000000;
+  --accent-foreground: #FFFFFF;
+  --destructive: #ef4444;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #000000;
+  
+  /* Chart colors (preserved for admin dashboard) */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  
+  /* Sidebar colors (preserved for admin dashboard) */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #020312;
+  --sidebar-primary: #000000;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F6F4F0;
+  --sidebar-accent-foreground: #020312;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #000000;
+  
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  
+  /* Spacing Variables */
+  --section-spacing-desktop: 120px;
+  --section-spacing-tablet: 80px;
+  --section-spacing-mobile: 60px;
+  --horizontal-margin-desktop: 10%;
+  --horizontal-margin-tablet: 8%;
+  --horizontal-margin-mobile: 5%;
 }
 
+/* Dark mode is not used in the Spencer Grey website design, but preserved for admin interface */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: #121212;
+  --foreground: #F6F4F0;
+  --card: #1E1E1E;
+  --card-foreground: #F6F4F0;
+  --popover: #1E1E1E;
+  --popover-foreground: #F6F4F0;
+  --primary: #F6F4F0;
+  --primary-foreground: #121212;
+  --secondary: #2A2A2A;
+  --secondary-foreground: #F6F4F0;
+  --muted: #2A2A2A;
+  --muted-foreground: #A1A1A1;
+  --accent: #2A2A2A;
+  --accent-foreground: #F6F4F0;
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #A1A1A1;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar: #1E1E1E;
+  --sidebar-foreground: #F6F4F0;
   --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-primary-foreground: #F6F4F0;
+  --sidebar-accent: #2A2A2A;
+  --sidebar-accent-foreground: #F6F4F0;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #A1A1A1;
 }
 
 @layer base {
@@ -118,6 +140,92 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* Typography styles based on Spencer Grey style guide */
+  h1, .h1 {
+    font-family: var(--font-serif);
+    font-size: 48px;
+    line-height: 1.1;
+    font-weight: 700;
+  }
+  
+  h2, .h2 {
+    font-family: var(--font-serif);
+    font-size: 36px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+  
+  h3, .h3 {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+  
+  h4, .h4 {
+    font-family: var(--font-sans);
+    font-size: 18px;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+  
+  p {
+    margin-bottom: 1rem;
+  }
+  
+  /* Button styles */
+  .btn {
+    display: inline-block;
+    background-color: var(--primary);
+    color: white;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    border: 1px solid var(--primary);
+    transition: all 0.2s ease;
+  }
+  
+  .btn:hover {
+    background-color: transparent;
+    color: var(--primary);
+  }
+  
+  .btn-outline {
+    background-color: transparent;
+    color: var(--primary);
+  }
+  
+  .btn-outline:hover {
+    background-color: var(--primary);
+    color: white;
+  }
+  
+  /* Section spacing */
+  .section {
+    padding-top: var(--section-spacing-mobile);
+    padding-bottom: var(--section-spacing-mobile);
+  }
+  
+  @media (min-width: 768px) {
+    .section {
+      padding-top: var(--section-spacing-tablet);
+      padding-bottom: var(--section-spacing-tablet);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .section {
+      padding-top: var(--section-spacing-desktop);
+      padding-bottom: var(--section-spacing-desktop);
+    }
   }
   
   /* Custom utility classes */
@@ -125,5 +233,28 @@
     overflow-y: hidden;
     /* Prevent content shift when scrollbar disappears */
     padding-right: var(--scrollbar-width, 0px);
+  }
+  
+  /* Container with proper margins */
+  .container-spencer {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--horizontal-margin-mobile);
+    padding-right: var(--horizontal-margin-mobile);
+  }
+  
+  @media (min-width: 768px) {
+    .container-spencer {
+      padding-left: var(--horizontal-margin-tablet);
+      padding-right: var(--horizontal-margin-tablet);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .container-spencer {
+      padding-left: var(--horizontal-margin-desktop);
+      padding-right: var(--horizontal-margin-desktop);
+    }
   }
 }

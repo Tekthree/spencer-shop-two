@@ -20,32 +20,32 @@ export default function Header() {
   };
 
   return (
-    <header className="py-8 px-6 border-b border-gray-100">
+    <header className="py-8 px-6 border-b border-[#020312]/10 bg-[#F6F4F0]">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
         {/* Logo/Brand */}
         <div className="mb-8 md:mb-0">
-          <Link href="/" className="font-serif text-2xl tracking-tight">
+          <Link href="/" className="font-serif text-3xl tracking-tight text-[#020312]">
             Spencer Grey
           </Link>
         </div>
         
         {/* Main Navigation */}
-        <nav className="flex items-center space-x-12 text-sm">
+        <nav className="flex items-center space-x-12 text-sm font-medium">
           <Link 
             href="/shop" 
-            className={`${isActive('/shop') ? 'text-black' : 'text-gray-400'} hover:text-black transition-colors`}
+            className={`${isActive('/shop') ? 'text-[#020312]' : 'text-[#020312]/60'} hover:text-[#020312] transition-colors`}
           >
             Shop All
           </Link>
           <Link 
             href="/about" 
-            className={`${isActive('/about') ? 'text-black' : 'text-gray-400'} hover:text-black transition-colors`}
+            className={`${isActive('/about') ? 'text-[#020312]' : 'text-[#020312]/60'} hover:text-[#020312] transition-colors`}
           >
             About
           </Link>
           <Link 
             href="/contact" 
-            className={`${isActive('/contact') ? 'text-black' : 'text-gray-400'} hover:text-black transition-colors`}
+            className={`${isActive('/contact') ? 'text-[#020312]' : 'text-[#020312]/60'} hover:text-[#020312] transition-colors`}
           >
             Contact
           </Link>
@@ -53,7 +53,7 @@ export default function Header() {
           {/* Cart Button */}
           <button 
             onClick={openCart}
-            className="relative flex items-center text-gray-400 hover:text-black transition-colors"
+            className="relative flex items-center text-[#020312]/60 hover:text-[#020312] transition-colors"
             aria-label="Open cart"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
