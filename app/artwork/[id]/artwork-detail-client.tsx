@@ -5,6 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import RelatedArtworks from '@/components/artwork/related-artworks';
+import ArtworkHeroBanner from '@/components/artwork/artwork-hero-banner';
+import ArtworkStoryTabs from '@/components/artwork/artwork-story-tabs';
 import JsonLd, { productJsonLd, breadcrumbJsonLd } from '@/components/shared/json-ld';
 import SocialShare from '@/components/shared/social-share';
 
@@ -136,6 +138,8 @@ export default function ArtworkDetailClient({
         { name: artwork.collection_name || 'Artworks', url: artwork.collection_id ? `/collections/${artwork.collection_id}` : '/shop' },
         { name: artwork.title, url: `/artwork/${artwork.id}` },
       ])} />
+
+
 
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -562,6 +566,54 @@ export default function ArtworkDetailClient({
           </motion.div>
         </div>
       </div>
+      
+      {/* Artist Story Tabs Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        viewport={{ once: true, margin: "-100px" }}
+        className="mt-24"
+      >
+        <ArtworkStoryTabs 
+          tabs={[
+            {
+              id: 'story',
+              title: 'MY STORY',
+              content: "I'm an artist from truly where I grew up surrounded by art. I began my journey painting with acrylics on canvas and sketching portraits with graphite. After college, I worked in the tech industry for years as a web designer. My wife and I now run our own web design studio. Traveling the world as we work. Longing to create again, I decided to merge my traditional and digital backgrounds into something new. This led to these traditional and digital techniques, producing high-quality prints that I love seeing in your spaces. For me, art is all about adding a touch of inspiration to everyday life.",
+              image: artwork?.images[0]?.url || '/placeholder-artist.jpg'
+            },
+            {
+              id: 'process',
+              title: 'MY PROCESS',
+              content: "My creative process begins with traditional sketches that capture the initial concept. I then scan these drawings and bring them into the digital realm where I can experiment with color, texture, and composition. This hybrid approach allows me to maintain the organic feel of traditional art while leveraging digital tools for precision and experimentation. Each piece typically goes through multiple iterations before I'm satisfied with the final result. The limited edition prints are produced using archival inks on museum-quality paper to ensure longevity and vibrant color reproduction.",
+              image: artwork?.images[1]?.url || '/placeholder-process.jpg'
+            },
+            {
+              id: 'inspiration',
+              title: 'INSPIRATION',
+              content: "My work draws inspiration from the places I've traveled, the cultures I've experienced, and the stories I've heard. I'm particularly fascinated by the intersection of natural and urban environments, and how humans navigate these spaces. Color plays a crucial role in my art as a vehicle for emotion and energy. I often find myself drawn to bold, vibrant palettes that evoke a sense of joy and vitality. My goal is to create pieces that not only please the eye but also invite the viewer to pause and reflect on their own relationship with the world around them.",
+              image: artwork?.images[2]?.url || '/placeholder-inspiration.jpg'
+            }
+          ]}
+        />
+      </motion.div>
+      
+      {/* Hero Banner with Two Images */}
+      {artwork && artwork.images && artwork.images.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "-100px" }}
+          className="mt-24 mb-24"
+        >
+          <ArtworkHeroBanner 
+            images={artwork.images}
+            title="HUNG ON YOUR WALL"
+          />
+        </motion.div>
+      )}
       
       {/* Related Artworks */}
       <motion.div
