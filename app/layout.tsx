@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
-import { Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 // Import layout components
@@ -16,18 +14,10 @@ import CartOverlay from "@/components/checkout/cart-overlay";
 import DefaultJsonLd from "@/components/shared/default-json-ld";
 import SEOHead from "@/components/shared/seo-head";
 
-// Sans-serif font for UI elements
-const geistSans = Geist({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
+// Import debugging script
+import Script from "next/script";
 
-// Serif font for headings and artistic elements
-const playfair = Playfair_Display({
-  variable: "--font-serif",
-  subsets: ["latin"],
-  display: "swap",
-});
+// Custom fonts are loaded via @font-face in globals.css
 
 export const metadata: Metadata = {
   title: {
@@ -79,8 +69,31 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link 
+          rel="preload" 
+          href="/Cardinal-Fruit-Regular.woff" 
+          as="font" 
+          type="font/woff" 
+          crossOrigin="anonymous" 
+        />
+        <link 
+          rel="preload" 
+          href="/SuisseIntl-Regular.woff" 
+          as="font" 
+          type="font/woff" 
+          crossOrigin="anonymous" 
+        />
+        <link 
+          rel="preload" 
+          href="/SuisseIntl-Light.woff" 
+          as="font" 
+          type="font/woff" 
+          crossOrigin="anonymous" 
+        />
+      </head>
       <body
-        className={`${geistSans.variable} ${playfair.variable} antialiased min-h-screen flex flex-col bg-[#F6F4F0]`}
+        className={`antialiased min-h-screen flex flex-col bg-[#F6F4F0]`}
       >
         <CartProvider>
           <DefaultJsonLd />
@@ -92,6 +105,12 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          {/* Debug script to help identify styling issues */}
+          <Script
+            id="style-debugger"
+            src="/debug-styles.js"
+            strategy="afterInteractive"
+          />
         </CartProvider>
       </body>
     </html>

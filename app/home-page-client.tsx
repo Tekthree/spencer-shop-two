@@ -352,7 +352,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       {/* Minimal Hero Section - "gallery vibes. at home." */}
       <section className="pt-20 pb-16 md:pt-32 md:pb-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="font-serif text-5xl md:text-7xl mb-10 max-w-3xl text-[#020312]">
+          <h1 className=" text-5xl md:text-7xl mb-10 max-w-3xl text-[#020312]">
             gallery vibes. at home.
           </h1>
           
@@ -396,7 +396,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
               className="max-w-3xl mx-auto text-center"
               variants={itemVariants}
             >
-              <p className="font-serif text-lg md:text-xl leading-relaxed text-[#020312]">
+              <p className="artist-statement text-[1.2rem] cardinalFontOverride">
                 I create art that captures the essence of emotion through vibrant colors and expressive forms. 
                 Each piece is a journey into the interplay between light, shadow, and the human experience.
               </p>
@@ -504,7 +504,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       </section>
       
       {/* Art Collection Features Section - Tabbed Interface */}
-      <section className="py-24 md:py-32 px-6 bg-[#F6F4F0]/50">
+      <section className="py-24 md:py-32 px-6 bg-[#e8e8f6]">
         <div className="max-w-7xl mx-auto">
           {/* Tabbed Interface */}
           <TabInterface />

@@ -38,9 +38,9 @@ module.exports = {
       },
       fontFamily: {
         // Sans-serif for body text and navigation
-        "sans": ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        "sans": ["Suisse Intl", "ui-sans-serif", "system-ui", "sans-serif"],
         // Serif for headings and titles
-        "serif": ["var(--font-serif)", "ui-serif", "Georgia", "serif"],
+        "serif": ["Cardinal Fruit", "ui-serif", "Georgia", "serif"],
       },
       fontSize: {
         // Text hierarchy

@@ -81,7 +81,13 @@ export default function AboutPageClient({
     order: 4
   };
 
-
+  const fallbackGalleryImage3 = {
+    id: 'gallery-image-3-fallback',
+    title: 'Gallery Image 3',
+    content: "",
+    image_url: '/images/about/gallery-3.jpg',
+    order: 5
+  };
 
   const fallbackSecondaryDescription = {
     id: 'secondary_description-fallback',
@@ -114,6 +120,7 @@ export default function AboutPageClient({
                               
   const galleryImage1 = contentSections?.find(section => section.title === 'Gallery Image 1') || fallbackGalleryImage1;
   const galleryImage2 = contentSections?.find(section => section.title === 'Gallery Image 2') || fallbackGalleryImage2;
+  const galleryImage3 = contentSections?.find(section => section.title === 'Gallery Image 3') || fallbackGalleryImage3;
 
   const secondaryDescription = contentSections?.find(section => section.title === 'Secondary Description') || fallbackSecondaryDescription;
   const signature = contentSections?.find(section => section.title === 'Signature') || fallbackArtistSignature;
@@ -242,6 +249,19 @@ export default function AboutPageClient({
             <Image
               src={galleryImage2.image_url}
               alt={galleryImage2.title}
+              fill
+              className="object-cover"
+            />
+          </motion.div>
+        )}
+        {galleryImage3 && galleryImage3.image_url && (
+          <motion.div 
+            className="relative aspect-square w-full overflow-hidden"
+            variants={imageVariants}
+          >
+            <Image
+              src={galleryImage3.image_url}
+              alt={galleryImage3.title}
               fill
               className="object-cover"
             />
