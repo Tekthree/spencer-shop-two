@@ -1,0 +1,82 @@
+/* 
+ * Spencer Grey Art - Lumos-inspired Utility Classes
+ * Based on the STYLE-GUIDE.md specifications
+ */
+
+/* This file contains utility classes that can be used with Tailwind */
+@layer utilities {
+  /* Display & Visibility */
+  .u-block { display: block; }
+  .u-inline { display: inline; }
+  .u-inline-block { display: inline-block; }
+  .u-flex { display: flex; }
+  .u-grid { display: grid; }
+  .u-hidden { display: none; }
+  .u-visible { visibility: visible; }
+  .u-invisible { visibility: hidden; }
+
+  /* Flex Utilities */
+  .u-flex-row { flex-direction: row; }
+  .u-flex-col { flex-direction: column; }
+  .u-flex-wrap { flex-wrap: wrap; }
+  .u-flex-nowrap { flex-wrap: nowrap; }
+  .u-items-start { align-items: flex-start; }
+  .u-items-center { align-items: center; }
+  .u-items-end { align-items: flex-end; }
+  .u-justify-start { justify-content: flex-start; }
+  .u-justify-center { justify-content: center; }
+  .u-justify-end { justify-content: flex-end; }
+  .u-justify-between { justify-content: space-between; }
+  .u-justify-around { justify-content: space-around; }
+
+  /* Text Utilities */
+  .u-text-left { text-align: left; }
+  .u-text-center { text-align: center; }
+  .u-text-right { text-align: right; }
+  .u-text-justify { text-align: justify; }
+  .u-text-uppercase { text-transform: uppercase; }
+  .u-text-lowercase { text-transform: lowercase; }
+  .u-text-capitalize { text-transform: capitalize; }
+  
+  /* Font Family Utilities */
+  .u-font-serif { font-family: var(--font-serif); }
+  .u-font-sans { font-family: var(--font-sans); }
+
+  /* Font Weight Utilities */
+  .u-font-light { font-weight: 300; }
+  .u-font-regular { font-weight: 400; }
+  .u-font-medium { font-weight: 500; }
+  .u-font-semibold { font-weight: 600; }
+  .u-font-bold { font-weight: 700; }
+
+  /* Border Utilities */
+  .u-border { border: 1px solid var(--color-border); }
+  .u-border-t { border-top: 1px solid var(--color-border); }
+  .u-border-r { border-right: 1px solid var(--color-border); }
+  .u-border-b { border-bottom: 1px solid var(--color-border); }
+  .u-border-l { border-left: 1px solid var(--color-border); }
+
+  /* Accessibility */
+  .u-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .u-not-sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}

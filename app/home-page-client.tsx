@@ -6,6 +6,7 @@ import Image from "next/image";
 import ProductCard from "@/components/artwork/product-card";
 import { ensureNumericPrice } from "@/components/artwork/price-helper";
 import { useState } from "react";
+import ArtworkGrid from "@/components/home/artwork-grid";
 
 // Define types for artwork data
 type ArtworkImage = {
@@ -350,7 +351,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       className="min-h-screen bg-[#F6F4F0]"
     >
       {/* Minimal Hero Section - "gallery vibes. at home." */}
-      <section className="pt-20 pb-16 md:pt-32 md:pb-24 px-6">
+      <section className="pt-20 pb-0 md:pt-32 md:pb-0 px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className=" text-5xl md:text-7xl mb-10 max-w-3xl text-[#020312]">
             gallery vibes. at home.
@@ -391,92 +392,54 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
               </div>
             </motion.div>
             
-            {/* Artist Statement */}
-            <motion.div 
-              className="max-w-3xl mx-auto text-center"
-              variants={itemVariants}
-            >
-              <p className="artist-statement text-[1.2rem] cardinalFontOverride">
-                I create art that captures the essence of emotion through vibrant colors and expressive forms. 
-                Each piece is a journey into the interplay between light, shadow, and the human experience.
-              </p>
-            </motion.div>
+            {/* Empty space removed for consistent spacing */}
           </motion.div>
         </div>
       </section>
-      
-      {/* Featured Artworks Section */}
-      <section className="py-24 md:py-32 px-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.div 
-            className="mb-16 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="font-serif text-3xl md:text-4xl mb-6 text-[#020312]">Featured Artworks</h2>
-            <p className="text-[#020312]/70 max-w-2xl mx-auto">
-              Discover my most popular limited edition prints, each one meticulously crafted and individually numbered.
-            </p>
-          </motion.div>
-          
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            {featuredArtworks.map((artwork, index) => (
-              <motion.div 
-                key={artwork.id}
-                variants={itemVariants}
-                custom={index as number}
-              >
-                <ProductCard 
-                  id={artwork.id}
-                  title={artwork.title}
-                  price={ensureNumericPrice(artwork.price)}
-                  images={artwork.images}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
-          
-          <motion.div 
-            className="text-center"
+
+      {/* Creative Process Section */}
+      <section className="py-16 md:py-24 px-6 bg-[#F6F4F0]">
+        <motion.div 
+          className="max-w-3xl mx-auto text-center"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <blockquote className="font-serif text-2xl md:text-3xl leading-relaxed mb-8 text-[#020312]">
+            &ldquo;I believe in the transformative power of art to connect us with our deeper selves. My creative process involves layers of intuition, technique, and emotional resonance.&rdquo;
+          </blockquote>
+          <motion.cite 
+            className="text-sm font-medium not-italic text-[#020312]/70"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <Link 
-              href="/shop"
-              className="inline-block border-2 border-[#020312]/10 rounded px-8 py-4 hover:bg-black hover:text-white transition-colors uppercase font-medium tracking-wide text-[#020312]"
-            >
-              View All Artworks
-            </Link>
-          </motion.div>
+            From the Studio
+          </motion.cite>
+        </motion.div>
+      </section>
+      
+      {/* Featured Artworks Section */}
+      <section className="mb-16 md:mb-24">
+        <div className="max-w-7xl mx-auto px-6">
+          <ArtworkGrid artworks={featuredArtworks} />
         </div>
       </section>
       
       {/* Recent Artworks Section */}
-      <section className="py-24 md:py-32 px-6">
+      <section className="py-16 md:py-24 px-6 bg-[#F6F4F0]">
         <div className="max-w-7xl mx-auto">
-          <motion.div 
-            className="mb-16 text-center"
+          <motion.h2 
+            className="font-serif text-3xl md:text-4xl text-center mb-12 text-[#020312]"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, margin: "-100px" }}
           >
-            <h2 className="font-serif text-3xl md:text-4xl mb-6 text-[#020312]">Latest Releases</h2>
-            <p className="text-[#020312]/70 max-w-2xl mx-auto">
-              Discover my most recent work, fresh from the studio and ready to transform your space.
-            </p>
-          </motion.div>
-          
+            Recent Artworks
+          </motion.h2>
           <motion.div 
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
             variants={containerVariants}
@@ -504,7 +467,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       </section>
       
       {/* Art Collection Features Section - Tabbed Interface */}
-      <section className="py-24 md:py-32 px-6 bg-[#e8e8f6]">
+      <section className="py-16 md:py-24 px-6 bg-[#e8e8f6]">
         <div className="max-w-7xl mx-auto">
           {/* Tabbed Interface */}
           <TabInterface />
@@ -512,7 +475,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       </section>
 
       {/* Artist Quote */}
-      <section className="py-24 md:py-40 px-6">
+      <section className="py-16 md:py-24 px-6">
         <motion.div 
           className="max-w-3xl mx-auto text-center"
           initial={{ opacity: 0, y: 30 }}

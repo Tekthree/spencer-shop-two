@@ -51,7 +51,7 @@ export default async function Home() {
       .select('id, title, images, sizes, featured')
       .eq('featured', true)
       .order('created_at', { ascending: false })
-      .limit(2);
+      .limit(5);
 
     // Fetch recent artworks from Supabase
     const { data: recentArtworksData } = await supabase

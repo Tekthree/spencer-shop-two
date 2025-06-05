@@ -385,4 +385,150 @@ h1, h2, h3, h4, h5, h6, .font-serif {
       padding-right: var(--horizontal-margin-desktop);
     }
   }
+  
+  /* Featured Artwork Section Styles */
+  .section.no-padding-top {
+    padding-top: 0;
+  }
+
+  .w-dyn-list {
+    width: 100%;
+  }
+
+  .w-dyn-items {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-item {
+    margin-bottom: 2rem;
+  }
+
+  .w-layout-grid {
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 2rem;
+  }
+
+  .products-split-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media screen and (max-width: 767px) {
+    .products-split-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .product-split-grid-small {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-split-grid-large {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .is-right-side {
+    order: 2;
+  }
+
+  @media screen and (max-width: 767px) {
+    .is-right-side {
+      order: 0;
+    }
+  }
+
+  .sticky-block {
+    position: sticky;
+    top: 100px;
+  }
+
+  .grid-product-image-wrapper {
+    position: relative;
+    display: block;
+    overflow: hidden;
+  }
+
+  .grid-product-tag-wrapper {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 10;
+  }
+
+  .product-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 2px;
+  }
+
+  .grid-product-image {
+    width: 100%;
+    height: auto;
+    transition: opacity 0.3s ease;
+  }
+
+  .grid-product-image.is-ratio-4-5 {
+    aspect-ratio: 4/5;
+    object-fit: cover;
+  }
+
+  .grid-product-image.is-ratio-4-3 {
+    aspect-ratio: 4/3;
+    object-fit: cover;
+  }
+
+  .grid-hover-product-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .grid-product-image-wrapper:hover .grid-hover-product-image {
+    opacity: 1;
+  }
+
+  .grid-product-content-wrapper {
+    margin-top: 1rem;
+  }
+
+  .grid-product-title-link {
+    display: block;
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+  }
+
+  .product-title-text {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    color: #020312;
+  }
+
+  .grid-product-price {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #020312;
+    font-size: 0.875rem;
+  }
+
+  .divider.height-6 {
+    height: 1.5rem;
+  }
+
+  /* Utility classes for featured artwork section */
+  .homepage-first-product-wrapper {
+    margin-bottom: 2rem;
+  }
 }
