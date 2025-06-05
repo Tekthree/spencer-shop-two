@@ -143,51 +143,7 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
         ))}
       </motion.div>
 
-      {/* Value Proposition Section */}
-      <motion.div 
-        className="mt-24 grid grid-cols-1 md:grid-cols-4 gap-6 text-center border-t border-b border-[#020312]/10 py-12"
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        viewport={{ once: true, margin: "-100px" }}
-      >
-        <motion.div 
-          className="flex flex-col items-center p-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          viewport={{ once: true }}
-        >
-          <p className="text-xs uppercase tracking-wider font-medium text-[#020312]/80">Certificate of Authenticity</p>
-        </motion.div>
-        <motion.div 
-          className="flex flex-col items-center p-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          viewport={{ once: true }}
-        >
-          <p className="text-xs uppercase tracking-wider font-medium text-[#020312]/80">Cultural context included</p>
-        </motion.div>
-        <motion.div 
-          className="flex flex-col items-center p-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          viewport={{ once: true }}
-        >
-          <p className="text-xs uppercase tracking-wider font-medium text-[#020312]/80">All prints are securely packaged</p>
-        </motion.div>
-        <motion.div 
-          className="flex flex-col items-center p-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          viewport={{ once: true }}
-        >
-          <p className="text-xs uppercase tracking-wider font-medium text-[#020312]/80">Limited edition prints</p>
-        </motion.div>
-      </motion.div>
+      {/* Value Proposition Section removed - now in footer */}
     </motion.div>
   );
 }

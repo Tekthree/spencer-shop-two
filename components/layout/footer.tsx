@@ -1,6 +1,6 @@
 /**
  * Footer component for Spencer Grey Artist Website
- * Provides site-wide footer with links and sustainability messaging
+ * Provides site-wide footer with links, benefits bar, and sustainability messaging
  */
 import Link from 'next/link';
 
@@ -8,7 +8,27 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="py-16 md:py-24 px-6 border-t border-[#020312]/10 mt-auto bg-[#F6F4F0]">
+    <footer className="mt-auto bg-[#F6F4F0]">
+      {/* Benefits Bar */}
+      <div className="border-t border-[#020312]/10 py-8 px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-0 text-center">
+          <div className="py-4 md:py-6 border-r border-b md:border-b-0 border-[#020312]/10 px-4">
+            <p className="text-sm md:text-base text-[#020312]/80 font-serif">Certificate of Authenticity with every print</p>
+          </div>
+          <div className="py-4 md:py-6 border-b md:border-b-0 md:border-r border-[#020312]/10 px-4">
+            <p className="text-sm md:text-base text-[#020312]/80 font-serif">Carbon neutral worldwide shipping</p>
+          </div>
+          <div className="py-4 md:py-6 border-r border-[#020312]/10 px-4">
+            <p className="text-sm md:text-base text-[#020312]/80 font-serif">All payments are securely processed</p>
+          </div>
+          <div className="py-4 md:py-6 px-4">
+            <p className="text-sm md:text-base text-[#020312]/80 font-serif">Limited edition prints. No restocks ever.</p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main Footer Content */}
+      <div className="py-16 md:py-24 px-6 border-t border-[#020312]/10">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
         {/* Brand & Sustainability Message */}
         <div className="space-y-6 md:col-span-2">
@@ -86,6 +106,7 @@ export default function Footer() {
       {/* Copyright */}
       <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-[#020312]/10 text-sm text-[#020312]/60">
         <p>© {currentYear} Spencer Grey. All rights reserved.</p>
+      </div>
       </div>
     </footer>
   );
