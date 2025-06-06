@@ -7,6 +7,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
+import SpencerLogo from '@/components/shared/spencer-logo';
 
 export default function Header() {
   const pathname = usePathname();
@@ -24,9 +25,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
         {/* Logo/Brand */}
         <div className="mb-8 md:mb-0">
-          <Link href="/" className="font-serif text-3xl tracking-tight text-[#020312]">
-            Spencer Grey
-          </Link>
+          <SpencerLogo size="extra-large" />
         </div>
         
         {/* Main Navigation */}

@@ -40,32 +40,41 @@ export default function ProductCard({ id, title, images, price, className = '' }
         onMouseLeave={() => setIsHovering(false)}
       >
         {/* Image container with hover effect */}
-        <div className="relative aspect-square w-full overflow-hidden bg-[#F6F4F0]">
-          {/* Main Image */}
-          {mainImage && (
-            <div className={`absolute inset-0 transition-opacity duration-300 ${isHovering && hoverImage ? 'opacity-0' : 'opacity-100'}`}>
-              <Image
-                src={mainImage.url}
-                alt={mainImage.alt || title}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover"
-              />
-            </div>
-          )}
-          
-          {/* Hover Image (only shown if available) */}
-          {hoverImage && (
-            <div className={`absolute inset-0 transition-opacity duration-300 ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
-              <Image
-                src={hoverImage.url}
-                alt={hoverImage.alt || `${title} hover image`}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover"
-              />
-            </div>
-          )}
+        <div className="relative w-full overflow-hidden bg-[#F6F4F0]">
+          {/* Main Image and Hover Image with proper stacking */}
+          <div className="relative">
+            {/* Main Image */}
+            {mainImage && (
+              <div className={`transition-opacity duration-300 ${isHovering && hoverImage ? 'opacity-0' : 'opacity-100'}`}>
+                <Image
+                  src={mainImage.url}
+                  alt={mainImage.alt || title}
+                  width={500}
+                  height={700}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="w-full h-auto"
+                  priority
+                />
+              </div>
+            )}
+            
+            {/* Hover Image (positioned absolutely over the main image) */}
+            {hoverImage && (
+              <div 
+                className={`absolute top-0 left-0 w-full transition-opacity duration-300 ${isHovering ? 'opacity-100' : 'opacity-0'}`}
+                style={{ zIndex: 1 }}
+              >
+                <Image
+                  src={hoverImage.url}
+                  alt={hoverImage.alt || `${title} hover image`}
+                  width={500}
+                  height={700}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="w-full h-auto"
+                />
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Title and price */}

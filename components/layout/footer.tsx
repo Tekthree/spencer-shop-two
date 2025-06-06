@@ -3,6 +3,7 @@
  * Provides site-wide footer with links, benefits bar, and sustainability messaging
  */
 import Link from 'next/link';
+import SpencerLogo from '@/components/shared/spencer-logo';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -32,7 +33,9 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
         {/* Brand & Sustainability Message */}
         <div className="space-y-6 md:col-span-2">
-          <h3 className="font-serif text-xl text-[#020312]">Spencer Grey</h3>
+          <SpencerLogo size="extra-large" />
+          {/* Minimal spacer */}
+          <div className="h-1"></div>
           <p className="text-sm text-[#020312]/80 max-w-md leading-relaxed">
             Limited edition fine art prints, produced with sustainable materials
             and a commitment to environmental responsibility. Each piece is crafted

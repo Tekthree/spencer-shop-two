@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import ProductCard from '@/components/artwork/product-card';
+import HorizontalScroll from '@/components/ui/horizontal-scroll';
 
 // Define types for the content sections
 interface ContentSection {
@@ -302,28 +303,33 @@ export default function AboutPageClient({
         >
           Shop the Art Prints
         </motion.h2>
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-          variants={containerVariants}
+        <HorizontalScroll
+          className="pb-2"
+          scrollbarTrackClassName="custom-scrollbar-track"
+          scrollbarThumbClassName="custom-scrollbar-thumb"
         >
-          {featuredArtworks?.map((artwork) => {
-            return (
-              <motion.div 
-                key={artwork.id} 
-                variants={itemVariants}
-                whileHover={{ y: -5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ProductCard 
-                  id={artwork.id} 
-                  title={artwork.title} 
-                  images={artwork.images}
-                  price={artwork.price}
-                />
-              </motion.div>
-            );
-          })}
-        </motion.div>
+          <div className="flex gap-8 py-2">
+            {featuredArtworks?.map((artwork) => {
+              return (
+                <motion.div 
+                  key={artwork.id} 
+                  className="min-w-[280px] sm:min-w-[320px] w-[320px] flex-shrink-0 flex flex-col"
+                  variants={itemVariants}
+                  whileHover={{ y: -5 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ProductCard 
+                    id={artwork.id} 
+                    title={artwork.title} 
+                    images={artwork.images}
+                    price={artwork.price}
+                    className="h-full"
+                  />
+                </motion.div>
+              );
+            })}
+          </div>
+        </HorizontalScroll>
       </motion.div>
 
       {/* Contact Section */}

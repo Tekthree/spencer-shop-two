@@ -10,6 +10,13 @@
 }
 
 @font-face {
+  font-family: 'Clandy';
+  src: url('/Clandy-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
   font-family: 'Suisse Intl';
   src: url('/SuisseIntl-Regular.woff') format('woff');
   font-weight: 400;
@@ -36,6 +43,11 @@ h1, h2, h3, h4, h5, h6, .font-serif {
 
 .cardinalFontOverride {
   font-family: 'Cardinal Fruit', serif !important;
+  font-weight: 400;
+}
+
+.clandyFontOverride {
+  font-family: 'Clandy', serif !important;
   font-weight: 400;
 }
 
@@ -530,5 +542,26 @@ h1, h2, h3, h4, h5, h6, .font-serif {
   /* Utility classes for featured artwork section */
   .homepage-first-product-wrapper {
     margin-bottom: 2rem;
+  }
+  
+  /* Hide scrollbar for horizontal scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+  
+  /* Custom scrollbar styling */
+  .custom-scrollbar-track {
+    background-color: #E5E5E5;
+    height: 2px;
+  }
+  
+  .custom-scrollbar-thumb {
+    background-color: #000000;
+    height: 2px;
   }
 }
