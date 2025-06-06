@@ -30,9 +30,6 @@ function highlightImportantStyles() {
   const allElements = document.querySelectorAll('*');
   
   allElements.forEach(el => {
-    // Get computed style
-    const style = window.getComputedStyle(el);
-    
     // Check if any font-related properties have !important
     const hasImportant = checkForImportant(el);
     

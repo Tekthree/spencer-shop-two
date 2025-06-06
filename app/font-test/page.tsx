@@ -19,7 +19,7 @@ export default function FontTestPage() {
         cardinalLoaded: cardinalLoaded ? "Yes" : "No",
         suisseLoaded: suisseLoaded ? "Yes" : "No",
         availableFonts: Array.from(document.fonts)
-          .map((font: any) => `${font.family} (${font.weight}, ${font.style})`)
+          .map((font: FontFace) => `${font.family} (${font.weight}, ${font.style})`)
           .filter((font, index, self) => self.indexOf(font) === index)
           .join(", ")
       });
