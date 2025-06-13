@@ -9,43 +9,43 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto bg-[#F6F4F0]">
+    <footer className="mt-auto bg-black text-white">
       {/* Benefits Bar */}
-      <div className="border-t border-[#020312]/10 py-8 px-6">
+      <div className="border-t border-white/10 py-8 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-0 text-center">
-          <div className="py-4 md:py-6 border-r border-b md:border-b-0 border-[#020312]/10 px-4">
-            <p className="text-sm md:text-base text-[#020312]/80 font-serif">Certificate of Authenticity with every print</p>
+          <div className="py-4 md:py-6 border-r border-b md:border-b-0 border-white/10 px-4">
+            <p className="text-sm md:text-base text-white/80 font-serif">Certificate of Authenticity with every print</p>
           </div>
-          <div className="py-4 md:py-6 border-b md:border-b-0 md:border-r border-[#020312]/10 px-4">
-            <p className="text-sm md:text-base text-[#020312]/80 font-serif">Carbon neutral worldwide shipping</p>
+          <div className="py-4 md:py-6 border-b md:border-b-0 md:border-r border-white/10 px-4">
+            <p className="text-sm md:text-base text-white/80 font-serif">Carbon neutral worldwide shipping</p>
           </div>
-          <div className="py-4 md:py-6 border-r border-[#020312]/10 px-4">
-            <p className="text-sm md:text-base text-[#020312]/80 font-serif">All payments are securely processed</p>
+          <div className="py-4 md:py-6 border-r border-white/10 px-4">
+            <p className="text-sm md:text-base text-white/80 font-serif">All payments are securely processed</p>
           </div>
           <div className="py-4 md:py-6 px-4">
-            <p className="text-sm md:text-base text-[#020312]/80 font-serif">Limited edition prints. No restocks ever.</p>
+            <p className="text-sm md:text-base text-white/80 font-serif">Limited edition prints. No restocks ever.</p>
           </div>
         </div>
       </div>
       
       {/* Main Footer Content */}
-      <div className="py-16 md:py-24 px-6 border-t border-[#020312]/10">
+      <div className="py-16 md:py-24 px-6 border-t border-white/10">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
         {/* Brand & Sustainability Message */}
         <div className="space-y-6 md:col-span-2">
-          <SpencerLogo size="extra-large" />
+          <SpencerLogo size="extra-large" textColor="white" />
           {/* Minimal spacer */}
           <div className="h-1"></div>
-          <p className="text-sm text-[#020312]/80 max-w-md leading-relaxed">
+          <p className="text-sm text-white/80 max-w-md leading-relaxed">
             Limited edition fine art prints, produced with sustainable materials
             and a commitment to environmental responsibility. Each piece is crafted
             to museum-quality standards and made to order.
           </p>
           <div className="flex space-x-6 pt-2">
-            <a href="#" className="text-[#020312]/60 hover:text-[#020312] transition-colors" aria-label="Instagram">
+            <a href="#" className="text-white/60 hover:text-white transition-colors" aria-label="Instagram">
               Instagram
             </a>
-            <a href="#" className="text-[#020312]/60 hover:text-[#020312] transition-colors" aria-label="Twitter">
+            <a href="#" className="text-white/60 hover:text-white transition-colors" aria-label="Twitter">
               Twitter
             </a>
           </div>
@@ -53,25 +53,21 @@ export default function Footer() {
 
         {/* Quick Links */}
         <div className="space-y-6">
-          <h3 className="font-serif text-lg text-[#020312]">Shop</h3>
+          <h3 className="font-serif text-lg text-white">Shop</h3>
           <ul className="space-y-4 text-sm">
             <li>
-              <Link href="/shop" className="text-[#020312]/60 hover:text-[#020312] transition-colors">
+              <Link href="/shop" className="text-white/60 hover:text-white transition-colors">
                 All Artworks
               </Link>
             </li>
+
             <li>
-              <Link href="/collections" className="text-[#020312]/60 hover:text-[#020312] transition-colors">
-                Collections
-              </Link>
-            </li>
-            <li>
-              <Link href="/about" className="text-[#020312]/60 hover:text-[#020312] transition-colors">
+              <Link href="/about" className="text-white/60 hover:text-white transition-colors">
                 About the Artist
               </Link>
             </li>
             <li>
-              <Link href="/contact" className="text-[#020312]/60 hover:text-[#020312] transition-colors">
+              <Link href="/contact" className="text-white/60 hover:text-white transition-colors">
                 Contact
               </Link>
             </li>
@@ -80,25 +76,25 @@ export default function Footer() {
 
         {/* Info Links */}
         <div className="space-y-6">
-          <h3 className="font-serif text-lg text-[#020312]">Information</h3>
+          <h3 className="font-serif text-lg text-white">Information</h3>
           <ul className="space-y-4 text-sm">
             <li>
-              <Link href="/shipping" className="text-[#020312]/60 hover:text-[#020312] transition-colors">
+              <Link href="/shipping" className="text-white/60 hover:text-white transition-colors">
                 Shipping & Returns
               </Link>
             </li>
             <li>
-              <Link href="/faq" className="text-[#020312]/60 hover:text-[#020312] transition-colors">
+              <Link href="/faq" className="text-white/60 hover:text-white transition-colors">
                 FAQ
               </Link>
             </li>
             <li>
-              <Link href="/privacy" className="text-[#020312]/60 hover:text-[#020312] transition-colors">
+              <Link href="/privacy" className="text-white/60 hover:text-white transition-colors">
                 Privacy Policy
               </Link>
             </li>
             <li>
-              <Link href="/terms" className="text-[#020312]/60 hover:text-[#020312] transition-colors">
+              <Link href="/terms" className="text-white/60 hover:text-white transition-colors">
                 Terms & Conditions
               </Link>
             </li>
@@ -107,7 +103,7 @@ export default function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-[#020312]/10 text-sm text-[#020312]/60">
+      <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/10 text-sm text-white/60">
         <p>© {currentYear} Spencer Grey. All rights reserved.</p>
       </div>
       </div>

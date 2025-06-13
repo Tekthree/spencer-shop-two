@@ -354,8 +354,8 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       {/* Minimal Hero Section - "gallery vibes. at home." */}
       <section className="pt-20 pb-0 md:pt-32 md:pb-0 px-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className=" text-5xl md:text-7xl mb-10 max-w-3xl text-[#020312]">
-            gallery vibes. at home.
+          <h1 className=" text-5xl md:text-7xl mb-10 max-w-3xl text-[#020312]" data-component-name="HomePageClient">
+            Love Channeled Through Form
           </h1>
           
           {/* Hero Image and Artist Statement */}

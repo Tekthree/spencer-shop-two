@@ -12,13 +12,15 @@ interface SpencerLogoProps {
   linkTo?: string;
   size?: 'small' | 'medium' | 'large' | 'extra-large';
   marginBottom?: string;
+  textColor?: string;
 }
 
 export default function SpencerLogo({ 
   className = "", 
   linkTo = "/", 
   size = "medium",
-  marginBottom = "0"
+  marginBottom = "0",
+  textColor = "#020312"
 }: SpencerLogoProps) {
   // Determine text size based on the size prop
   const textSizeClass = {
@@ -38,8 +40,9 @@ export default function SpencerLogo({
   // Wrap in Link if linkTo is provided, otherwise just render the text
   const content = (
     <span 
-      className={`tracking-tight text-[#020312] ${textSizeClass} ${className}`} 
-      style={logoStyle}
+      className={`tracking-tight ${textSizeClass} ${className}`} 
+      style={{...logoStyle, color: textColor}}
+      data-component-name="SpencerLogo"
     >
       Spencer Grey
     </span>

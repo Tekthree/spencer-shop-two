@@ -1,0 +1,32 @@
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.marquee-container {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  margin-bottom: 2.5rem;
+}
+
+.marquee-content {
+  display: inline-block;
+  animation: marquee 60s linear infinite;
+  will-change: transform;
+}
+
+.heading-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #020312;
+  border-radius: 50%;
+  margin: 0 2rem;
+  vertical-align: middle;
+}
