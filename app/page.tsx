@@ -58,7 +58,7 @@ export default async function Home() {
       .from('artworks')
       .select('id, title, images, sizes')
       .order('created_at', { ascending: false })
-      .limit(4);
+      .limit(5);
 
     // Format the featured artworks data
     const formattedFeaturedArtworks: FormattedArtwork[] = featuredArtworksData?.map((artwork: Artwork) => ({

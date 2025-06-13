@@ -95,7 +95,7 @@ export default function ArtworkGrid({ artworks }: ArtworkGridProps) {
                 custom={index}
                 className="artwork-card"
               >
-                <Link href={`/products/${artwork.id}`} className="block relative">
+                <Link href={`/artwork/${artwork.id}`} className="block relative">
                   <div className="relative aspect-[4/5] overflow-hidden">
                     {/* Main Image */}
                     <Image 

@@ -119,13 +119,13 @@ export default function HorizontalScroll({
       </div>
       
       {/* Custom scrollbar */}
-      <div className={`mt-4 relative h-1 ${scrollbarClassName || 'w-full'}`}>
+      <div className={`mt-4 relative h-2 ${scrollbarClassName || 'w-full'}`}>
         <div 
-          className={`absolute h-full rounded-full ${scrollbarTrackClassName || 'bg-gray-200'}`} 
+          className={`absolute h-full rounded-full custom-scrollbar-track ${scrollbarTrackClassName || 'bg-gray-200'}`} 
           style={{ width: '100%' }}
         />
         <motion.div
-          className={`absolute h-full rounded-full cursor-pointer ${scrollbarThumbClassName || 'bg-indigo-500'}`}
+          className={`absolute h-full rounded-full cursor-pointer ${scrollbarThumbClassName || 'bg-indigo-500 hover:bg-indigo-600'}`}
           style={{ 
             width: `${thumbWidth}%`,
             left: `${scrollPercentage * (100 - thumbWidth) / 100}%`

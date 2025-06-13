@@ -7,6 +7,7 @@ import ProductCard from "@/components/artwork/product-card";
 import { ensureNumericPrice } from "@/components/artwork/price-helper";
 import { useState } from "react";
 import ArtworkGrid from "@/components/home/artwork-grid";
+import HorizontalScroll from "@/components/ui/horizontal-scroll";
 
 // Define types for artwork data
 type ArtworkImage = {
@@ -440,28 +441,38 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           >
             Recent Artworks
           </motion.h2>
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
           >
-            {recentArtworks.map((artwork, index) => (
-              <motion.div 
-                key={artwork.id}
-                variants={itemVariants}
-                custom={index as number}
-                className="relative"
-              >
-                <ProductCard 
-                  id={artwork.id}
-                  title={artwork.title}
-                  price={ensureNumericPrice(artwork.price)}
-                  images={artwork.images}
-                />
-              </motion.div>
-            ))}
+            <HorizontalScroll
+              className="pb-2"
+              scrollbarTrackClassName="custom-scrollbar-track"
+              scrollbarThumbClassName="custom-scrollbar-thumb"
+            >
+              <div className="flex gap-8 py-2">
+                {recentArtworks.map((artwork, index) => (
+                  <motion.div 
+                    key={artwork.id} 
+                    className="min-w-[280px] sm:min-w-[320px] w-[320px] flex-shrink-0 flex flex-col"
+                    variants={itemVariants}
+                    custom={index as number}
+                    whileHover={{ y: -5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ProductCard 
+                      id={artwork.id} 
+                      title={artwork.title} 
+                      images={artwork.images}
+                      price={ensureNumericPrice(artwork.price)}
+                      className="h-full"
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </HorizontalScroll>
           </motion.div>
         </div>
       </section>
