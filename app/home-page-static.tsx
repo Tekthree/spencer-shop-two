@@ -298,7 +298,7 @@ export default function HomePageStatic({ featuredArtworks, recentArtworks }: Hom
       <section className="py-16 md:py-24 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <p className="font-serif text-xl md:text-2xl leading-relaxed text-[#020312]">
-            My work explores the delicate balance between structure and fluidity, creating spaces where viewers can find their own meaning and connection. Each piece is a meditation on form, color, and the subtle interplay of light.
+            My work is birthed from the delicate balance between structure and fluidity, creating spaces where viewers can find their own meaning and connection. Each piece is a meditation on form, color, and the subtle interplay of light.
           </p>
         </div>
       </section>
@@ -374,7 +374,7 @@ export default function HomePageStatic({ featuredArtworks, recentArtworks }: Hom
       <section className="py-24 md:py-40 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <blockquote className="font-serif text-2xl md:text-3xl leading-relaxed mb-8 text-[#020312]">
-            &ldquo;My work explores the delicate balance between chaos and order, finding beauty in the spaces between. Each piece is a meditation on form, color, and texture&mdash;an invitation to pause and reflect.&rdquo;
+            &ldquo;My work is birthed from the delicate balance between chaos and order, finding beauty in the spaces between. Each piece is a meditation on form, color, and texture&mdash;an invitation to pause and reflect.&rdquo;
           </blockquote>
           <cite className="text-sm font-medium not-italic text-[#020312]/70">
             Spencer Grey

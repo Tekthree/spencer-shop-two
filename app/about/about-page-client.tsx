@@ -62,7 +62,7 @@ export default function AboutPageClient({
   const fallbackMainDescription = {
     id: 'main_description-fallback',
     title: 'Main Description',
-    content: "From Miami to New York, my artwork has been exhibited around the world. Each piece is meticulously printed on archival paper, ensuring rich, vibrant colors that will last for generations. My work explores the intersection of emotion and abstraction, inviting viewers to find their own meaning within each piece.",
+    content: "From Miami to New York, my artwork has been exhibited around the world. Each piece is meticulously printed on archival paper, ensuring rich, vibrant colors that will last for generations. My work is birthed from the intersection of emotion and abstraction, inviting viewers to find their own meaning within each piece.",
     order: 2
   };
 
