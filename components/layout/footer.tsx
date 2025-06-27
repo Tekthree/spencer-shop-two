@@ -4,6 +4,7 @@
  */
 import Link from 'next/link';
 import SpencerLogo from '@/components/shared/spencer-logo';
+import { Award, Leaf, ShieldCheck, Clock } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -14,15 +15,27 @@ export default function Footer() {
       <div className="border-t border-white/10 py-8 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-0 text-center">
           <div className="py-4 md:py-6 border-r border-b md:border-b-0 border-white/10 px-4">
+            <div className="flex justify-center mb-3">
+              <Award className="w-6 h-6 text-white/80" />
+            </div>
             <p className="text-sm md:text-base text-white/80 font-serif">Certificate of Authenticity with every print</p>
           </div>
           <div className="py-4 md:py-6 border-b md:border-b-0 md:border-r border-white/10 px-4">
+            <div className="flex justify-center mb-3">
+              <Leaf className="w-6 h-6 text-white/80" />
+            </div>
             <p className="text-sm md:text-base text-white/80 font-serif">Carbon neutral worldwide shipping</p>
           </div>
           <div className="py-4 md:py-6 border-r border-white/10 px-4">
+            <div className="flex justify-center mb-3">
+              <ShieldCheck className="w-6 h-6 text-white/80" />
+            </div>
             <p className="text-sm md:text-base text-white/80 font-serif">All payments are securely processed</p>
           </div>
           <div className="py-4 md:py-6 px-4">
+            <div className="flex justify-center mb-3">
+              <Clock className="w-6 h-6 text-white/80" />
+            </div>
             <p className="text-sm md:text-base text-white/80 font-serif">Limited edition prints. No restocks ever.</p>
           </div>
         </div>
