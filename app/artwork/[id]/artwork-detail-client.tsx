@@ -128,7 +128,7 @@ export default function ArtworkDetailClient({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-12 max-w-7xl bg-[#F6F4F0]"
+      className="container mx-auto px-4 py-12 max-w-[1440px] bg-[#F6F4F0]"
     >
       {/* Add JSON-LD structured data for rich search results */}
       <JsonLd data={productJsonLd(artwork)} />
@@ -142,7 +142,7 @@ export default function ArtworkDetailClient({
 
 
       {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <nav className="flex" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2 text-sm text-[#020312]/70">
             <li>

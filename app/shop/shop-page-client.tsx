@@ -90,7 +90,7 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
 
   return (
     <motion.div 
-      className="container mx-auto px-4 py-12 md:py-24 max-w-7xl bg-[#F6F4F0]"
+      className="container mx-auto px-4 py-12 md:py-24 max-w-[1440px] bg-[#F6F4F0]"
       initial="hidden"
       animate="visible"
       variants={pageVariants}

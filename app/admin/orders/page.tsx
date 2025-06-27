@@ -146,7 +146,7 @@ export default function AdminOrdersPage() {
   
   if (loading && orders.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-2xl font-serif mb-8">Orders</h1>
         <div className="animate-pulse">
           <div className="h-12 bg-gray-200 rounded mb-6"></div>
@@ -158,7 +158,7 @@ export default function AdminOrdersPage() {
   
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-2xl font-serif mb-8">Orders</h1>
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           <p>Error: {error}</p>
@@ -174,7 +174,7 @@ export default function AdminOrdersPage() {
   }
   
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-serif">Orders</h1>
         

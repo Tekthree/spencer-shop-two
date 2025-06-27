@@ -13,7 +13,7 @@ export default function Footer() {
     <footer className="mt-auto bg-black text-white">
       {/* Benefits Bar */}
       <div className="border-t border-white/10 py-8 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-0 text-center">
+        <div className="max-w-[1440px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-0 text-center">
           <div className="py-4 md:py-6 border-r border-b md:border-b-0 border-white/10 px-4">
             <div className="flex justify-center mb-3">
               <Award className="w-6 h-6 text-white/80" />
@@ -43,7 +43,7 @@ export default function Footer() {
       
       {/* Main Footer Content */}
       <div className="py-16 md:py-24 px-6 border-t border-white/10">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
+      <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
         {/* Brand & Sustainability Message */}
         <div className="space-y-6 md:col-span-2">
           <SpencerLogo size="extra-large" textColor="white" />
@@ -116,7 +116,7 @@ export default function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/10 text-sm text-white/60">
+      <div className="max-w-[1440px] mx-auto mt-16 pt-8 border-t border-white/10 text-sm text-white/60">
         <p>© {currentYear} Spencer Grey. All rights reserved.</p>
       </div>
       </div>

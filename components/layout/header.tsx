@@ -22,7 +22,7 @@ export default function Header() {
 
   return (
     <header className="py-8 px-6 border-b border-[#020312]/10 bg-[#F6F4F0]">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+      <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center">
         {/* Logo/Brand */}
         <div className="mb-8 md:mb-0">
           <SpencerLogo size="extra-large" />

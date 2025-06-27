@@ -11,7 +11,7 @@ export default function AnimatedPageTemplate() {
   return (
     <AnimatedPage>
       <div className="min-h-screen px-6 py-20">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1440px] mx-auto">
           <h1 className="font-serif text-3xl mb-6">Animated Page Example</h1>
           <p className="mb-4">
             This is an example of how to implement page transitions in Next.js 15

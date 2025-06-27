@@ -305,7 +305,7 @@ export default function HomePageStatic({ featuredArtworks, recentArtworks }: Hom
       
       {/* Featured Artworks Section */}
       <section className="py-24 md:py-32 px-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1440px] mx-auto">
           <div className="mb-16 text-center">
             <h2 className="font-serif text-3xl md:text-4xl mb-6 text-[#020312]">Featured Collection</h2>
             <p className="text-[#020312]/70 max-w-2xl mx-auto">
@@ -339,7 +339,7 @@ export default function HomePageStatic({ featuredArtworks, recentArtworks }: Hom
       
       {/* Recent Artworks Section */}
       <section className="py-24 md:py-32 px-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1440px] mx-auto">
           <div className="mb-16 text-center">
             <h2 className="font-serif text-3xl md:text-4xl mb-6 text-[#020312]">Latest Releases</h2>
             <p className="text-[#020312]/70 max-w-2xl mx-auto">
@@ -364,7 +364,7 @@ export default function HomePageStatic({ featuredArtworks, recentArtworks }: Hom
       
       {/* Art Collection Features Section - Tabbed Interface */}
       <section className="py-24 md:py-32 px-6 bg-[#e8e8f6]">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1440px] mx-auto">
           {/* Tabbed Interface */}
           <TabInterface />
         </div>

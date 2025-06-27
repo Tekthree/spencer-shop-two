@@ -222,7 +222,7 @@ export default function FAQPage() {
   );
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-16 md:py-24 bg-[#F6F4F0]">
+    <main className="max-w-[1440px] mx-auto px-6 py-16 md:py-24 bg-[#F6F4F0]">
       {/* Add structured data for FAQs */}
       <FAQSchema faqs={allFAQs} />
       

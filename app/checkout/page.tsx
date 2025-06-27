@@ -102,7 +102,7 @@ export default function CheckoutPage() {
   // If cart is empty, show a message
   if (cartItems.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
           <h1 className="text-3xl font-serif mb-6">Your Cart is Empty</h1>
           <p className="text-gray-500 mb-8">
@@ -120,7 +120,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-3xl font-serif mb-10">Checkout</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

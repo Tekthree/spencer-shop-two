@@ -60,7 +60,7 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-16 md:py-24">
+    <main className="max-w-[1440px] mx-auto px-6 py-16 md:py-24">
       <div className="mb-16 md:mb-24">
         <h1 className="font-serif text-5xl md:text-6xl mb-12 text-[#020312]">GET IN TOUCH</h1>
         

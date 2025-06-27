@@ -353,7 +353,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
     >
       {/* Minimal Hero Section - "gallery vibes. at home." */}
       <section className="pt-20 pb-0 md:pt-32 md:pb-0 px-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1440px] mx-auto">
           <h1 className=" text-5xl md:text-7xl mb-10 max-w-3xl text-[#020312]" data-component-name="HomePageClient">
             Love Channeled Through Form
           </h1>
@@ -424,14 +424,14 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       
       {/* Featured Artworks Section */}
       <section className="mb-16 md:mb-24">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-[1440px] mx-auto px-6">
           <ArtworkGrid artworks={featuredArtworks} />
         </div>
       </section>
       
       {/* Recent Artworks Section */}
       <section className="py-16 md:py-24 px-6 bg-[#F6F4F0]">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1440px] mx-auto">
           <motion.h2 
             className="font-serif text-3xl md:text-4xl text-center mb-12 text-[#020312]"
             initial={{ opacity: 0, y: 20 }}
@@ -479,7 +479,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       
       {/* Art Collection Features Section - Tabbed Interface */}
       <section className="py-16 md:py-24 px-6 bg-[#e8e8f6]">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1440px] mx-auto">
           {/* Tabbed Interface */}
           <TabInterface />
         </div>
