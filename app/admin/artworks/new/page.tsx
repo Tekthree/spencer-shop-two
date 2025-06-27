@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import ImageUploader from '@/components/admin/image-uploader';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -48,6 +48,16 @@ export default function NewArtwork() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
+        // Create a Supabase client instance
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Supabase environment variables are not set');
+        }
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        
         const { data, error } = await supabase
           .from('collections')
           .select('id, name')
@@ -150,56 +160,44 @@ export default function NewArtwork() {
     setError(null);
     setSuccess(false);
 
-    // Validation
-    if (!title) {
-      setError('Title is required');
-      setLoading(false);
-      return;
-    }
-
-    if (images.length === 0) {
-      setError('At least one image is required');
-      setLoading(false);
-      return;
-    }
-
-    if (sizes.length === 0) {
-      setError('At least one size option is required');
-      setLoading(false);
-      return;
-    }
-
-    // Validate sizes
-    for (const size of sizes) {
-      if (!size.size) {
-        setError('All size options must have a name');
-        setLoading(false);
-        return;
-      }
-      if (size.price <= 0) {
-        setError('All size options must have a price greater than 0');
-        setLoading(false);
-        return;
-      }
-      if (size.edition_limit <= 0) {
-        setError('All size options must have an edition limit greater than 0');
-        setLoading(false);
-        return;
-      }
-      if (size.editions_sold < 0) {
-        setError('Editions sold cannot be negative');
-        setLoading(false);
-        return;
-      }
-      if (size.editions_sold > size.edition_limit) {
-        setError('Editions sold cannot exceed edition limit');
-        setLoading(false);
-        return;
-      }
-    }
-
     try {
-      // Create artwork in database
+      // Create a Supabase client instance
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error('Supabase environment variables are not set');
+      }
+      
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+      
+      // Validate form data
+      if (!title) throw new Error('Title is required');
+      if (!year) throw new Error('Year is required');
+      if (images.length === 0) throw new Error('At least one image is required');
+      if (sizes.length === 0) throw new Error('At least one size option is required');
+      
+      // Validate that there is a main image
+      const mainImage = images.find(img => img.type === 'main');
+      if (!mainImage) {
+        // If no main image is set, set the first image as main
+        const updatedImages = [...images];
+        updatedImages[0] = { ...updatedImages[0], type: 'main' };
+        setImages(updatedImages);
+      }
+      
+      // Validate each size option
+      for (const size of sizes) {
+        if (!size.size) throw new Error('Size name is required for all size options');
+        if (size.price < 0) throw new Error('Price cannot be negative');
+        if (size.edition_limit < 1) throw new Error('Edition limit must be at least 1');
+        if (size.editions_sold < 0) throw new Error('Editions sold cannot be negative');
+        if (size.editions_sold > size.edition_limit) {
+          throw new Error('Editions sold cannot exceed edition limit');
+        }
+      }
+
+      // Create new artwork in database
       const { data, error } = await supabase
         .from('artworks')
         .insert([
@@ -211,30 +209,25 @@ export default function NewArtwork() {
             collection_id: collectionId || null,
             featured,
             images,
-            sizes,
-          },
+            sizes
+          }
         ])
         .select();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       setSuccess(true);
       
-      // Reset form after successful submission
-      if (data) {
-        setTimeout(() => {
-          router.push(`/admin/artworks/${data[0].id}`);
-        }, 1500);
-      } else {
-        setTimeout(() => {
-          router.push('/admin/artworks');
-        }, 1500);
-      }
-    } catch (err) {
-      console.error('Error creating artwork:', err);
-      setError('Failed to create artwork. Please try again.');
+      // Redirect after a short delay to show success message
+      setTimeout(() => {
+        router.push('/admin/artworks');
+        router.refresh(); // Refresh the page to show updated data
+      }, 1500);
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      console.error('Error creating artwork:', error);
+      setError(error.message || 'Failed to create artwork');
+      setLoading(false);
     } finally {
       setLoading(false);
     }

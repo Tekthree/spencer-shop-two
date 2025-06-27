@@ -1,8 +1,14 @@
 "use client";
 
-import { Suspense } from 'react';
-import EditArtworkClient from './edit-artwork-client';
+import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
+
+// Dynamically import the EditArtworkClient component with no SSR
+// This helps prevent server-side module resolution issues
+const EditArtworkClient = dynamic(() => import('./edit-artwork-client'), {
+  ssr: false,
+  loading: () => <div className="p-12 text-center">Loading artwork details...</div>
+});
 
 /**
  * Edit Artwork Page - Client Component
@@ -12,9 +18,5 @@ export default function EditArtworkPage() {
   const params = useParams();
   const id = params.id as string;
 
-  return (
-    <Suspense fallback={<div className="p-12 text-center">Loading artwork details...</div>}>
-      <EditArtworkClient id={id} />
-    </Suspense>
-  );
+  return <EditArtworkClient id={id} />;
 }

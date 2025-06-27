@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import ImageUploader from '@/components/admin/image-uploader';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -71,6 +71,16 @@ export default function EditArtworkClient({ id }: { id: string }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Create a Supabase client instance
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Supabase environment variables are not set');
+        }
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        
         // Fetch artwork data
         const { data: artworkData, error: artworkError } = await supabase
           .from('artworks')
@@ -210,8 +220,15 @@ export default function EditArtworkClient({ id }: { id: string }) {
     setSaving(true);
     setError(null);
     setSuccess(false);
-    
+
     try {
+      // Create a Supabase client instance
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error('Supabase environment variables are not set');
+      }
       // Validate form
       if (!title) {
         throw new Error('Title is required');
@@ -221,68 +238,56 @@ export default function EditArtworkClient({ id }: { id: string }) {
         throw new Error('At least one image is required');
       }
       
-      if (sizes.length === 0) {
-        throw new Error('At least one size option is required');
-      }
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+      // Validate form data
+      if (!title) throw new Error('Title is required');
+      if (!year) throw new Error('Year is required');
+      if (sizes.length === 0) throw new Error('At least one size option is required');
       
-      // Validate that there is a main image
-      const mainImage = images.find(img => img.type === 'main');
-      if (!mainImage) {
-        // If no main image is set, set the first image as main
-        const updatedImages = [...images];
-        updatedImages[0] = { ...updatedImages[0], type: 'main' as const };
-        setImages(updatedImages);
-      }
-      
-      // Validate size options
+      // Validate each size option
       for (const size of sizes) {
-        if (!size.size) {
-          throw new Error('Size name is required for all size options');
-        }
-        if (size.price < 0) {
-          throw new Error('Price cannot be negative');
-        }
-        if (size.edition_limit < 1) {
-          throw new Error('Edition limit must be at least 1');
-        }
-        if (size.editions_sold < 0) {
-          throw new Error('Editions sold cannot be negative');
-        }
+        if (!size.size) throw new Error('Size name is required for all size options');
+        if (size.price < 0) throw new Error('Price cannot be negative');
+        if (size.edition_limit < 1) throw new Error('Edition limit must be at least 1');
+        if (size.editions_sold < 0) throw new Error('Editions sold cannot be negative');
         if (size.editions_sold > size.edition_limit) {
           throw new Error('Editions sold cannot exceed edition limit');
         }
       }
-      
-      // Update artwork in Supabase
-      const { error: updateError } = await supabase
+
+      // Prepare artwork data
+      const artworkData = {
+        title,
+        description,
+        year,
+        medium,
+        collection_id: collectionId || null,
+        featured,
+        images,
+        sizes
+      };
+
+      // Update artwork in database
+      const { error } = await supabase
         .from('artworks')
-        .update({
-          title,
-          description,
-          year,
-          medium,
-          collection_id: collectionId || null,
-          featured,
-          images,
-          sizes
-        })
+        .update(artworkData)
         .eq('id', id);
-      
-      if (updateError) {
-        throw updateError;
-      }
-      
+
+      if (error) throw error;
+
       setSuccess(true);
       
-      // Redirect after a short delay
+      // Redirect after a short delay to show success message
       setTimeout(() => {
         router.push('/admin/artworks');
-        router.refresh();
+        router.refresh(); // Refresh the page to show updated data
       }, 1500);
     } catch (err: unknown) {
       const error = err as { message?: string };
       console.error('Error updating artwork:', error);
-      setError(error.message || 'Failed to update artwork. Please try again.');
+      setError(error.message || 'Failed to update artwork');
+      setSaving(false);
     } finally {
       setSaving(false);
     }
@@ -292,38 +297,47 @@ export default function EditArtworkClient({ id }: { id: string }) {
   const handleDelete = async () => {
     setSaving(true);
     setError(null);
-    
+
     try {
-      // First check if the artwork has any sold editions
-      let hasSoldEditions = false;
-      for (const size of sizes) {
-        if (size.editions_sold > 0) {
-          hasSoldEditions = true;
-          break;
-        }
+      // Create a Supabase client instance
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error('Supabase environment variables are not set');
       }
       
-      if (hasSoldEditions) {
-        throw new Error('Cannot delete artwork with sold editions. This would affect order history.');
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+      // First check if this artwork is referenced in any orders
+      const { data: orderItems, error: orderCheckError } = await supabase
+        .from('order_items')
+        .select('id')
+        .eq('artwork_id', id);
+
+      if (orderCheckError) throw orderCheckError;
+
+      // If artwork is in orders, don't allow deletion
+      if (orderItems && orderItems.length > 0) {
+        throw new Error('Cannot delete artwork that has been purchased. Consider marking it as sold out instead.');
       }
-      
-      // Delete artwork from Supabase
+
+      // Delete the artwork
       const { error: deleteError } = await supabase
         .from('artworks')
         .delete()
         .eq('id', id);
-      
-      if (deleteError) {
-        throw deleteError;
-      }
-      
+
+      if (deleteError) throw deleteError;
+
       // Redirect to artworks list
       router.push('/admin/artworks');
       router.refresh();
     } catch (err: unknown) {
       const error = err as { message?: string };
       console.error('Error deleting artwork:', error);
-      setError(error.message || 'Failed to delete artwork. Please try again.');
+      setError(error.message || 'Failed to delete artwork');
+      setSaving(false);
       setDeleteConfirmation(false);
     } finally {
       setSaving(false);

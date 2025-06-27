@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -28,6 +28,16 @@ export default function CollectionsAdmin() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
+        // Create a Supabase client instance within the component
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Supabase environment variables are not set');
+        }
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        
         // First get all collections
         const { data: collectionsData, error: collectionsError } = await supabase
           .from('collections')
