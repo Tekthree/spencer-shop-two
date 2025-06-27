@@ -1,0 +1,19 @@
+/* Custom styles for artwork detail page */
+.artwork-title {
+  text-transform: lowercase;
+}
+
+.artwork-title::first-letter {
+  text-transform: uppercase;
+}
+
+/* Style for each word in the title */
+.title-word {
+  display: inline-block;
+  text-transform: lowercase;
+}
+
+.title-word::first-letter {
+  text-transform: uppercase;
+}
+

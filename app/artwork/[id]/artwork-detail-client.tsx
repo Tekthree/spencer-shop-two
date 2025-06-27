@@ -1,9 +1,10 @@
 "use client";
 
-import { motion } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
+import { motion } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import "./artwork-detail.css";
 import RelatedArtworks from '@/components/artwork/related-artworks';
 import ArtworkHeroBanner from '@/components/artwork/artwork-hero-banner';
 import ArtworkStoryTabs from '@/components/artwork/artwork-story-tabs';
@@ -121,6 +122,8 @@ export default function ArtworkDetailClient({
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const wasRecentlyAdded = new Date(artwork.created_at) > thirtyDaysAgo;
+  
+  // Title capitalization is handled with CSS
 
   return (
     <motion.div
@@ -141,43 +144,7 @@ export default function ArtworkDetailClient({
 
 
 
-      {/* Breadcrumb */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <nav className="flex" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 text-sm text-[#020312]/70">
-            <li>
-              <Link href="/" className="hover:text-[#020312]">Home</Link>
-            </li>
-            <li>
-              <span className="mx-2">/</span>
-            </li>
-            <li>
-              <Link href="/shop" className="hover:text-[#020312]">Shop</Link>
-            </li>
-            {artwork.collection_name && (
-              <>
-                <li>
-                  <span className="mx-2">/</span>
-                </li>
-                <li>
-                  <Link 
-                    href={`/collections/${artwork.collection_id}`} 
-                    className="hover:text-[#020312]"
-                  >
-                    {artwork.collection_name}
-                  </Link>
-                </li>
-              </>
-            )}
-            <li>
-              <span className="mx-2">/</span>
-            </li>
-            <li className="text-[#020312] font-medium truncate">
-              {artwork.title}
-            </li>
-          </ol>
-        </nav>
-      </div>
+
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -185,13 +152,14 @@ export default function ArtworkDetailClient({
         <div className="space-y-8">
           {/* Mobile Carousel - Only visible on small screens */}
           <div className="relative md:hidden">
-            <div className="relative aspect-square overflow-hidden bg-gray-100">
+            <div className="relative overflow-hidden bg-gray-100">
               <Image
                 src={artwork.images[currentImageIndex].url}
                 alt={artwork.images[currentImageIndex].alt || artwork.title}
-                fill
+                width={1000}
+                height={1000}
                 sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
+                className="w-full h-auto object-contain"
                 priority
               />
             </div>
@@ -240,14 +208,15 @@ export default function ArtworkDetailClient({
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true, margin: "-100px" }}
-                className="relative aspect-square overflow-hidden bg-gray-100"
+                className="relative overflow-hidden bg-gray-100"
               >
                 <Image
                   src={image.url}
                   alt={image.alt || artwork.title}
-                  fill
+                  width={1000}
+                  height={1000}
                   sizes="50vw"
-                  className="object-cover"
+                  className="w-full h-auto object-contain"
                   priority={index === 0}
                 />
               </motion.div>
@@ -267,11 +236,13 @@ export default function ArtworkDetailClient({
 
             
             {/* Title and Price */}
-            <div className="flex justify-between items-baseline mb-4 pb-4 border-b border-[#020312]/10">
-              <h1 className="text-2xl font-medium mb-2 text-[#020312]">
-                {artwork.title}
-                {wasRecentlyAdded && <span className="ml-2 text-xs bg-black text-white px-2 py-1 inline-block">JUST DROPPED</span>}
-              </h1>
+            <div className="flex justify-between items-center mb-4 pb-4 border-b border-[#020312]/10">
+              <div>
+                {wasRecentlyAdded && <span className="mb-2 text-sm bg-[#e8a35a] text-black px-3 py-1 inline-block font-medium">NEW ARTWORK</span>}
+                <h1 className="text-4xl font-medium text-[#020312]">
+                  {artwork.title}
+                </h1>
+              </div>
               <div className="text-2xl">
                 {selectedSize ? (
                   formatPrice(selectedSize.price)
