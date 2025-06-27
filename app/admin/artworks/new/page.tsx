@@ -198,7 +198,7 @@ export default function NewArtwork() {
       }
 
       // Create new artwork in database
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('artworks')
         .insert([
           {
