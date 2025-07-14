@@ -588,6 +588,21 @@ h1, h2, h3, h4, h5, h6, .font-serif {
     animation: marquee 8s linear infinite;
   }
   
+  /* Faster animation for smaller screens */
+  @media (max-width: 767px) {
+    .marquee-track {
+      animation: marquee 7s linear infinite;
+    }
+    
+    .marquee-track-slow {
+      animation: marquee 15s linear infinite;
+    }
+    
+    .marquee-track-fast {
+      animation: marquee 3s linear infinite;
+    }
+  }
+  
   .marquee-item {
     display: flex;
     align-items: center;
