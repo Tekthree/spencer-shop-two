@@ -34,7 +34,7 @@ export function MarqueeHeading({
       <div className="marquee-item">
         <div className="flex items-center">
           <h1 className={clsx("marquee-heading text-[#020312] my-0", className)}>{children}</h1>
-          <div className="mx-16 flex items-center" style={{ height: '1em' }}>
+          <div className="mx-6 flex items-center" style={{ height: '1em' }}>
             <span 
               className="text-[#020312]/30 text-3xl md:text-5xl lg:text-6xl" 
               style={{ 
