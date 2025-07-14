@@ -410,15 +410,27 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           <blockquote className="font-serif text-2xl md:text-3xl leading-relaxed mb-8 text-[#020312]">
             &ldquo;Our relationship with transformative power of art to connect us with our deeper selves. My creative process involves layers of intuition, technique, and emotional resonance.&rdquo;
           </blockquote>
-          <motion.cite 
-            className="text-sm font-medium not-italic text-[#020312]/70"
+          <motion.div 
+            className="flex flex-col items-center justify-center gap-4"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
             viewport={{ once: true }}
           >
-            From the Studio
-          </motion.cite>
+            <div className="relative w-24 h-24 rounded-full overflow-hidden border border-[#020312]/10">
+              <Image 
+                src="/hero-spencer.jpg" 
+                alt="Spencer Grey" 
+                fill 
+                className="object-cover"
+                sizes="(max-width: 768px) 96px, 96px"
+                priority
+              />
+            </div>
+            <cite className="text-sm font-medium not-italic text-[#020312]/70">
+              From Spencer Grey
+            </cite>
+          </motion.div>
         </motion.div>
       </section>
       

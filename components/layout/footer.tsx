@@ -123,6 +123,8 @@ export default function Footer() {
           {/* Payment Trust Badges */}
           <div className="flex items-center">
             <div className="flex items-center">
+              
+              
               {/* Credit Card Icons */}
               <div className="flex">
                 <div className="rounded-md p-1 h-8 w-12 flex items-center justify-center">
@@ -187,11 +189,7 @@ export default function Footer() {
               </div>
             </div>
             
-            {/* Secure Badge */}
-            <div className="flex items-center text-white/80 text-xs">
-              <ShieldCheck className="w-4 h-4 mr-1" />
-              <span>Secure Checkout</span>
-            </div>
+            
           </div>
         </div>
       </div>
