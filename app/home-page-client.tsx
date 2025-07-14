@@ -428,7 +428,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
               />
             </div>
             <cite className="text-sm font-medium not-italic text-[#020312]/70">
-              From Spencer Grey
+              Spencer Grey
             </cite>
           </motion.div>
         </motion.div>
