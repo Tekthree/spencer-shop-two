@@ -68,62 +68,63 @@ function TabInterface() {
   
   return (
     <div>
-      {/* Tab Navigation */}
-      <div className="flex flex-col md:flex-row justify-center mb-12">
-        <div className="grid grid-cols-3 md:flex md:space-x-12 items-center">
-          {/* Limited Prints Tab */}
-          <button 
-            className={`flex flex-col items-center space-y-2 ${activeTab === 'limited' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
-            onClick={() => setActiveTab('limited')}
-          >
-            <div className="flex items-center justify-center w-10 h-10 border border-[#020312]/10 rounded-full">
-              <span className="font-serif">1</span>
-            </div>
-            <h3 className={`font-serif text-base md:text-xl ${activeTab === 'limited' ? 'underline font-medium' : ''}`}>
-              <span className="md:hidden">LIMITED<br />PRINTS</span>
-              <span className="hidden md:inline">LIMITED PRINTS</span>
-            </h3>
-          </button>
-          
-          {/* Museum Quality Tab */}
-          <button 
-            className={`flex flex-col items-center space-y-2 ${activeTab === 'museum' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
-            onClick={() => setActiveTab('museum')}
-          >
-            <div className="flex items-center justify-center w-10 h-10 border border-[#020312]/10 rounded-full">
-              <span className="font-serif">2</span>
-            </div>
-            <h3 className={`font-serif text-base md:text-xl ${activeTab === 'museum' ? 'underline font-medium' : ''}`}>
-              <span className="md:hidden">MUSEUM<br />QUALITY</span>
-              <span className="hidden md:inline">MUSEUM QUALITY</span>
-            </h3>
-          </button>
-          
-          {/* Print to Order Tab */}
-          <button 
-            className={`flex flex-col items-center space-y-2 ${activeTab === 'order' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
-            onClick={() => setActiveTab('order')}
-          >
-            <div className="flex items-center justify-center w-10 h-10 border border-[#020312]/10 rounded-full">
-              <span className="font-serif">3</span>
-            </div>
-            <h3 className={`font-serif text-base md:text-xl ${activeTab === 'order' ? 'underline font-medium' : ''}`}>
-              <span className="md:hidden">PRINT TO<br />ORDER</span>
-              <span className="hidden md:inline">PRINT TO ORDER</span>
-            </h3>
-          </button>
+      {/* Three-column layout container */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-center min-h-[500px]">
+        {/* Column 1: Tab Navigation */}
+        <div className="flex flex-col space-y-8 mb-8 lg:mb-0 justify-center">
+          <div className="grid grid-cols-3 lg:grid-cols-1 gap-4 lg:gap-10">
+            {/* Limited Prints Tab */}
+            <button 
+              className={`flex flex-col items-center lg:items-start lg:flex-row lg:space-x-4 space-y-2 lg:space-y-0 ${activeTab === 'limited' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
+              onClick={() => setActiveTab('limited')}
+            >
+              <div className="flex items-center justify-center w-10 h-10 lg:w-16 lg:h-16 border border-[#020312]/10 rounded-full">
+                <span className="font-serif text-base lg:text-2xl">1</span>
+              </div>
+              <h3 className={`font-serif text-base md:text-xl lg:text-4xl ${activeTab === 'limited' ? 'underline font-medium' : ''}`}>
+                <span className="md:hidden">LIMITED<br />PRINTS</span>
+                <span className="hidden md:inline">LIMITED PRINTS</span>
+              </h3>
+            </button>
+            
+            {/* Museum Quality Tab */}
+            <button 
+              className={`flex flex-col items-center lg:items-start lg:flex-row lg:space-x-4 space-y-2 lg:space-y-0 ${activeTab === 'museum' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
+              onClick={() => setActiveTab('museum')}
+            >
+              <div className="flex items-center justify-center w-10 h-10 lg:w-16 lg:h-16 border border-[#020312]/10 rounded-full">
+                <span className="font-serif text-base lg:text-2xl">2</span>
+              </div>
+              <h3 className={`font-serif text-base md:text-xl lg:text-4xl ${activeTab === 'museum' ? 'underline font-medium' : ''}`}>
+                <span className="md:hidden">MUSEUM<br />QUALITY</span>
+                <span className="hidden md:inline">MUSEUM QUALITY</span>
+              </h3>
+            </button>
+            
+            {/* Print to Order Tab */}
+            <button 
+              className={`flex flex-col items-center lg:items-start lg:flex-row lg:space-x-4 space-y-2 lg:space-y-0 ${activeTab === 'order' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
+              onClick={() => setActiveTab('order')}
+            >
+              <div className="flex items-center justify-center w-10 h-10 lg:w-16 lg:h-16 border border-[#020312]/10 rounded-full">
+                <span className="font-serif text-base lg:text-2xl">3</span>
+              </div>
+              <h3 className={`font-serif text-base md:text-xl lg:text-4xl ${activeTab === 'order' ? 'underline font-medium' : ''}`}>
+                <span className="md:hidden">PRINT TO<br />ORDER</span>
+                <span className="hidden md:inline">PRINT TO ORDER</span>
+              </h3>
+            </button>
+          </div>
         </div>
-      </div>
-      
-      {/* Tab Content */}
-      <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+        
+        {/* Columns 2 & 3: Tab Content */}
         {/* Tab Content - Limited Prints */}
         {activeTab === 'limited' && (
           <>
-            {/* Left Column - Image/Video */}
+            {/* Column 2 - Image/Video */}
             <motion.div 
               key="limited-media"
-              className="relative aspect-[9/16] md:aspect-[9/16] w-full max-w-[280px] mx-auto md:max-w-[320px] order-1" 
+              className="relative aspect-[9/16] md:aspect-[9/16] w-full max-w-[280px] mx-auto md:max-w-[320px] flex items-center justify-center" 
               variants={tabContentVariants}
               initial="hidden"
               animate="visible"
@@ -143,10 +144,10 @@ function TabInterface() {
               </div>
             </motion.div>
             
-            {/* Right Column - Description */}
+            {/* Column 3 - Description */}
             <motion.div 
               key="limited-content"
-              className="space-y-6 order-2" 
+              className="space-y-6 flex flex-col justify-center" 
               variants={tabContentVariants}
               initial="hidden"
               animate="visible"
@@ -179,10 +180,10 @@ function TabInterface() {
         {/* Tab Content - Museum Quality */}
         {activeTab === 'museum' && (
           <>
-            {/* Left Column - Image/Video */}
+            {/* Column 2 - Image/Video */}
             <motion.div 
               key="museum-media"
-              className="relative aspect-[9/16] md:aspect-[9/16] w-full max-w-[280px] mx-auto md:max-w-[320px] order-1" 
+              className="relative aspect-[9/16] md:aspect-[9/16] w-full max-w-[280px] mx-auto md:max-w-[320px] flex items-center justify-center" 
               variants={tabContentVariants}
               initial="hidden"
               animate="visible"
@@ -202,10 +203,10 @@ function TabInterface() {
               </div>
             </motion.div>
             
-            {/* Right Column - Description */}
+            {/* Column 3 - Description */}
             <motion.div 
               key="museum-content"
-              className="space-y-6 order-2" 
+              className="space-y-6 flex flex-col justify-center" 
               variants={tabContentVariants}
               initial="hidden"
               animate="visible"
@@ -241,10 +242,10 @@ function TabInterface() {
         {/* Tab Content - Print to Order */}
         {activeTab === 'order' && (
           <>
-            {/* Left Column - Image/Video */}
+            {/* Column 2 - Image/Video */}
             <motion.div 
               key="order-media"
-              className="relative aspect-[9/16] md:aspect-[9/16] w-full max-w-[280px] mx-auto md:max-w-[320px] order-1" 
+              className="relative aspect-[9/16] md:aspect-[9/16] w-full max-w-[280px] mx-auto md:max-w-[320px] flex items-center justify-center" 
               variants={tabContentVariants}
               initial="hidden"
               animate="visible"
@@ -266,10 +267,10 @@ function TabInterface() {
               </div>
             </motion.div>
             
-            {/* Right Column - Description */}
+            {/* Column 3 - Description */}
             <motion.div 
               key="order-content"
-              className="space-y-6 order-2" 
+              className="space-y-6 flex flex-col justify-center" 
               variants={tabContentVariants}
               initial="hidden"
               animate="visible"
@@ -491,7 +492,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       </section>
       
       {/* Art Collection Features Section - Tabbed Interface */}
-      <section className="py-16 md:py-24 px-6 bg-[#e8e8f6]">
+      <section className="py-16 md:py-24 px-6 bg-[#e8e8f6]" data-component-name="HomePageClient">
         <div className="max-w-[1440px] mx-auto">
           {/* Tabbed Interface */}
           <TabInterface />
