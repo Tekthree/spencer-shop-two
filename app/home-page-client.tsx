@@ -353,7 +353,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       className="min-h-screen bg-[#F6F4F0]"
     >
       {/* Minimal Hero Section - "gallery vibes. at home." */}
-      <section className="pt-20 pb-0 md:pt-32 md:pb-0">
+      <section className="pt-8 pb-0 md:pt-12 md:pb-0">
         <MarqueeHeading speed="normal" className="" data-component-name="HomePageClient">
           <span className="clandyFontOverride">LOVE</span> Channeled Through Form
         </MarqueeHeading>
