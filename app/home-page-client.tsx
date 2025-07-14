@@ -8,6 +8,7 @@ import { ensureNumericPrice } from "@/components/artwork/price-helper";
 import { useState } from "react";
 import ArtworkGrid from "@/components/home/artwork-grid";
 import HorizontalScroll from "@/components/ui/horizontal-scroll";
+import { MarqueeHeading } from "@/components/ui/marquee-heading";
 
 // Define types for artwork data
 type ArtworkImage = {
@@ -352,11 +353,11 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       className="min-h-screen bg-[#F6F4F0]"
     >
       {/* Minimal Hero Section - "gallery vibes. at home." */}
-      <section className="pt-20 pb-0 md:pt-32 md:pb-0 px-6">
-        <div className="max-w-[1440px] mx-auto">
-          <h1 className=" text-5xl md:text-7xl mb-10 max-w-3xl text-[#020312]" data-component-name="HomePageClient">
-            Love Channeled Through Form
-          </h1>
+      <section className="pt-20 pb-0 md:pt-32 md:pb-0">
+        <MarqueeHeading speed="normal" className="" data-component-name="HomePageClient">
+          <span className="clandyFontOverride">LOVE</span> Channeled Through Form
+        </MarqueeHeading>
+        <div className="max-w-[1440px] mx-auto px-6">
           
           {/* Hero Image and Artist Statement */}
           <motion.div 
