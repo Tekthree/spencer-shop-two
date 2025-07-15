@@ -409,7 +409,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           viewport={{ once: true, margin: "-100px" }}
         >
-          <blockquote className="font-serif text-2xl md:text-3xl leading-relaxed mb-8 text-[#020312]">
+          <blockquote className="font-serif text-2xl md:text-3xl lg:text-4xl leading-relaxed mb-8 text-[#020312]">
             &ldquo;Our relationship with transformative power of art to connect us with our deeper selves. My creative process involves layers of intuition, technique, and emotional resonance.&rdquo;
           </blockquote>
           <motion.div 
@@ -508,7 +508,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           viewport={{ once: true, margin: "-100px" }}
         >
-          <blockquote className="font-serif text-2xl md:text-3xl leading-relaxed mb-8 text-[#020312]">
+          <blockquote className="font-serif text-2xl md:text-3xl lg:text-4xl leading-relaxed mb-8 text-[#020312]">
             &ldquo;My work is birthed from the delicate balance between chaos and order, finding beauty in the spaces between. Each piece is a meditation on form, color, and texture—an invitation to pause and reflect.&rdquo;
           </blockquote>
           <motion.cite 
