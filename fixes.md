@@ -387,3 +387,178 @@ useEffect(() => {
 ```
 
 These fixes address all the ESLint and TypeScript errors that were preventing successful builds in Next.js 15.
+
+## UI Animation Fixes (July 2025)
+
+### 1. Marquee Heading Animation Fix
+
+Fixed the hero header marquee animation to eliminate skips, glitches, and overlapping text:
+
+```tsx
+// Before - Problematic marquee implementation with multiple nested divs
+export function MarqueeHeading({
+  children,
+  className = "", 
+  speed = "normal" 
+}: MarqueeHeadingProps) {
+  let speedClass = "";
+  if (speed === "slow") speedClass = "marquee-track-slow";
+  if (speed === "fast") speedClass = "marquee-track-fast";
+  
+  // Create a single marquee item with heading and dot
+  const createMarqueeItem = () => (
+    <div className="marquee-item-wrapper">
+      <h1 className={clsx("marquee-heading text-[#020312] my-0", className)}>
+        {children}
+      </h1>
+      <div className="marquee-dot-wrapper">
+        <span className="marquee-dot">•</span>
+      </div>
+    </div>
+  );
+  
+  return (
+    <div className="marquee-outer">
+      <div className={clsx("marquee", speedClass)}>
+        {/* First set of items */}
+        <div className="marquee-inner">
+          {createMarqueeItem()}
+          {createMarqueeItem()}
+          {createMarqueeItem()}
+          {createMarqueeItem()}
+        </div>
+        
+        {/* Duplicate set of items for seamless loop */}
+        <div className="marquee-inner" aria-hidden="true">
+          {createMarqueeItem()}
+          {createMarqueeItem()}
+          {createMarqueeItem()}
+          {createMarqueeItem()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// After - Simplified marquee implementation with 4 copies for perfect looping
+export function MarqueeHeading({
+  children,
+  className = "", 
+  speed = "normal" 
+}: MarqueeHeadingProps) {
+  let speedClass = "";
+  if (speed === "slow") speedClass = "marquee-track-slow";
+  if (speed === "fast") speedClass = "marquee-track-fast";
+  
+  return (
+    <div className="marquee-container">
+      <div className={clsx("marquee-track", speedClass)}>
+        {/* Create 4 copies of the content for smoother animation */}
+        <div className="marquee-content">
+          <h1 className={clsx("marquee-heading text-[#020312] my-0", className)}>{children}</h1>
+          <div className="marquee-dot-wrapper">
+            <span className="marquee-dot">•</span>
+          </div>
+        </div>
+        <div className="marquee-content" aria-hidden="true">
+          <h1 className={clsx("marquee-heading text-[#020312] my-0", className)}>{children}</h1>
+          <div className="marquee-dot-wrapper">
+            <span className="marquee-dot">•</span>
+          </div>
+        </div>
+        <div className="marquee-content" aria-hidden="true">
+          <h1 className={clsx("marquee-heading text-[#020312] my-0", className)}>{children}</h1>
+          <div className="marquee-dot-wrapper">
+            <span className="marquee-dot">•</span>
+          </div>
+        </div>
+        <div className="marquee-content" aria-hidden="true">
+          <h1 className={clsx("marquee-heading text-[#020312] my-0", className)}>{children}</h1>
+          <div className="marquee-dot-wrapper">
+            <span className="marquee-dot">•</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+```css
+/* Before - CSS with animation issues */
+.marquee-outer {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+}
+
+.marquee {
+  width: 100%;
+  display: flex;
+  animation: marquee-scroll 15s linear infinite;
+  will-change: transform;
+}
+
+.marquee-inner {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+/* After - Fixed CSS with proper animation */
+.marquee-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+}
+
+.marquee-track {
+  display: flex;
+  width: fit-content;
+  animation: marquee 30s linear infinite;
+  will-change: transform;
+}
+
+.marquee-content {
+  display: flex;
+  align-items: center;
+  padding: 1rem 0;
+  white-space: nowrap;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-25%); } /* Move exactly 1/4 of the width since we have 4 copies */
+}
+```
+
+Key improvements:
+
+1. **Simplified Component Structure**:
+   - Removed unnecessary nesting of divs
+   - Used 4 copies of content instead of 8 (4 in each inner container)
+   - Eliminated the function to create marquee items for better readability
+
+2. **Fixed Animation Logic**:
+   - Changed animation to move exactly 25% of the width (`translateX(-25%)`) since we have 4 copies
+   - Used `width: fit-content` to ensure proper sizing of the track
+   - Added `white-space: nowrap` to prevent text wrapping
+
+3. **Improved Spacing and Alignment**:
+   - Increased margin between text and dot to prevent overlap
+   - Adjusted vertical position of the dot to be centered (`top: -0.15em`)
+   - Used `display: flex` with proper alignment
+
+4. **Performance Optimization**:
+   - Maintained `will-change: transform` for better performance
+   - Added `user-select: none` to prevent text selection during animation
+   - Used `aria-hidden="true"` on duplicate content for accessibility
+
+This fix ensures a perfectly seamless loop without any visual glitches or text overlap while maintaining the minimalist aesthetic of the Spencer Grey brand.

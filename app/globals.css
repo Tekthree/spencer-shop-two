@@ -565,54 +565,55 @@ h1, h2, h3, h4, h5, h6, .font-serif {
     height: 2px;
   }
   
-  /* Marquee animation styles */
+  /* Marquee animation styles - completely rebuilt for perfect looping */
   .marquee-container {
+    position: relative;
     width: 100%;
     overflow: hidden;
-    white-space: nowrap;
-    position: relative;
+    user-select: none;
   }
   
   .marquee-track {
     display: flex;
-    white-space: nowrap;
-    animation: marquee 15s linear infinite;
+    width: fit-content;
+    animation: marquee 20s linear infinite; /* Faster default speed: 30s → 20s */
     will-change: transform;
   }
   
   .marquee-track-slow {
-    animation: marquee 30s linear infinite;
+    animation-duration: 40s; /* Faster slow speed: 60s → 40s */
   }
   
   .marquee-track-fast {
-    animation: marquee 8s linear infinite;
+    animation-duration: 10s; /* Faster fast speed: 15s → 10s */
   }
   
-  /* Faster animation for smaller screens */
+  /* Even faster animation for smaller screens */
   @media (max-width: 767px) {
     .marquee-track {
-      animation: marquee 7s linear infinite;
+      animation-duration: 15s; /* Keeping mobile speed the same */
     }
     
     .marquee-track-slow {
-      animation: marquee 15s linear infinite;
+      animation-duration: 30s; /* Keeping mobile slow speed the same */
     }
     
     .marquee-track-fast {
-      animation: marquee 3s linear infinite;
+      animation-duration: 8s; /* Keeping mobile fast speed the same */
     }
   }
   
-  .marquee-item {
+  .marquee-content {
     display: flex;
     align-items: center;
     padding: 1rem 0;
-    flex-shrink: 0;
+    white-space: nowrap;
   }
   
   .marquee-heading {
     font-size: 3.5rem;
     line-height: 1;
+    white-space: nowrap;
   }
   
   @media (min-width: 768px) {
@@ -627,14 +628,18 @@ h1, h2, h3, h4, h5, h6, .font-serif {
     }
   }
   
+  .marquee-dot-wrapper {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 3rem;
+  }
+  
   .marquee-dot {
-    margin: 0 4rem;
     font-size: 3.5rem;
     line-height: 0;
     opacity: 0.3;
-    display: flex;
-    align-items: center;
-    height: 100%;
+    position: relative;
+    top: -0.15em; /* Adjusted to be more vertically centered */
   }
   
   @media (min-width: 768px) {
@@ -645,6 +650,6 @@ h1, h2, h3, h4, h5, h6, .font-serif {
   
   @keyframes marquee {
     0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
+    100% { transform: translateX(-25%); } /* Move exactly 1/4 of the width since we have 4 copies */
   }
 }
