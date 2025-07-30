@@ -22,15 +22,14 @@ export function MarqueeHeading({
   className = "", 
   speed = "normal" 
 }: MarqueeHeadingProps) {
-  // Generate a timestamp for cache busting
-  const timestamp = Date.now();
+  // No need for timestamp with local images
   
-  // Array of artwork URLs for easier management
+  // Array of local artwork paths for easier management
   const artworkUrls = [
-    "https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/cb0297d0-831a-48a8-8798-d47ead272408.jpg",
-    "https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/69a4d340-a0f1-4f79-98ba-3b9de0e5de0e.jpg",
-    "https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/2d93b43e-3a24-42e8-83f9-bc38f0627bea.jpg",
-    "https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/f6f312b1-4f5b-4536-a264-10a3411950d8.jpg"
+    "/images/framed-for-mar.gif",
+    "/images/framed-for-mar-two.gif",
+    "/images/framed-for-mar-three.gif",
+    "/images/framed-for-mar-four.gif"
   ];
 
   // Determine speed class based on prop
@@ -60,14 +59,15 @@ export function MarqueeHeading({
         <h1 className={clsx("marquee-heading text-[#020312] my-0", className)} data-component-name="MarqueeHeading">
           {children}
         </h1>
-        <div className="marquee-dot-wrapper" style={{ margin: '0 3rem' }}>
-          <div className="marquee-artwork-dot" data-index={artworkIndex}>
+        <div className="marquee-dot-wrapper" style={{ margin: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '120px', height: '120px', overflow: 'visible' }}>
+          <div className="marquee-artwork-dot" data-index={artworkIndex} style={{ width: '120px', height: '120px', overflow: 'visible' }}>
             <Image 
-              src={`${url}?t=${timestamp}-${index}`}
+              src={url}
               alt={`Spencer Grey artwork ${artworkIndex + 1}`}
-              width={60}
-              height={60}
-              className="rounded-full object-cover"
+              width={120}
+              height={120}
+              className="object-contain"
+              style={{ maxWidth: '100%', maxHeight: '100%' }}
               unoptimized={true}
               priority={index === 0} // Only prioritize the first image
               loading={index === 0 ? "eager" : "lazy"} // Load first image eagerly, others lazily
@@ -93,7 +93,7 @@ export function MarqueeHeading({
   
   return (
     <div className="marquee-container" style={{ 
-      overflow: 'hidden', 
+      overflow: 'visible', 
       whiteSpace: 'nowrap',
       width: '100%'
     }}>

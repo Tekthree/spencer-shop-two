@@ -8,6 +8,8 @@ import { headers } from 'next/headers';
 import stripe from '@/lib/stripe/stripe-server';
 // Import Supabase client directly to avoid path issues
 import { createClient as supabaseCreateClient } from '@supabase/supabase-js';
+import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/lib/email/email-service';
+import { format } from 'date-fns';
 
 // Create Supabase client function
 function createClient() {
@@ -83,7 +85,7 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     // Get the current artwork data
     const { data: artwork, error: artworkError } = await supabase
       .from('artworks')
-      .select('sizes')
+      .select('sizes, title')
       .eq('id', item.artwork_id)
       .single();
     
@@ -119,6 +121,44 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     if (updateError) {
       console.error(`Error updating artwork ${item.artwork_id}:`, updateError);
     }
+    
+    // Add title to orderItem for email template
+    item.title = artwork.title;
+  }
+  
+  // Send order confirmation email
+  try {
+    const orderNumber = order.id.toString().padStart(6, '0');
+    const customerName = session.metadata?.customer_name || 'Valued Customer';
+    const customerEmail = session.customer_details?.email || '';
+    
+    if (customerEmail) {
+      // Prepare email data
+      const emailData = {
+        orderNumber,
+        customerName,
+        customerEmail,
+        items: orderItems.map(item => ({
+          title: item.title || 'Artwork',
+          size: item.size,
+          price: item.price,
+          quantity: item.quantity || 1
+        })),
+        total: session.amount_total || 0,
+        date: format(new Date(), 'MMMM d, yyyy')
+      };
+      
+      // Send customer confirmation email
+      await sendOrderConfirmationEmail(emailData);
+      
+      // Send admin notification
+      await sendAdminOrderNotification(emailData);
+    } else {
+      console.error('Cannot send order confirmation: customer email missing');
+    }
+  } catch (emailError) {
+    console.error('Error sending order confirmation email:', emailError);
+    // Don't throw error here to prevent webhook failure
   }
   
   return order;

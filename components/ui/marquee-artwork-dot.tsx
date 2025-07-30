@@ -8,12 +8,12 @@ import Image from 'next/image';
  * @returns A circular artwork image component
  */
 export function MarqueeArtworkDot({ index = 0 }: { index?: number }) {
-  // Define fixed image URLs directly in the component
+  // Define local image paths for the framed-for-mar images
   // Each image is completely different to ensure visual variety
-  const image0 = 'https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/cb0297d0-831a-48a8-8798-d47ead272408.jpg';
-  const image1 = 'https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/69a4d340-a0f1-4f79-98ba-3b9de0e5de0e.jpg';
-  const image2 = 'https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/2d93b43e-3a24-42e8-83f9-bc38f0627bea.jpg';
-  const image3 = 'https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/f6f312b1-4f5b-4536-a264-10a3411950d8.jpg';
+  const image0 = '/images/framed-for-mar.gif';
+  const image1 = '/images/framed-for-mar-two.gif';
+  const image2 = '/images/framed-for-mar-three.gif';
+  const image3 = '/images/framed-for-mar-four.gif';
   
   // Directly determine which image to use based on index
   // No array indexing or complex logic that could cause confusion
@@ -34,8 +34,8 @@ export function MarqueeArtworkDot({ index = 0 }: { index?: number }) {
   console.log(`MarqueeArtworkDot [${uniqueId}] - Index: ${index}, Image: ${imageUrl.split('/').pop()?.split('.')[0]}`);
 
 
-  // Add a unique query parameter to completely defeat any caching
-  const uniqueUrl = `${imageUrl}?dot=${index}&t=${uniqueId}`;
+  // Local images don't need cache-busting parameters
+  const uniqueUrl = imageUrl;
   
   return (
     <div className="marquee-artwork-dot" data-index={index}>
