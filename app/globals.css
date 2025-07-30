@@ -574,32 +574,32 @@ h1, h2, h3, h4, h5, h6, .font-serif {
   }
   
   .marquee-track {
-    display: flex;
+    display: inline-flex;
     width: fit-content;
-    animation: marquee 20s linear infinite; /* Faster default speed: 30s → 20s */
+    animation: marquee 30s linear infinite;
     will-change: transform;
   }
   
   .marquee-track-slow {
-    animation-duration: 40s; /* Faster slow speed: 60s → 40s */
+    animation-duration: 50s;
   }
   
   .marquee-track-fast {
-    animation-duration: 10s; /* Faster fast speed: 15s → 10s */
+    animation-duration: 15s;
   }
   
-  /* Even faster animation for smaller screens */
+  /* Slower animation for smaller screens */
   @media (max-width: 767px) {
     .marquee-track {
-      animation-duration: 15s; /* Keeping mobile speed the same */
+      animation-duration: 25s;
     }
     
     .marquee-track-slow {
-      animation-duration: 30s; /* Keeping mobile slow speed the same */
+      animation-duration: 40s;
     }
     
     .marquee-track-fast {
-      animation-duration: 8s; /* Keeping mobile fast speed the same */
+      animation-duration: 12s;
     }
   }
   
@@ -642,14 +642,78 @@ h1, h2, h3, h4, h5, h6, .font-serif {
     top: -0.15em; /* Adjusted to be more vertically centered */
   }
   
+  .marquee-artwork-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; /* Keep original size */
+    height: 40px;
+    opacity: 0.9;
+    transition: all 0.4s ease;
+    position: relative;
+    margin-left: 8px;
+    /* Create a smaller inner circle for the image to overflow */
+    overflow: hidden;
+  }
+  
+  .marquee-artwork-dot:hover {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  
+  .marquee-artwork-dot img {
+    border: 1px solid rgba(2, 3, 18, 0.1); /* Subtle border using the deep navy color */
+    transition: all 0.3s ease;
+    width: 180% !important; /* Make image larger than container */
+    height: 180% !important;
+    object-fit: cover;
+    object-position: center;
+    /* Negative margin to center the enlarged image */
+    margin: -40% !important;
+  }
+  
+  /* Ensure each dot has a unique appearance based on its index */
+  .marquee-artwork-dot[data-index="0"] img {
+    border-color: rgba(2, 3, 18, 0.15);
+  }
+  
+  .marquee-artwork-dot[data-index="1"] img {
+    border-color: rgba(2, 3, 18, 0.2);
+  }
+  
+  .marquee-artwork-dot[data-index="2"] img {
+    border-color: rgba(2, 3, 18, 0.25);
+  }
+  
+  .marquee-artwork-dot[data-index="3"] img {
+    border-color: rgba(2, 3, 18, 0.3);
+  }
+  
+  /* Subtle pulse animation for the artwork dots */
+  @keyframes subtle-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+  
+  /* Apply animation to every other dot for visual variety */
+  .marquee-content:nth-child(odd) .marquee-artwork-dot img {
+    animation: subtle-pulse 4s infinite ease-in-out;
+  }
+  
   @media (min-width: 768px) {
     .marquee-dot {
       font-size: 5rem;
+    }
+    
+    .marquee-artwork-dot {
+      width: 50px;
+      height: 50px;
     }
   }
   
   @keyframes marquee {
     0% { transform: translateX(0); }
-    100% { transform: translateX(-25%); } /* Move exactly 1/4 of the width since we have 4 copies */
+    100% { transform: translateX(-50%); } /* Move exactly half the width for perfect looping */
   }
 }
