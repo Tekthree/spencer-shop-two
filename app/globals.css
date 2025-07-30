@@ -576,30 +576,30 @@ h1, h2, h3, h4, h5, h6, .font-serif {
   .marquee-track {
     display: inline-flex;
     width: fit-content;
-    animation: marquee 30s linear infinite;
+    animation: marquee 60s linear infinite;
     will-change: transform;
   }
   
   .marquee-track-slow {
-    animation-duration: 50s;
+    animation-duration: 80s;
   }
   
   .marquee-track-fast {
-    animation-duration: 15s;
+    animation-duration: 35s;
   }
   
   /* Slower animation for smaller screens */
   @media (max-width: 767px) {
     .marquee-track {
-      animation-duration: 25s;
+      animation-duration: 45s;
     }
     
     .marquee-track-slow {
-      animation-duration: 40s;
+      animation-duration: 70s;
     }
     
     .marquee-track-fast {
-      animation-duration: 12s;
+      animation-duration: 30s;
     }
   }
   
