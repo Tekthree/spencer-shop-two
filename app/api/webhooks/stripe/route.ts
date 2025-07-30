@@ -46,8 +46,18 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     })
   );
   
+  // Define the type for order items
+  type OrderItem = {
+    artwork_id: string;
+    size: string;
+    price: number;
+    edition_number: number;
+    quantity: number | null;
+    title?: string; // Add optional title property for email template
+  };
+
   // Extract order items from line items
-  const orderItems = expandedLineItems.map((item) => {
+  const orderItems: OrderItem[] = expandedLineItems.map((item) => {
     const metadata = item.product.metadata;
     return {
       artwork_id: metadata.artwork_id,
