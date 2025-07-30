@@ -1,17 +1,25 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 /**
  * Stripe API Test Page
  * Tests the Stripe checkout flow and API endpoints
  */
+
+// Define type for checkout result
+interface CheckoutResult {
+  url?: string;
+  sessionId?: string;
+  success?: boolean;
+  message?: string;
+  [key: string]: unknown;
+}
 export default function TestStripePage() {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<CheckoutResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+
 
   // Test creating a checkout session with a sample item
   const testCheckout = async () => {
