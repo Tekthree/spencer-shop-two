@@ -93,7 +93,7 @@ export function MarqueeHeading({
   
   return (
     <div className="marquee-container" style={{ 
-      overflow: 'visible', 
+      overflow: 'hidden', 
       whiteSpace: 'nowrap',
       width: '100%'
     }}>
