@@ -1,0 +1,41 @@
+{
+  "id": "evt_test_webhook_sample",
+  "object": "event",
+  "api_version": "2025-04-30.basil",
+  "created": 1723219167,
+  "data": {
+    "object": {
+      "id": "cs_test_sample_checkout",
+      "object": "checkout.session",
+      "payment_status": "paid",
+      "customer_details": {
+        "email": "test@example.com",
+        "name": "Test Customer",
+        "address": {
+          "line1": "123 Test St",
+          "city": "Test City",
+          "state": "TS",
+          "postal_code": "12345",
+          "country": "US"
+        }
+      },
+      "metadata": {
+        "customer_name": "Test Customer"
+      },
+      "amount_total": 9900,
+      "payment_intent": "pi_test_sample_intent",
+      "line_items": {
+        "data": [
+          {
+            "amount_total": 9900,
+            "quantity": 1,
+            "price": {
+              "product": "prod_test_sample"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "type": "checkout.session.completed"
+}

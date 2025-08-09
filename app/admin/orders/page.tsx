@@ -26,6 +26,20 @@ export default function AdminOrdersPage() {
       if (!supabase) return;
       
       setLoading(true);
+      console.log('Fetching orders with status filter:', statusFilter);
+      
+      // Debug: Check if orders table exists
+      const { data: tableInfo, error: tableError } = await supabase
+        .from('orders')
+        .select('id')
+        .limit(1);
+      
+      if (tableError) {
+        console.error('Error checking orders table:', tableError);
+        throw new Error(`Table check failed: ${tableError.message}`);
+      }
+      
+      console.log('Orders table exists, sample data:', tableInfo);
       
       let query = supabase
         .from('orders')
@@ -40,7 +54,15 @@ export default function AdminOrdersPage() {
       const { data, error } = await query;
       
       if (error) {
+        console.error('Supabase query error:', error);
         throw error;
+      }
+      
+      console.log('Orders fetched:', data ? data.length : 0, 'orders');
+      if (data && data.length > 0) {
+        console.log('Sample order:', data[0]);
+      } else {
+        console.log('No orders found');
       }
       
       setOrders(data || []);
@@ -61,10 +83,26 @@ export default function AdminOrdersPage() {
       return;
     }
     
-    // Only fetch orders when Supabase client is available
-    if (supabase) {
-      fetchOrders();
-    }
+    // Check authentication status
+    const checkAuth = async () => {
+      if (supabase) {
+        const { data: { session }, error: authError } = await supabase.auth.getSession();
+        console.log('Auth status:', session ? 'Authenticated' : 'Not authenticated');
+        if (authError) {
+          console.error('Auth error:', authError.message);
+          setError('Authentication error: ' + authError.message);
+        }
+        if (!session) {
+          setError('Not authenticated. Please log in to view orders.');
+          setLoading(false);
+          return;
+        }
+        // Fetch orders when authenticated
+        fetchOrders();
+      }
+    };
+    
+    checkAuth();
   }, [fetchOrders, supabase, supabaseError]);
   
   /**
@@ -162,11 +200,29 @@ export default function AdminOrdersPage() {
         <h1 className="text-2xl font-serif mb-8">Orders</h1>
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           <p>Error: {error}</p>
+          <div className="mt-4 p-4 bg-gray-100 rounded text-sm font-mono overflow-auto">
+            <p className="font-medium">Debugging Information:</p>
+            <p>1. Check if you&apos;re logged in as admin</p>
+            <p>2. Check if RLS policies are correctly set up</p>
+            <p>3. Check if orders exist in the database</p>
+          </div>
           <button 
             onClick={fetchOrders}
-            className="mt-2 text-sm underline"
+            className="mt-4 px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
           >
             Try again
+          </button>
+          <button 
+            onClick={async () => {
+              if (!supabase) return;
+              const { data, error } = await supabase.auth.getSession();
+              console.log('Current session:', data.session);
+              if (error) console.error('Session error:', error);
+              alert(data.session ? 'Authenticated as: ' + data.session.user.email : 'Not authenticated');
+            }}
+            className="mt-4 ml-2 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+          >
+            Check Auth Status
           </button>
         </div>
       </div>
@@ -178,21 +234,74 @@ export default function AdminOrdersPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-serif">Orders</h1>
         
-        {/* Status filter */}
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-600">Filter:</span>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+        <div className="flex items-center space-x-4">
+          {/* Create test order button */}
+          <button
+            onClick={async () => {
+              try {
+                if (!supabase) return;
+                
+                const testOrder = {
+                  customer_info: {
+                    name: "Test Customer",
+                    email: "test@example.com",
+                    address: {
+                      line1: "123 Test St",
+                      city: "Test City",
+                      state: "TS",
+                      postal_code: "12345",
+                      country: "US"
+                    }
+                  },
+                  items: [{
+                    artwork_id: "00000000-0000-0000-0000-000000000000",
+                    size: "8x10",
+                    price: 9900,
+                    edition_number: 1,
+                    quantity: 1,
+                    title: "Test Artwork"
+                  }],
+                  total: 9900,
+                  status: 'paid',
+                  payment_intent: `pi_test_${Date.now()}`
+                };
+                
+                const { data, error } = await supabase
+                  .from('orders')
+                  .insert(testOrder)
+                  .select();
+                  
+                if (error) throw error;
+                
+                alert(`Test order created successfully! ID: ${data[0].id}`);
+                fetchOrders();
+              } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Failed to create test order';
+                alert(`Error creating test order: ${errorMessage}`);
+                console.error('Error creating test order:', err);
+              }
+            }}
+            className="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
           >
-            <option value="all">All Orders</option>
-            <option value="paid">Paid</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+            Create Test Order
+          </button>
+          
+          {/* Status filter */}
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-600">Filter:</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+            >
+              <option value="all">All Orders</option>
+              <option value="paid">Paid</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
         </div>
       </div>
       

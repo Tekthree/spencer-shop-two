@@ -16,12 +16,20 @@ type OrderDetails = {
   status: string;
   items: Array<{
     artwork_id: string;
+    title?: string;
     size: string;
     price: number;
     edition_number: number;
-    quantity: number;
+    quantity: number | null;
   }>;
   created_at: string;
+  // Debug information (only available in development)
+  debug?: {
+    orderFound: boolean;
+    webhookProcessed: boolean;
+    sessionId: string;
+    paymentIntentId: string | null;
+  };
 };
 
 /**
@@ -37,17 +45,38 @@ export function ClientSuccessContent() {
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Add state for client-side rendering to prevent hydration warnings
+  const [isClient, setIsClient] = useState(false);
 
   // Use a ref to track if we've already fetched the order details
   const hasOrderBeenFetched = useRef(false);
+  
+  // Mark when component is mounted on client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Effect for cart clearing - run only once
   useEffect(() => {
     // Clear the cart when the component mounts
-    clearCart();
-    // We intentionally only want this to run once on mount
-    // and not re-run when clearCart changes
-  }, [clearCart]);
+    // Using a flag to prevent infinite loops
+    const shouldClearCart = sessionStorage.getItem('cartCleared') !== 'true';
+    
+    if (shouldClearCart) {
+      clearCart();
+      sessionStorage.setItem('cartCleared', 'true');
+    }
+    
+    // Cleanup function to reset the flag when component unmounts
+    return () => {
+      // Only reset after a delay to prevent issues with page refreshes
+      setTimeout(() => {
+        sessionStorage.removeItem('cartCleared');
+      }, 5000);
+    };
+    // We intentionally omit clearCart from dependencies to prevent infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Separate effect for fetching order details - run only once
   useEffect(() => {
@@ -123,6 +152,12 @@ export function ClientSuccessContent() {
     );
   }
 
+  // Use a simple div during server-side rendering to prevent hydration warnings
+  // Only render the full content when on the client side
+  if (!isClient) {
+    return <div className="max-w-3xl mx-auto px-4 py-16"></div>;
+  }
+  
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">
       <div className="text-center mb-12">
@@ -165,21 +200,60 @@ export function ClientSuccessContent() {
             
             <div className="flex justify-between border-b border-gray-200 pb-2">
               <span className="text-gray-600">Date</span>
-              <span>{new Date().toLocaleDateString()}</span>
-            </div>
-            
-            <div className="flex justify-between pt-2">
-              <span className="font-medium">Total</span>
-              <span className="font-medium">
-                {orderDetails.total
-                  ? new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                    }).format(orderDetails.total / 100)
-                  : "Processing"}
-              </span>
+              <span>{new Date(orderDetails.created_at).toLocaleDateString()}</span>
             </div>
           </div>
+          
+          {/* Purchased Items */}
+          {orderDetails.items && orderDetails.items.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-medium mb-3">Purchased Items</h3>
+              <div className="space-y-4">
+                {orderDetails.items.map((item, index) => (
+                  <div key={index} className="border-b border-gray-200 pb-3">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium">{item.title || `Artwork #${item.artwork_id}`}</span>
+                      <span>
+                        {new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                        }).format((item.price || 0) / 100)}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      <p>Size: {item.size}</p>
+                      <p>Edition: {item.edition_number}</p>
+                      <p>Quantity: {item.quantity}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Order Total */}
+          <div className="flex justify-between pt-2 border-t border-gray-200">
+            <span className="font-medium">Total</span>
+            <span className="font-medium">
+              {orderDetails.total
+                ? new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  }).format(orderDetails.total / 100)
+                : "Processing"}
+            </span>
+          </div>
+          
+          {/* Debug Info - Only visible in development */}
+          {process.env.NODE_ENV === 'development' && orderDetails.debug && (
+            <div className="mt-6 pt-4 border-t border-gray-200 text-xs font-mono text-gray-500">
+              <h4 className="font-medium mb-1">Debug Information</h4>
+              <p>Order found in database: {orderDetails.debug.orderFound ? 'Yes' : 'No'}</p>
+              <p>Webhook processed: {orderDetails.debug.webhookProcessed ? 'Yes' : 'No'}</p>
+              <p>Session ID: {orderDetails.debug.sessionId}</p>
+              <p>Payment Intent: {orderDetails.debug.paymentIntentId}</p>
+            </div>
+          )}
         </div>
       )}
 

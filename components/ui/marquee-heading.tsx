@@ -59,15 +59,16 @@ export function MarqueeHeading({
         <h1 className={clsx("marquee-heading text-[#020312] my-0", className)} data-component-name="MarqueeHeading">
           {children}
         </h1>
-        <div className="marquee-dot-wrapper" style={{ margin: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '120px', height: '120px', overflow: 'visible' }}>
-          <div className="marquee-artwork-dot" data-index={artworkIndex} style={{ width: '120px', height: '120px', overflow: 'visible' }}>
+        <div className="marquee-dot-wrapper sm:w-[120px] sm:h-[120px] w-[70px] h-[70px]" style={{ margin: '0 3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+          <div className="marquee-artwork-dot sm:w-[120px] sm:h-[120px] w-[70px] h-[70px]" data-index={artworkIndex} style={{ overflow: 'visible' }}>
             <Image 
               src={url}
               alt={`Spencer Grey artwork ${artworkIndex + 1}`}
-              width={120}
-              height={120}
-              className="object-contain"
-              style={{ maxWidth: '100%', maxHeight: '100%' }}
+              width={0}
+              height={0}
+              sizes="(max-width: 640px) 70px, 120px"
+              className="object-contain w-full h-full"
+              style={{ color: 'transparent' }}
               unoptimized={true}
               priority={index === 0} // Only prioritize the first image
               loading={index === 0 ? "eager" : "lazy"} // Load first image eagerly, others lazily
