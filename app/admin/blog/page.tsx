@@ -357,6 +357,19 @@ export default function BlogAdminPage() {
         ? publishAt ?? new Date().toISOString()
         : publishAt;
 
+    const contentFormState = {
+      introductionHeading: form.introductionHeading.trim(),
+      introductionBody: form.introductionBody.trim(),
+      bodyContent: form.bodyContent.trim(),
+      quoteText: form.quoteText.trim(),
+      quoteAttribution: form.quoteAttribution.trim(),
+      conclusionHeading: form.conclusionHeading.trim(),
+      conclusionBody: form.conclusionBody.trim(),
+      inlineImageUrl: form.inlineImageUrl.trim(),
+      inlineImageAlt: form.inlineImageAlt.trim(),
+      inlineImageCaption: form.inlineImageCaption.trim(),
+    };
+
     const { error } = await supabaseClient.from('blog_posts').insert({
       title: form.title.trim(),
       slug: slugify(form.slug),
@@ -370,6 +383,7 @@ export default function BlogAdminPage() {
       status: form.status,
       published_at: computedPublishedAt,
       content: contentBlocks,
+      content_form: contentFormState,
     });
 
     if (error) {
@@ -466,13 +480,21 @@ export default function BlogAdminPage() {
                     <p className="text-xs text-gray-400 mt-1">Slug: {post.slug}</p>
                   </div>
                 </div>
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="text-sm text-black underline underline-offset-4"
-                  target="_blank"
-                >
-                  View live post
-                </Link>
+                <div className="flex gap-4">
+                  <Link
+                    href={`/admin/blog/${post.slug}/edit`}
+                    className="text-sm text-gray-600 underline underline-offset-4 hover:text-black"
+                  >
+                    Edit post
+                  </Link>
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="text-sm text-black underline underline-offset-4"
+                    target="_blank"
+                  >
+                    View live post
+                  </Link>
+                </div>
               </div>
             );
           })}

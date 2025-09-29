@@ -10,7 +10,7 @@ import SocialShare from '@/components/shared/social-share';
 import { fetchBlogPostBySlug, fetchPublishedBlogPosts } from '@/lib/supabase/blog';
 
 interface BlogPostPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
@@ -33,7 +33,7 @@ async function getPost(slug: string) {
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
   const post = await fetchBlogPostBySlug(slug);
 
   if (!post) {
@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
   const result = await getPost(slug);
 
   if (!result) {

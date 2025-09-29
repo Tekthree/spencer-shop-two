@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS public.blog_posts (
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'scheduled')),
   published_at TIMESTAMPTZ,
   content JSONB NOT NULL DEFAULT '[]'::jsonb,
+  content_form JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -85,7 +86,8 @@ INSERT INTO public.blog_posts (
   read_time_minutes,
   status,
   published_at,
-  content
+  content,
+  content_form
 )
 SELECT
   'Introducing the Spencer Grey Art Store',
@@ -108,7 +110,8 @@ SELECT
     {"type":"paragraph","text":"Over the coming weeks I will share behind-the-scenes looks at the studio, stories from recent travels, and previews of new series before they release."},
     {"type":"heading","level":2,"text":"Conclusion"},
     {"type":"paragraph","text":"Thank you for being here at the beginning. Subscribe to studio updates to hear about upcoming drops, exhibition announcements, and collector-only releases."}
-  ]'::jsonb
+  ]'::jsonb,
+  '{"introductionHeading":"Introduction","introductionBody":"After months of refining prints, photographing every edition, and designing the experience, the Spencer Grey art store is officially open. This space was created to give collectors a calm, intentional way to explore new work.","bodyContent":"Each limited edition print is produced with museum-grade materials and a focus on sustainability. Every order is printed to demand, numbered by hand, and accompanied by a signed certificate of authenticity.\nOver the coming weeks I will share behind-the-scenes looks at the studio, stories from recent travels, and previews of new series before they release.","quoteText":"This launch is an invitation to slow down, collect deliberately, and live with artwork that carries a story.","quoteAttribution":"Spencer Grey","conclusionHeading":"Conclusion","conclusionBody":"Thank you for being here at the beginning. Subscribe to studio updates to hear about upcoming drops, exhibition announcements, and collector-only releases.","inlineImageUrl":"/hero-spencer.jpg","inlineImageAlt":"Spencer Grey stands in the studio next to newly framed prints.","inlineImageCaption":"The studio ready for opening week."}'::jsonb
 WHERE NOT EXISTS (
   SELECT 1 FROM public.blog_posts WHERE slug = 'announcing-the-spencer-grey-art-store'
 );

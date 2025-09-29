@@ -19,6 +19,7 @@ interface BlogRow {
   created_at?: string | null;
   updated_at?: string | null;
   content?: unknown;
+  content_form?: unknown;
 }
 
 function normalizeContent(rawContent: unknown) {
