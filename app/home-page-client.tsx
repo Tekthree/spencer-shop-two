@@ -421,9 +421,9 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           >
             <div className="relative w-24 h-24 rounded-full overflow-hidden border border-[#020312]/10">
               <Image 
-                src="/hero-spencer.jpg" 
+                src="https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/headshot.jpg"
                 alt="Spencer Grey" 
-                fill 
+                fill
                 className="object-cover"
                 sizes="(max-width: 768px) 96px, 96px"
                 priority

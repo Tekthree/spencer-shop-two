@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import ImageUploader from '@/components/admin/image-uploader';
+import ImageLibraryPickerModal from '@/components/admin/image-library-picker-modal';
+import { type StorageImage } from '@/lib/supabase/storage';
 import Image from 'next/image';
 
 interface ContentSection {
@@ -24,6 +26,8 @@ export default function AboutPageAdmin() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isLibraryPickerOpen, setIsLibraryPickerOpen] = useState(false);
+  const [libraryTargetIndex, setLibraryTargetIndex] = useState<number | null>(null);
 
   // Fetch existing content sections
   useEffect(() => {
@@ -122,6 +126,16 @@ export default function AboutPageAdmin() {
     }
   };
 
+  const handleImageLibrarySelect = (image: StorageImage) => {
+    if (libraryTargetIndex === null) return;
+
+    const newSections = [...sections];
+    newSections[libraryTargetIndex].image_url = image.url;
+    setSections(newSections);
+
+    setLibraryTargetIndex(null);
+  };
+
   // Save all sections
   const saveContent = async () => {
     setSaving(true);
@@ -184,10 +198,11 @@ export default function AboutPageAdmin() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">About Page Editor</h1>
-        <div className="flex items-center space-x-4">
+    <>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">About Page Editor</h1>
+          <div className="flex items-center space-x-4">
           {error && <p className="text-sm text-red-600">{error}</p>}
           {success && <p className="text-sm text-green-600">Content saved successfully!</p>}
           <button
@@ -237,7 +252,19 @@ export default function AboutPageAdmin() {
                 <div className="mb-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <div className="mb-2 text-sm font-medium text-gray-700">Upload Image</div>
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">Upload Image</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLibraryTargetIndex(index);
+                            setIsLibraryPickerOpen(true);
+                          }}
+                          className="text-sm font-medium text-gray-600 hover:text-black"
+                        >
+                          Choose from Image Library
+                        </button>
+                      </div>
                       <ImageUploader
                         multiple={false}
                         bucketName="about"
@@ -285,16 +312,28 @@ export default function AboutPageAdmin() {
         })}
       </div>
 
-      <div className="mt-8 flex justify-end">
-        <button
-          type="button"
-          onClick={saveContent}
-          disabled={saving}
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
-        >
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
+        <div className="mt-8 flex justify-end">
+          <button
+            type="button"
+            onClick={saveContent}
+            disabled={saving}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
       </div>
-    </div>
+
+      <ImageLibraryPickerModal
+        isOpen={isLibraryPickerOpen}
+        onClose={() => {
+          setIsLibraryPickerOpen(false);
+          setLibraryTargetIndex(null);
+        }}
+        onSelect={handleImageLibrarySelect}
+        buckets={['artworks', 'about', 'collections']}
+        initialBucket="about"
+      />
+    </>
   );
 }

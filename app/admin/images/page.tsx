@@ -1,31 +1,17 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { fetchImagesFromBuckets, type StorageImage } from '@/lib/supabase/storage';
 import ImageUploader from '@/components/admin/image-uploader';
 import Image from 'next/image';
-
-interface ImageFile {
-  id: string;
-  name: string;
-  bucket: string;
-  path: string;
-  url: string;
-  metadata: {
-    size: number;
-    mimetype: string;
-    width?: number;
-    height?: number;
-  };
-  created_at: string;
-}
 
 /**
  * Image Library page
  * Centralized management for all uploaded images
  */
 export default function ImageLibrary() {
-  const [images, setImages] = useState<ImageFile[]>([]);
+  const [images, setImages] = useState<StorageImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedBucket, setSelectedBucket] = useState<string>('all');
@@ -35,117 +21,34 @@ export default function ImageLibrary() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [buckets] = useState<string[]>(['artworks', 'about', 'collections']);
 
+  const fetchAllImages = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { images: results, errors: fetchErrors } = await fetchImagesFromBuckets(buckets);
+
+      fetchErrors.forEach(({ bucket, error }) => {
+        console.error(`Error listing files in ${bucket}:`, error);
+      });
+
+      setImages(results);
+    } catch (err) {
+      console.error('Error fetching images:', err);
+      setError('Failed to load images. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [buckets]);
+
   // Fetch images from Supabase Storage
   useEffect(() => {
-    const fetchImages = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        let allImages: ImageFile[] = [];
-        
-        // Fetch from each bucket
-        for (const bucket of buckets) {
-          const { data, error } = await supabase.storage.from(bucket).list();
-          
-          if (error) {
-            console.error(`Error listing files in ${bucket}:`, error);
-            continue;
-          }
-          
-          if (data) {
-            // Get public URL for each file
-            const bucketImages = await Promise.all(
-              data
-                .filter(item => !item.id.endsWith('/')) // Filter out folders
-                .map(async (item) => {
-                  const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(item.name);
-                  
-                  return {
-                    id: `${bucket}/${item.name}`,
-                    name: item.name,
-                    bucket,
-                    path: item.name,
-                    url: publicUrlData.publicUrl,
-                    metadata: {
-                      size: item.metadata?.size || 0,
-                      mimetype: item.metadata?.mimetype || 'unknown',
-                    },
-                    created_at: item.created_at,
-                  };
-                })
-            );
-            
-            allImages = [...allImages, ...bucketImages];
-          }
-        }
-        
-        setImages(allImages);
-      } catch (err) {
-        console.error('Error fetching images:', err);
-        setError('Failed to load images. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchImages();
-  }, [buckets]);
+    fetchAllImages();
+  }, [fetchAllImages]);
 
   // Handle image upload
   const handleImageUpload = () => {
-    // Refresh the image list after upload
-    const fetchImages = async () => {
-      setLoading(true);
-      
-      try {
-        let allImages: ImageFile[] = [];
-        
-        // Fetch from each bucket
-        for (const bucket of buckets) {
-          const { data, error } = await supabase.storage.from(bucket).list();
-          
-          if (error) {
-            console.error(`Error listing files in ${bucket}:`, error);
-            continue;
-          }
-          
-          if (data) {
-            // Get public URL for each file
-            const bucketImages = await Promise.all(
-              data
-                .filter(item => !item.id.endsWith('/')) // Filter out folders
-                .map(async (item) => {
-                  const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(item.name);
-                  
-                  return {
-                    id: `${bucket}/${item.name}`,
-                    name: item.name,
-                    bucket,
-                    path: item.name,
-                    url: publicUrlData.publicUrl,
-                    metadata: {
-                      size: item.metadata?.size || 0,
-                      mimetype: item.metadata?.mimetype || 'unknown',
-                    },
-                    created_at: item.created_at,
-                  };
-                })
-            );
-            
-            allImages = [...allImages, ...bucketImages];
-          }
-        }
-        
-        setImages(allImages);
-      } catch (err) {
-        console.error('Error fetching images:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchImages();
+    fetchAllImages();
   };
 
   // Filter images based on selected bucket and search query
