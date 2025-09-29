@@ -552,19 +552,19 @@ export default function ArtworkDetailClient({
               id: 'story',
               title: 'MY STORY',
               content: "I'm an artist from truly where I grew up surrounded by art. I began my journey painting with acrylics on canvas and sketching portraits with graphite. After college, I worked in the tech industry for years as a web designer. My wife and I now run our own web design studio. Traveling the world as we work. Longing to create again, I decided to merge my traditional and digital backgrounds into something new. This led to these traditional and digital techniques, producing high-quality prints that I love seeing in your spaces. For me, art is all about adding a touch of inspiration to everyday life.",
-              image: artwork?.images[0]?.url || '/placeholder-artist.jpg'
+              image: 'https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/my-story.jpg'
             },
             {
               id: 'process',
               title: 'MY PROCESS',
               content: "My creative process begins with traditional sketches that capture the initial concept. I then scan these drawings and bring them into the digital realm where I can experiment with color, texture, and composition. This hybrid approach allows me to maintain the organic feel of traditional art while leveraging digital tools for precision and experimentation. Each piece typically goes through multiple iterations before I'm satisfied with the final result. The limited edition prints are produced using archival inks on museum-quality paper to ensure longevity and vibrant color reproduction.",
-              image: artwork?.images[1]?.url || '/placeholder-process.jpg'
+              image: 'https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/my-process.jpg'
             },
             {
               id: 'inspiration',
               title: 'INSPIRATION',
               content: "My work draws inspiration from the places I've traveled, the cultures I've experienced, and the stories I've heard. I'm particularly fascinated by the intersection of natural and urban environments, and how humans navigate these spaces. Color plays a crucial role in my art as a vehicle for emotion and energy. I often find myself drawn to bold, vibrant palettes that evoke a sense of joy and vitality. My goal is to create pieces that not only please the eye but also invite the viewer to pause and reflect on their own relationship with the world around them.",
-              image: artwork?.images[2]?.url || '/placeholder-inspiration.jpg'
+              image: 'https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/inspiration.jpg'
             }
           ]}
         />
