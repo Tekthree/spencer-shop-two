@@ -42,6 +42,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    },
   ];
 
   // Fetch all artwork IDs and their last modified dates
@@ -72,6 +78,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   })) || [];
 
+  // Fetch published blog posts
+  const { data: blogPosts } = await supabase
+    .from('blog_posts')
+    .select('slug, published_at, updated_at')
+    .eq('status', 'published')
+    .not('published_at', 'is', null)
+    .order('published_at', { ascending: false });
+
+  const blogRoutes = blogPosts?.map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: new Date(post.updated_at ?? post.published_at ?? new Date()),
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+  })) || [];
+
   // Combine all routes
-  return [...staticRoutes, ...artworkRoutes, ...collectionRoutes];
+  return [...staticRoutes, ...artworkRoutes, ...collectionRoutes, ...blogRoutes];
 }

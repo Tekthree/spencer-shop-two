@@ -43,6 +43,12 @@ export default function Header() {
             About
           </Link>
           <Link 
+            href="/blog" 
+            className={`${isActive('/blog') ? 'text-[#020312]' : 'text-[#020312]/60'} hover:text-[#020312] transition-colors`}
+          >
+            Blog
+          </Link>
+          <Link 
             href="/contact" 
             className={`${isActive('/contact') ? 'text-[#020312]' : 'text-[#020312]/60'} hover:text-[#020312] transition-colors`}
           >

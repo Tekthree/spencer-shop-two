@@ -67,6 +67,14 @@ export default function AdminSidebar() {
             </li>
             <li>
               <Link 
+                href="/admin/blog" 
+                className={`block px-2 py-2 rounded-md ${isActive('/admin/blog') ? 'bg-gray-100 text-black' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
+                Journal
+              </Link>
+            </li>
+            <li>
+              <Link 
                 href="/admin/about" 
                 className={`block px-2 py-2 rounded-md ${isActive('/admin/about') ? 'bg-gray-100 text-black' : 'text-gray-600 hover:bg-gray-50'}`}
               >

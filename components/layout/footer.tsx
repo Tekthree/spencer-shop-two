@@ -71,7 +71,6 @@ export default function Footer() {
             </a>
           </div>
         </div>
-
         {/* Quick Links */}
         <div className="space-y-6">
           <h3 className="font-serif text-lg text-white">Shop</h3>
@@ -81,7 +80,11 @@ export default function Footer() {
                 All Artworks
               </Link>
             </li>
-
+            <li>
+              <Link href="/blog" className="text-white/60 hover:text-white transition-colors">
+                Journal
+              </Link>
+            </li>
             <li>
               <Link href="/about" className="text-white/60 hover:text-white transition-colors">
                 About the Artist
