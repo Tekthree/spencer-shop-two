@@ -55,11 +55,19 @@ export default function Footer() {
             to museum-quality standards and made to order.
           </p>
           <div className="flex space-x-6 pt-2">
-            <a href="#" className="text-white/60 hover:text-white transition-colors" aria-label="Instagram">
+            <a
+              href="https://www.instagram.com/spencergreytheartist"
+              className="text-white/60 hover:text-white transition-colors"
+              aria-label="Instagram"
+            >
               Instagram
             </a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors" aria-label="Twitter">
-              Twitter
+            <a
+              href="https://www.facebook.com/SpencerGrey333"
+              className="text-white/60 hover:text-white transition-colors"
+              aria-label="Facebook"
+            >
+              Facebook
             </a>
           </div>
         </div>

@@ -181,7 +181,7 @@ export default function AboutPageClient({
           className="max-w-3xl mx-auto border-b border-[#020312]/10 pb-10"
           variants={itemVariants}
         >
-          <p className="text-[#020312]/80 text-lg italic">
+          <p className="text-[#020312]/80 text-lg italic whitespace-pre-line">
             {artistStatement.content}
           </p>
         </motion.div>
@@ -218,7 +218,7 @@ export default function AboutPageClient({
       >
         <div className="flex flex-col justify-center max-w-3xl mx-auto text-center">
           <h2 className="text-2xl font-serif mb-6 text-[#020312]">The Artist</h2>
-          <p className="text-[#020312]/80 mb-6 leading-relaxed">
+          <p className="text-[#020312]/80 mb-6 leading-relaxed whitespace-pre-line">
             {mainDescription.content}
           </p>
         </div>
@@ -275,7 +275,7 @@ export default function AboutPageClient({
         className="mb-16 max-w-3xl mx-auto text-center"
         variants={itemVariants}
       >
-        <p className="text-[#020312]/80 mb-10 leading-relaxed">
+        <p className="text-[#020312]/80 mb-10 leading-relaxed whitespace-pre-line">
           {secondaryDescription.content}
         </p>
         {signature && signature.image_url && (
