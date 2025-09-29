@@ -511,15 +511,27 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           <blockquote className="font-serif text-2xl md:text-3xl lg:text-4xl leading-relaxed mb-8 text-[#020312]">
             &ldquo;My work is birthed from the delicate balance between chaos and order, finding beauty in the spaces between. Each piece is a meditation on form, color, and texture—an invitation to pause and reflect.&rdquo;
           </blockquote>
-          <motion.cite 
-            className="text-sm font-medium not-italic text-[#020312]/70"
+          <motion.div
+            className="flex flex-col items-center justify-center gap-4"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
             viewport={{ once: true }}
           >
-            Spencer Grey
-          </motion.cite>
+            <div className="relative w-24 h-24 rounded-full overflow-hidden border border-[#020312]/10">
+              <Image
+                src="https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/headshot-three.jpg"
+                alt="Spencer Grey"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 96px, 96px"
+                priority
+              />
+            </div>
+            <cite className="text-sm font-medium not-italic text-[#020312]/70">
+              Spencer Grey
+            </cite>
+          </motion.div>
         </motion.div>
       </section>
     </motion.div>
