@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import "./artwork-detail.css";
@@ -66,6 +66,7 @@ export default function ArtworkDetailClient({
   const [selectedSize, setSelectedSize] = useState<SizeOption | null>(
     artwork?.sizes?.length ? artwork.sizes[0] : null
   );
+  const [shareUrl, setShareUrl] = useState('');
 
   const { addToCart } = useCart();
 
@@ -112,6 +113,37 @@ export default function ArtworkDetailClient({
       setSelectedSize(null);
     }
   }, [artwork?.id, artwork?.sizes]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setShareUrl(window.location.href);
+  }, []);
+
+  const shareDescription = useMemo(() => {
+    if (!artwork) return '';
+
+    const summaryParts = [
+      artwork.medium ? `${artwork.medium}` : null,
+      artwork.year ? `Created in ${artwork.year}` : null,
+    ].filter(Boolean);
+
+    const textFragments = [summaryParts.join(', '), artwork.description?.trim()].filter(
+      (fragment): fragment is string => Boolean(fragment && fragment.length)
+    );
+
+    if (!textFragments.length) {
+      return 'Discover this limited edition artwork by Spencer Grey.';
+    }
+
+    const combined = textFragments.join(' – ');
+    const MAX_LENGTH = 240;
+
+    if (combined.length <= MAX_LENGTH) {
+      return combined;
+    }
+
+    return `${combined.slice(0, MAX_LENGTH - 1).trimEnd()}…`;
+  }, [artwork]);
 
   // Handle errors
   if (error) {
@@ -547,9 +579,9 @@ export default function ArtworkDetailClient({
             {/* Share Button */}
             <div className="pt-6 border-t border-[#020312]/10">
               <SocialShare 
-                url={window.location.href}
+                url={shareUrl || (artwork ? `/artwork/${artwork.id}` : '')}
                 title={artwork.title}
-                description={`Check out ${artwork.title} by Spencer Grey - Limited edition fine art print.`}
+                description={shareDescription}
               />
             </div>
           </motion.div>
