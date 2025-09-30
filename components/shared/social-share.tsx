@@ -26,8 +26,13 @@ export default function SocialShare({
     setCanNativeShare(typeof navigator !== 'undefined' && !!navigator.share);
   }, []);
   
-  // Get the full URL
-  const fullUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const fullUrl = url.startsWith('http')
+    ? url
+    : origin
+      ? `${origin}${url}`
+      : url;
+
   
   // Handle share functionality
   const handleShare = async () => {
@@ -49,6 +54,11 @@ export default function SocialShare({
   // Handle copy link functionality
   const handleCopyLink = async () => {
     try {
+      if (!fullUrl) return;
+      if (typeof navigator === "undefined" || !navigator.clipboard) {
+        console.warn('Clipboard API unavailable in this environment');
+        return;
+      }
       await navigator.clipboard.writeText(fullUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
