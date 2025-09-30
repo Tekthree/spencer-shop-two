@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 
 interface SocialShareProps {
@@ -258,9 +259,12 @@ export default function SocialShare({ url, title, description }: SocialShareProp
               )}
 
               {!isGeneratingQr && qrDataUrl && (
-                <img
+                <Image
                   src={qrDataUrl}
                   alt={`QR code for ${title}`}
+                  width={192}
+                  height={192}
+                  unoptimized
                   className="h-48 w-48 rounded-lg border border-gray-200 bg-white p-2 shadow-sm"
                 />
               )}
@@ -313,4 +317,3 @@ export default function SocialShare({ url, title, description }: SocialShareProp
     </>
   );
 }
-
