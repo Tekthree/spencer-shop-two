@@ -7,6 +7,8 @@ import { format } from 'date-fns';
 import BlogPostContent from '@/components/blog/blog-post-content';
 import BlogPostCard, { resolveCoverImage } from '@/components/blog/blog-post-card';
 import SocialShare from '@/components/shared/social-share';
+import JsonLd from '@/components/shared/json-ld';
+import { generateArticleSchema } from '@/lib/seo/schema';
 import { fetchBlogPostBySlug, fetchPublishedBlogPosts } from '@/lib/supabase/blog';
 
 interface BlogPostPageProps {
@@ -85,9 +87,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const heroAlt = post.cover_image_alt || post.title;
   const publishedDate = post.published_at ? format(new Date(post.published_at), 'MMMM d, yyyy') : undefined;
   const shareUrl = `/blog/${post.slug}`;
+  const structuredData = generateArticleSchema({
+    title: post.title,
+    description: post.excerpt || post.title,
+    url: shareUrl,
+    image: heroImage || '/images/og-image.jpg',
+    publishedAt: post.published_at || new Date().toISOString(),
+    modifiedAt: post.updated_at || post.published_at || undefined,
+    authorName: post.author_name || 'Spencer Grey',
+  });
 
   return (
     <article className="px-6 py-16 md:py-24">
+      <JsonLd id={`blog-article-${post.slug}`} data={structuredData} />
       <div className="max-w-3xl mx-auto">
         <nav className="text-xs uppercase tracking-[0.3em] text-[#020312]/60 mb-8 flex gap-2">
           <Link href="/blog" className="hover:text-[#020312]">

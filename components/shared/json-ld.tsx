@@ -1,29 +1,26 @@
-"use client";
-
-import { useEffect, useState } from 'react';
-
 /**
- * Component for rendering JSON-LD structured data
- * @param data - The structured data to render
- * @returns Script element with JSON-LD data
+ * Component for rendering JSON-LD structured data as part of the initial HTML response.
+ * The script is rendered server-side so search engines receive the schema without waiting
+ * for client-side hydration.
  */
-// Define a type for JSON-LD structured data
 type JsonLdData = Record<string, unknown>;
 
-export default function JsonLd({ data }: { data: JsonLdData }) {
-  // Use state to ensure this only runs on the client
-  const [mounted, setMounted] = useState(false);
+const jsonEncode = (data: JsonLdData) =>
+  JSON.stringify(data, null, 0)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
+export default function JsonLd({ data, id }: { data: JsonLdData; id?: string }) {
+  if (!data || Object.keys(data).length === 0) {
+    return null;
+  }
 
   return (
     <script
+      id={id}
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: jsonEncode(data) }}
     />
   );
 }
@@ -34,17 +31,18 @@ export default function JsonLd({ data }: { data: JsonLdData }) {
  */
 export function websiteJsonLd() {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
-  
+
   return {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Spencer Grey Art",
-    "url": baseUrl,
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": `${baseUrl}/shop?search={search_term_string}`,
-      "query-input": "required name=search_term_string"
-    }
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${baseUrl}/#website`,
+    name: 'Spencer Grey Art',
+    url: baseUrl,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${baseUrl}/shop?search={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
   };
 }
 
@@ -54,24 +52,65 @@ export function websiteJsonLd() {
  */
 export function organizationJsonLd() {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
-  
+  const logo = `${baseUrl}/images/og-image.jpg`;
+
   return {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Spencer Grey Art",
-    "url": baseUrl,
-    "logo": `${baseUrl}/images/og-image.jpg`,
-    "sameAs": [
-      "https://instagram.com/spencergreyart",
-      "https://twitter.com/spencergreyart"
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': `${baseUrl}/#organization`,
+    name: 'Spencer Grey Art',
+    url: baseUrl,
+    logo,
+    sameAs: [
+      'https://instagram.com/spencergreyart',
+      'https://twitter.com/spencergreyart',
+      'https://www.facebook.com/SpencerGrey333',
     ],
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "",
-      "contactType": "customer service",
-      "email": "support@spencergrey.com",
-      "availableLanguage": "English"
-    }
+    foundingLocation: {
+      '@type': 'Place',
+      name: 'Seattle, Washington',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Seattle',
+        addressRegion: 'WA',
+        addressCountry: 'US',
+      },
+    },
+    contactPoint: [
+      {
+        '@type': 'ContactPoint',
+        contactType: 'customer service',
+        email: 'support@spencergrey.com',
+        availableLanguage: ['English'],
+        areaServed: 'Worldwide',
+      },
+    ],
+  };
+}
+
+/**
+ * Creates person structured data describing the artist.
+ */
+export function artistJsonLd() {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
+  const image = `${baseUrl}/hero-spencer.jpg`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': `${baseUrl}/#person`,
+    name: 'Spencer Grey',
+    url: baseUrl,
+    image,
+    jobTitle: 'Visual Artist',
+    worksFor: {
+      '@id': `${baseUrl}/#organization`,
+    },
+    sameAs: [
+      'https://instagram.com/spencergreyart',
+      'https://twitter.com/spencergreyart',
+      'https://www.facebook.com/SpencerGrey333',
+    ],
   };
 }
 
@@ -91,62 +130,69 @@ type ArtworkData = {
 
 export function productJsonLd(artwork: ArtworkData) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
-  
-  // Get the first image URL or a placeholder
+
   let imageUrl = `${baseUrl}/images/og-image.jpg`;
-  
+
   if (artwork.images) {
     if (Array.isArray(artwork.images) && artwork.images.length > 0) {
       const firstImage = artwork.images[0];
       if (typeof firstImage === 'string') {
         imageUrl = firstImage;
-      } else if (typeof firstImage === 'object' && 'url' in firstImage) {
-        imageUrl = firstImage.url;
+      } else if (firstImage && typeof firstImage === 'object' && 'url' in firstImage) {
+        imageUrl = String(firstImage.url);
       }
     } else if (typeof artwork.images === 'string') {
       imageUrl = artwork.images;
     } else if (typeof artwork.images === 'object' && 'url' in artwork.images) {
-      const url = artwork.images.url;
+      const url = (artwork.images as { url?: string }).url;
       if (typeof url === 'string') {
         imageUrl = url;
       }
     }
   }
-  
-  // Format the absolute image URL
-  const absoluteImageUrl = typeof imageUrl === 'string' && imageUrl.startsWith('http') 
-    ? imageUrl 
-    : `${baseUrl}${imageUrl}`;
-  
-  // Get the lowest price from available sizes
-  const lowestPrice = artwork.sizes && artwork.sizes.length > 0
-    ? Math.min(...artwork.sizes.map((size) => size.price))
-    : 0;
-  
-  // Format price from cents to dollars
-  const formattedPrice = (lowestPrice / 100).toFixed(2);
-  
+
+  const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${baseUrl}${imageUrl}`;
+
+  const prices = artwork.sizes?.map((size) => size.price) || [];
+  const lowestPrice = prices.length > 0 ? Math.min(...prices) : 0;
+  const highestPrice = prices.length > 0 ? Math.max(...prices) : lowestPrice;
+
+  const formattedLowPrice = (lowestPrice / 100).toFixed(2);
+  const formattedHighPrice = (highestPrice / 100).toFixed(2);
+
   return {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": artwork.title,
-    "image": absoluteImageUrl,
-    "description": artwork.description || `Limited edition fine art print by Spencer Grey: ${artwork.title}`,
-    "sku": `SGP-${artwork.id}`,
-    "brand": {
-      "@type": "Brand",
-      "name": "Spencer Grey Art"
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    '@id': `${baseUrl}/artwork/${artwork.id}#product`,
+    name: artwork.title,
+    image: absoluteImageUrl,
+    description:
+      artwork.description || `Limited edition fine art print by Spencer Grey: ${artwork.title}`,
+    sku: `SGP-${artwork.id}`,
+    mpn: `SGP-${artwork.id}`,
+    brand: {
+      '@type': 'Brand',
+      name: 'Spencer Grey Art',
+      '@id': `${baseUrl}/#organization`,
     },
-    "offers": {
-      "@type": "AggregateOffer",
-      "priceCurrency": "USD",
-      "lowPrice": formattedPrice,
-      "highPrice": artwork.sizes && artwork.sizes.length > 0
-        ? ((Math.max(...artwork.sizes.map((size: { price: number }) => size.price))) / 100).toFixed(2)
-        : formattedPrice,
-      "offerCount": artwork.sizes ? artwork.sizes.length : 1,
-      "availability": "https://schema.org/InStock"
-    }
+    offers: {
+      '@type': 'AggregateOffer',
+      url: `${baseUrl}/artwork/${artwork.id}`,
+      priceCurrency: 'USD',
+      lowPrice: formattedLowPrice,
+      highPrice: formattedHighPrice,
+      offerCount: prices.length || 1,
+      availability: 'https://schema.org/InStock',
+      seller: {
+        '@type': 'Organization',
+        '@id': `${baseUrl}/#organization`,
+        name: 'Spencer Grey Art',
+      },
+    },
+    isAccessoryOrSparePartFor: {
+      '@type': 'CreativeWork',
+      name: 'Limited edition fine art print',
+    },
   };
 }
 
@@ -157,15 +203,15 @@ export function productJsonLd(artwork: ArtworkData) {
  */
 export function breadcrumbJsonLd(items: Array<{ name: string; url: string }>) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
-  
+
   return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": items.map((item, index) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "name": item.name,
-      "item": item.url.startsWith('http') ? item.url : `${baseUrl}${item.url}`
-    }))
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: item.url.startsWith('http') ? item.url : `${baseUrl}${item.url}`,
+    })),
   };
 }

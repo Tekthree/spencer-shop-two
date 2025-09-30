@@ -8,8 +8,8 @@ import "./artwork-detail.css";
 import RelatedArtworks from '@/components/artwork/related-artworks';
 import ArtworkHeroBanner from '@/components/artwork/artwork-hero-banner';
 import ArtworkStoryTabs from '@/components/artwork/artwork-story-tabs';
-import JsonLd, { productJsonLd, breadcrumbJsonLd } from '@/components/shared/json-ld';
 import SocialShare from '@/components/shared/social-share';
+import { useCart } from '@/context/cart-context';
 
 // Define TypeScript interfaces for our data models
 interface SizeOption {
@@ -41,11 +41,6 @@ interface Artwork {
 interface ArtworkDetailClientProps {
   artwork: Artwork | null;
   error: string | null;
-  formatPrice: (cents: number) => string;
-  isAvailable: (size: SizeOption) => boolean;
-  handleSizeSelect: (size: SizeOption) => void;
-  handleAddToCart: (quantity?: number) => void;
-  selectedSize: SizeOption | null;
 }
 
 /**
@@ -56,11 +51,6 @@ interface ArtworkDetailClientProps {
 export default function ArtworkDetailClient({
   artwork,
   error,
-  formatPrice,
-  isAvailable,
-  handleSizeSelect,
-  handleAddToCart,
-  selectedSize
 }: ArtworkDetailClientProps) {
   // Create refs for sticky behavior
   const productInfoRef = useRef<HTMLDivElement>(null);
@@ -73,6 +63,39 @@ export default function ArtworkDetailClient({
   
   // State for tracking quantity
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<SizeOption | null>(
+    artwork?.sizes?.length ? artwork.sizes[0] : null
+  );
+
+  const { addToCart } = useCart();
+
+  const formatPrice = (cents: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(cents / 100);
+
+  const isAvailable = (size: SizeOption) => size.editions_sold < size.edition_limit;
+
+  const handleSizeSelect = (size: SizeOption) => {
+    setSelectedSize(size);
+  };
+
+  const handleAddToCart = (requestedQty: number = 1) => {
+    if (!artwork || !selectedSize) return;
+
+    const imageUrl = artwork.images && artwork.images.length > 0 ? artwork.images[0].url : '/placeholder.jpg';
+
+    addToCart({
+      id: artwork.id,
+      title: artwork.title,
+      size: selectedSize.size,
+      sizeDisplay: selectedSize.size,
+      price: selectedSize.price,
+      quantity: requestedQty,
+      imageUrl,
+    });
+  };
 
   // Use useEffect to handle any side effects
   useEffect(() => {
@@ -81,6 +104,14 @@ export default function ArtworkDetailClient({
       // Cleanup if necessary
     };
   }, []);
+
+  useEffect(() => {
+    if (artwork?.sizes?.length) {
+      setSelectedSize(artwork.sizes[0]);
+    } else {
+      setSelectedSize(null);
+    }
+  }, [artwork?.id, artwork?.sizes]);
 
   // Handle errors
   if (error) {
@@ -133,20 +164,7 @@ export default function ArtworkDetailClient({
       transition={{ duration: 0.5 }}
       className="container mx-auto px-4 py-12 max-w-[1440px] bg-[#F6F4F0]"
     >
-      {/* Add JSON-LD structured data for rich search results */}
-      <JsonLd data={productJsonLd(artwork)} />
-      <JsonLd data={breadcrumbJsonLd([
-        { name: 'Home', url: '/' },
-        { name: 'Shop', url: '/shop' },
-        { name: artwork.collection_name || 'Artworks', url: artwork.collection_id ? `/collections/${artwork.collection_id}` : '/shop' },
-        { name: artwork.title, url: `/artwork/${artwork.id}` },
-      ])} />
-
-
-
-
-
-      {/* Main Content Grid */}
+     {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* Left Column - Stacked Images */}
         <div className="space-y-8">

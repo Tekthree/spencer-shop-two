@@ -12,15 +12,16 @@ export function generateWebsiteSchema() {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
   
   return {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Spencer Grey Art",
-    "url": baseUrl,
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": `${baseUrl}/shop?search={search_term_string}`,
-      "query-input": "required name=search_term_string"
-    }
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${baseUrl}/#website`,
+    name: 'Spencer Grey Art',
+    url: baseUrl,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${baseUrl}/shop?search={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
   };
 }
 
@@ -30,24 +31,29 @@ export function generateWebsiteSchema() {
  */
 export function generateOrganizationSchema() {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
+  const logo = `${baseUrl}/images/og-image.jpg`;
   
   return {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Spencer Grey Art",
-    "url": baseUrl,
-    "logo": `${baseUrl}/images/og-image.jpg`,
-    "sameAs": [
-      "https://instagram.com/spencergreyart",
-      "https://twitter.com/spencergreyart"
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': `${baseUrl}/#organization`,
+    name: 'Spencer Grey Art',
+    url: baseUrl,
+    logo,
+    sameAs: [
+      'https://instagram.com/spencergreyart',
+      'https://twitter.com/spencergreyart',
+      'https://www.facebook.com/SpencerGrey333',
     ],
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "",
-      "contactType": "customer service",
-      "email": "support@spencergrey.com",
-      "availableLanguage": "English"
-    }
+    contactPoint: [
+      {
+        '@type': 'ContactPoint',
+        contactType: 'customer service',
+        email: 'support@spencergrey.com',
+        availableLanguage: ['English'],
+        areaServed: 'Worldwide',
+      },
+    ],
   };
 }
 
@@ -97,30 +103,40 @@ export function generateProductSchema(artwork: ArtworkData) {
     : 0;
   
   // Format price from cents to dollars
+  const highestPrice = artwork.sizes && artwork.sizes.length > 0
+    ? Math.max(...artwork.sizes.map((size: { price: number }) => size.price))
+    : lowestPrice;
   const formattedPrice = (lowestPrice / 100).toFixed(2);
+  const formattedHighPrice = (highestPrice / 100).toFixed(2);
   
   return {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": artwork.title,
-    "image": absoluteImageUrl,
-    "description": artwork.description || `Limited edition fine art print by Spencer Grey: ${artwork.title}`,
-    "sku": `SGP-${artwork.id}`,
-    "mpn": `SGP-${artwork.id}`,
-    "brand": {
-      "@type": "Brand",
-      "name": "Spencer Grey Art"
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    '@id': `${baseUrl}/artwork/${artwork.id}#product`,
+    name: artwork.title,
+    image: absoluteImageUrl,
+    description: artwork.description || `Limited edition fine art print by Spencer Grey: ${artwork.title}`,
+    sku: `SGP-${artwork.id}`,
+    mpn: `SGP-${artwork.id}`,
+    brand: {
+      '@type': 'Brand',
+      '@id': `${baseUrl}/#organization`,
+      name: 'Spencer Grey Art',
     },
-    "offers": {
-      "@type": "AggregateOffer",
-      "priceCurrency": "USD",
-      "lowPrice": formattedPrice,
-      "highPrice": artwork.sizes && artwork.sizes.length > 0
-        ? ((Math.max(...artwork.sizes.map((size) => size.price))) / 100).toFixed(2)
-        : formattedPrice,
-      "offerCount": artwork.sizes ? artwork.sizes.length : 1,
-      "availability": "https://schema.org/InStock"
-    }
+    offers: {
+      '@type': 'AggregateOffer',
+      url: `${baseUrl}/artwork/${artwork.id}`,
+      priceCurrency: 'USD',
+      lowPrice: formattedPrice,
+      highPrice: formattedHighPrice,
+      offerCount: artwork.sizes && artwork.sizes.length ? artwork.sizes.length : 1,
+      availability: 'https://schema.org/InStock',
+      seller: {
+        '@type': 'Organization',
+        '@id': `${baseUrl}/#organization`,
+        name: 'Spencer Grey Art',
+      },
+    },
   };
 }
 
@@ -133,14 +149,14 @@ export function generateBreadcrumbSchema(items: Array<{ name: string; url: strin
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
   
   return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": items.map((item, index) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "name": item.name,
-      "item": item.url.startsWith('http') ? item.url : `${baseUrl}${item.url}`
-    }))
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: item.url.startsWith('http') ? item.url : `${baseUrl}${item.url}`,
+    })),
   };
 }
 
@@ -151,16 +167,16 @@ export function generateBreadcrumbSchema(items: Array<{ name: string; url: strin
  */
 export function generateFAQSchema(questions: { question: string; answer: string }[]) {
   return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": questions.map(q => ({
-      "@type": "Question",
-      "name": q.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": q.answer
-      }
-    }))
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: questions.map((q) => ({
+      '@type': 'Question',
+      name: q.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: q.answer,
+      },
+    })),
   };
 }
 
@@ -201,29 +217,31 @@ export function generateArticleSchema(article: ArticleData) {
     : `${baseUrl}${article.url}`;
   
   return {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": article.title,
-    "description": article.description,
-    "image": absoluteImageUrl,
-    "datePublished": article.publishedAt,
-    "dateModified": article.modifiedAt || article.publishedAt,
-    "author": {
-      "@type": "Person",
-      "name": article.authorName
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.description,
+    image: absoluteImageUrl,
+    datePublished: article.publishedAt,
+    dateModified: article.modifiedAt || article.publishedAt,
+    author: {
+      '@type': 'Person',
+      name: article.authorName,
+      '@id': `${baseUrl}/#person`,
     },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Spencer Grey Art",
-      "logo": {
-        "@type": "ImageObject",
-        "url": `${baseUrl}/images/og-image.jpg`
-      }
+    publisher: {
+      '@type': 'Organization',
+      name: 'Spencer Grey Art',
+      '@id': `${baseUrl}/#organization`,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${baseUrl}/images/og-image.jpg`,
+      },
     },
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": absoluteUrl
-    }
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': absoluteUrl,
+    },
   };
 }
 
@@ -235,40 +253,23 @@ export function generateLocalBusinessSchema() {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
   
   return {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "Spencer Grey Art",
-    "image": `${baseUrl}/images/og-image.jpg`,
-    "url": baseUrl,
-    "telephone": "",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "",
-      "addressLocality": "Seattle",
-      "addressRegion": "WA",
-      "postalCode": "98101",
-      "addressCountry": "US"
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': `${baseUrl}/#studio`,
+    name: 'Spencer Grey Art',
+    image: `${baseUrl}/images/og-image.jpg`,
+    url: baseUrl,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Seattle',
+      addressRegion: 'WA',
+      addressCountry: 'US',
     },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 47.6062,
-      "longitude": -122.3321
-    },
-    "openingHoursSpecification": {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday"
-      ],
-      "opens": "09:00",
-      "closes": "17:00"
-    },
-    "sameAs": [
-      "https://instagram.com/spencergreyart",
-      "https://twitter.com/spencergreyart"
-    ]
+    areaServed: 'Worldwide',
+    sameAs: [
+      'https://instagram.com/spencergreyart',
+      'https://twitter.com/spencergreyart',
+      'https://www.facebook.com/SpencerGrey333',
+    ],
   };
 }

@@ -1,13 +1,9 @@
-"use client";
+import { notFound } from 'next/navigation';
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { useParams } from 'next/navigation';
-import { useCart } from '@/context/cart-context';
-import { ArtworkDetailSkeleton } from '@/components/ui/skeleton';
 import ArtworkDetailClient from './artwork-detail-client';
+import JsonLd, { breadcrumbJsonLd, productJsonLd } from '@/components/shared/json-ld';
+import { supabase } from '@/lib/supabase/client';
 
-// Define TypeScript interfaces for our data models
 interface SizeOption {
   size: string;
   price: number;
@@ -15,7 +11,29 @@ interface SizeOption {
   editions_sold: number;
 }
 
-interface Artwork {
+interface ArtworkImage {
+  url: string;
+  alt: string;
+}
+
+interface ArtworkRecord {
+  id: string;
+  title: string;
+  description: string;
+  year: number;
+  medium: string;
+  collection_id: string | null;
+  collection_name?: string | null;
+  featured: boolean;
+  images: Array<{ url?: string; alt?: string } | string> | string | null;
+  sizes: SizeOption[] | null;
+  created_at: string;
+  collections?: {
+    name?: string | null;
+  } | null;
+}
+
+interface ArtworkData {
   id: string;
   title: string;
   description: string;
@@ -24,126 +42,107 @@ interface Artwork {
   collection_id: string | null;
   collection_name?: string;
   featured: boolean;
-  images: { url: string, alt: string }[];
+  images: ArtworkImage[];
   sizes: SizeOption[];
   created_at: string;
 }
 
-/**
- * Artwork Detail Page
- * Displays detailed information about a specific artwork with scrollable images
- * and sticky product information for purchasing
- */
-export default function ArtworkDetailPage() {
-  // Get the id from the URL params using the useParams hook
-  const params = useParams();
-  const id = params.id as string;
+async function fetchArtwork(id: string): Promise<{ artwork: ArtworkData | null; error: string | null }> {
+  try {
+    const { data, error } = await supabase
+      .from('artworks')
+      .select('*, collections(name)')
+      .eq('id', id)
+      .maybeSingle();
 
-  // State variables
-  const [artwork, setArtwork] = useState<Artwork | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedSize, setSelectedSize] = useState<SizeOption | null>(null);
+    if (error) {
+      console.error('Error fetching artwork', error);
+      return { artwork: null, error: 'Failed to load artwork data.' };
+    }
 
-  // Fetch artwork data on component mount
-  useEffect(() => {
-    const fetchArtwork = async () => {
-      try {
-        // Fetch artwork data
-        const { data, error: artworkError } = await supabase
-          .from('artworks')
-          .select('*, collections(name)')
-          .eq('id', id)
-          .single();
+    if (!data) {
+      return { artwork: null, error: 'Artwork not found.' };
+    }
 
-        if (artworkError) {
-          throw artworkError;
+    const record = data as ArtworkRecord;
+
+    const formattedImages: ArtworkImage[] = [];
+
+    if (Array.isArray(record.images)) {
+      record.images.forEach((image) => {
+        if (typeof image === 'string') {
+          formattedImages.push({ url: image, alt: record.title });
+        } else if (image && typeof image === 'object') {
+          formattedImages.push({
+            url: image.url ?? '',
+            alt: image.alt ?? record.title,
+          });
         }
+      });
+    } else if (typeof record.images === 'string') {
+      formattedImages.push({ url: record.images, alt: record.title });
+    }
 
-        if (!data) {
-          throw new Error('Artwork not found');
-        }
+    const sanitizedImages = formattedImages.filter((image) => Boolean(image.url));
 
-        // Format the data to include collection name
-        const formattedArtwork: Artwork = {
-          ...data,
-          collection_name: data.collections?.name || null
-        };
+    if (sanitizedImages.length === 0) {
+      sanitizedImages.push({ url: '/images/og-image.jpg', alt: record.title });
+    }
 
-        setArtwork(formattedArtwork);
-        
-        // Set the first size as the default selected size if available
-        if (formattedArtwork.sizes && formattedArtwork.sizes.length > 0) {
-          setSelectedSize(formattedArtwork.sizes[0]);
-        }
-      } catch (err: unknown) {
-        const error = err as { message?: string };
-        console.error('Error fetching artwork:', error);
-        setError(error.message || 'Failed to load artwork data');
-      } finally {
-        setLoading(false);
-      }
+    const formattedArtwork: ArtworkData = {
+      id: record.id,
+      title: record.title,
+      description: record.description,
+      year: record.year,
+      medium: record.medium,
+      collection_id: record.collection_id,
+      collection_name: record.collection_name ?? record.collections?.name ?? undefined,
+      featured: record.featured,
+      images: sanitizedImages,
+      sizes: record.sizes || [],
+      created_at: record.created_at,
     };
 
-    fetchArtwork();
-  }, [id]);
+    return { artwork: formattedArtwork, error: null };
+  } catch (err) {
+    console.error('Unexpected error fetching artwork', err);
+    return { artwork: null, error: 'Unexpected error loading artwork.' };
+  }
+}
 
-  // Format price from cents to dollars
-  const formatPrice = (cents: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(cents / 100);
-  };
+interface ArtworkPageProps {
+  params: Promise<{ id: string }>;
+}
 
-  // Calculate if the selected size is available (not sold out)
-  const isAvailable = (size: SizeOption) => {
-    return size.editions_sold < size.edition_limit;
-  };
+export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
+  const { id } = await params;
+  const { artwork, error } = await fetchArtwork(id);
 
-  // Handle size selection
-  const handleSizeSelect = (size: SizeOption) => {
-    setSelectedSize(size);
-  };
-
-  // Get cart context
-  const { addToCart } = useCart();
-
-  // Handle add to cart
-  const handleAddToCart = (quantity: number = 1) => {
-    if (!artwork || !selectedSize) return;
-    
-    // Get the first image URL or a placeholder
-    const imageUrl = artwork.images && artwork.images.length > 0 
-      ? artwork.images[0].url 
-      : '/placeholder.jpg';
-    
-    // Add the item to the cart
-    addToCart({
-      id: artwork.id,
-      title: artwork.title,
-      size: selectedSize.size,
-      sizeDisplay: selectedSize.size, // You could enhance this with unit conversion if needed
-      price: selectedSize.price,
-      quantity: quantity,
-      imageUrl: imageUrl
-    });
-  };
-
-  if (loading) {
-    return <ArtworkDetailSkeleton />;
+  if (!artwork && !error) {
+    notFound();
   }
 
-  // Use the client component to handle animations and rendering
+  const breadcrumbItems = artwork
+    ? [
+        { name: 'Home', url: '/' },
+        { name: 'Shop', url: '/shop' },
+        {
+          name: artwork.collection_name || 'Artworks',
+          url: artwork.collection_id ? `/collections/${artwork.collection_id}` : '/shop',
+        },
+        { name: artwork.title, url: `/artwork/${artwork.id}` },
+      ]
+    : [];
+
   return (
-    <ArtworkDetailClient
-      artwork={artwork}
-      error={error}
-      formatPrice={formatPrice}
-      isAvailable={isAvailable}
-      handleSizeSelect={handleSizeSelect}
-      handleAddToCart={handleAddToCart}
-      selectedSize={selectedSize}
-    />
+    <>
+      {artwork && (
+        <>
+          <JsonLd id={`product-${artwork.id}`} data={productJsonLd(artwork)} />
+          <JsonLd id={`breadcrumb-${artwork.id}`} data={breadcrumbJsonLd(breadcrumbItems)} />
+        </>
+      )}
+      <ArtworkDetailClient artwork={artwork} error={error} />
+    </>
   );
 }

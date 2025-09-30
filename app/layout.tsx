@@ -12,40 +12,59 @@ import CartOverlay from "@/components/checkout/cart-overlay";
 
 // Import SEO components
 import DefaultJsonLd from "@/components/shared/default-json-ld";
-import SEOHead from "@/components/shared/seo-head";
 
 // Import debugging script - temporarily disabled
 // import Script from "next/script";
 
 // Custom fonts are loaded via @font-face in globals.css
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://spencergrey.com";
+const ogImagePath = "/images/og-image.jpg";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
+  applicationName: "Spencer Grey Art",
+  category: "Art",
   title: {
     default: "Spencer Grey | Limited Edition Fine Art Prints",
-    template: "%s | Spencer Grey Art"
+    template: "%s | Spencer Grey Art",
   },
-  description: "Discover limited edition fine art prints by Spencer Grey. Clean, minimalist artwork with a focus on quality and sustainability.",
-  keywords: ["Spencer Grey", "fine art", "limited edition prints", "art prints", "minimalist art", "contemporary artist", "gallery prints", "art collection"],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com'),
+  description:
+    "Discover limited edition fine art prints by Spencer Grey. Clean, minimalist artwork with a focus on quality and sustainability.",
+  keywords: [
+    "Spencer Grey",
+    "fine art",
+    "limited edition prints",
+    "art prints",
+    "minimalist art",
+    "contemporary artist",
+    "gallery prints",
+    "art collection",
+  ],
   openGraph: {
     type: "website",
     locale: "en_US",
     siteName: "Spencer Grey Art",
     title: "Spencer Grey | Limited Edition Fine Art Prints",
-    description: "Discover limited edition fine art prints by Spencer Grey. Clean, minimalist artwork with a focus on quality and sustainability.",
-    images: [{
-      url: "/images/og-image.jpg",
-      width: 1200,
-      height: 630,
-      alt: "Spencer Grey Art"
-    }]
+    description:
+      "Discover limited edition fine art prints by Spencer Grey. Clean, minimalist artwork with a focus on quality and sustainability.",
+    url: baseUrl,
+    images: [
+      {
+        url: ogImagePath,
+        width: 1200,
+        height: 630,
+        alt: "Spencer Grey Art",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Spencer Grey | Limited Edition Fine Art Prints",
-    description: "Discover limited edition fine art prints by Spencer Grey. Clean, minimalist artwork with a focus on quality and sustainability.",
+    description:
+      "Discover limited edition fine art prints by Spencer Grey. Clean, minimalist artwork with a focus on quality and sustainability.",
     creator: "@spencergreyart",
-    images: ["/images/og-image.jpg"]
+    images: [ogImagePath],
   },
   robots: {
     index: true,
@@ -53,13 +72,25 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    }
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  formatDetection: {
+    telephone: false,
+    email: false,
   },
   alternates: {
-    canonical: "/"
-  }
+    canonical: "/",
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/icons/apple-touch-icon.png",
+  },
+  manifest: "/manifest.json",
+  themeColor: "#020312",
 };
 
 export default function RootLayout({
@@ -104,7 +135,6 @@ export default function RootLayout({
       >
         <CartProvider>
           <DefaultJsonLd />
-          <SEOHead />
           <Header />
           <CartOverlay />
           <CartDrawer />

@@ -1,6 +1,4 @@
-"use client";
-
-import JsonLd, { websiteJsonLd, organizationJsonLd } from './json-ld';
+import JsonLd, { artistJsonLd, organizationJsonLd, websiteJsonLd } from './json-ld';
 
 /**
  * Component for adding default JSON-LD structured data to all pages
@@ -8,16 +6,11 @@ import JsonLd, { websiteJsonLd, organizationJsonLd } from './json-ld';
  * @returns Default JSON-LD structured data components
  */
 export default function DefaultJsonLd() {
-  // We can use pathname to determine page context if needed in the future
-  // const pathname = usePathname();
-  
   return (
     <>
-      {/* Add website structured data */}
-      <JsonLd data={websiteJsonLd()} />
-      
-      {/* Add organization structured data */}
-      <JsonLd data={organizationJsonLd()} />
+      <JsonLd id="structured-data-website" data={websiteJsonLd()} />
+      <JsonLd id="structured-data-organization" data={organizationJsonLd()} />
+      <JsonLd id="structured-data-artist" data={artistJsonLd()} />
     </>
   );
 }
