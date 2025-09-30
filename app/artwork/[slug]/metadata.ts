@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase/client';
  * @param params - The route parameters
  * @returns Metadata for the artwork page
  */
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   // Base URL from environment variable or default
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
   
@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     const { data: artwork } = await supabase
       .from('artworks')
       .select('*, collections(name)')
-      .eq('id', params.id)
+      .eq('slug', params.slug)
       .single();
     
     if (!artwork) {
@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       openGraph: {
         title: `${artwork.title} | Spencer Grey Art`,
         description: description.substring(0, 160),
-        url: `${baseUrl}/artwork/${params.id}`,
+        url: `${baseUrl}/artwork/${params.slug}`,
         siteName: 'Spencer Grey Art',
         images: [{
           url: absoluteImageUrl,
@@ -84,7 +84,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
         creator: '@spencergreyart',
       },
       alternates: {
-        canonical: `${baseUrl}/artwork/${params.id}`,
+        canonical: `${baseUrl}/artwork/${params.slug}`,
       },
       other: {
         'og:price:amount': formattedPrice,

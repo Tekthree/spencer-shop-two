@@ -6,6 +6,7 @@ import ProductCard from './product-card';
 
 interface Artwork {
   id: string;
+  slug: string;
   title: string;
   year: number;
   medium: string;
@@ -41,7 +42,7 @@ export default function RelatedArtworks({
       try {
         let query = supabase
           .from('artworks')
-          .select('id, title, year, medium, images, collection_id, sizes')
+          .select('id, slug, title, year, medium, images, collection_id, sizes')
           .neq('id', currentArtworkId)
           .order('created_at', { ascending: false })
           .limit(limit);
@@ -62,7 +63,7 @@ export default function RelatedArtworks({
         if (data.length < limit && collectionId) {
           const { data: moreData, error: moreError } = await supabase
             .from('artworks')
-            .select('id, title, year, medium, images, collection_id, sizes')
+            .select('id, slug, title, year, medium, images, collection_id, sizes')
             .neq('id', currentArtworkId)
             .neq('collection_id', collectionId)
             .order('created_at', { ascending: false })
@@ -117,7 +118,7 @@ export default function RelatedArtworks({
         {artworks.map((artwork) => (
           <ProductCard
             key={artwork.id}
-            id={artwork.id}
+            slug={artwork.slug}
             title={artwork.title}
             images={artwork.images}
             price={artwork.sizes && artwork.sizes.length > 0 ? artwork.sizes[0].price : undefined}

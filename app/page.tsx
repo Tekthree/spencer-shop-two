@@ -23,6 +23,7 @@ interface ArtworkSize {
 
 interface Artwork {
   id: string;
+  slug: string;
   title: string;
   description?: string;
   year?: number;
@@ -35,6 +36,7 @@ interface Artwork {
 
 interface FormattedArtwork {
   id: string;
+  slug: string;
   title: string;
   price: number;
   images: ArtworkImage[];
@@ -48,7 +50,7 @@ export default async function Home() {
     // Fetch featured artworks from Supabase
     const { data: featuredArtworksData } = await supabase
       .from('artworks')
-      .select('id, title, images, sizes, featured')
+      .select('id, slug, title, images, sizes, featured')
       .eq('featured', true)
       .order('created_at', { ascending: false })
       .limit(5);
@@ -56,13 +58,14 @@ export default async function Home() {
     // Fetch recent artworks from Supabase
     const { data: recentArtworksData } = await supabase
       .from('artworks')
-      .select('id, title, images, sizes')
+      .select('id, slug, title, images, sizes')
       .order('created_at', { ascending: false })
       .limit(5);
 
     // Format the featured artworks data
     const formattedFeaturedArtworks: FormattedArtwork[] = featuredArtworksData?.map((artwork: Artwork) => ({
       id: artwork.id,
+      slug: artwork.slug,
       title: artwork.title,
       price: artwork.sizes && artwork.sizes.length > 0 
         ? artwork.sizes[0].price
@@ -81,6 +84,7 @@ export default async function Home() {
     // Format the recent artworks data
     const formattedRecentArtworks = recentArtworksData?.map((artwork: Artwork) => ({
       id: artwork.id,
+      slug: artwork.slug,
       title: artwork.title,
       // Add price property (required by Artwork type)
       price: artwork.sizes && artwork.sizes.length > 0 

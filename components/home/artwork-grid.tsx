@@ -10,6 +10,7 @@ import { formatPrice, ensureNumericPrice } from '@/components/artwork/price-help
 // Define a client-side artwork type that matches what we get from the home page client
 type ClientArtwork = {
   id: string;
+  slug?: string;
   title: string;
   price: string | number;
   images: {
@@ -89,13 +90,13 @@ export default function ArtworkGrid({ artworks }: ArtworkGridProps) {
               : artwork.price;
             
             return (
-              <motion.div 
-                key={artwork.id}
+          <motion.div 
+                key={artwork.slug || artwork.id}
                 variants={itemVariants}
                 custom={index}
                 className="artwork-card"
               >
-                <Link href={`/artwork/${artwork.id}`} className="block relative">
+                <Link href={`/artwork/${artwork.slug || artwork.id}`} className="block relative">
                   <div className="relative aspect-[4/5] overflow-hidden">
                     {/* Main Image */}
                     <Image 

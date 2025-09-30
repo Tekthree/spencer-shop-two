@@ -19,6 +19,7 @@ interface ArtworkSize {
 
 interface Artwork {
   id: string;
+  slug: string;
   title: string;
   year: number;
   medium: string;
@@ -125,7 +126,7 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
       >
         {artworks.map((artwork, index) => (
           <motion.div 
-            key={artwork.id} 
+            key={artwork.slug} 
             className="artwork-item"
             variants={itemVariants}
             custom={index as number}
@@ -133,7 +134,7 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
             transition={{ duration: 0.3 }}
           >
             <ProductCard
-              id={artwork.id}
+              slug={artwork.slug}
               title={artwork.title}
               images={artwork.images}
               price={artwork.sizes && artwork.sizes.length > 0 ? artwork.sizes[0].price : undefined}

@@ -15,6 +15,7 @@ interface ContentSection {
 // Define the return type for featured artworks
 type FeaturedArtwork = {
   id: string;
+  slug: string;
   title: string;
   images: {
     url: string;
@@ -124,7 +125,7 @@ const getFeaturedArtworks = async (): Promise<FeaturedArtwork[]> => {
     // Get all artworks instead of just featured ones to display more in the Shop section
     const { data, error } = await supabase
       .from('artworks')
-      .select('id, title, images')
+      .select('id, slug, title, images')
       .order('created_at', { ascending: false })
       .limit(10); // Increased limit to show more artworks
 
@@ -215,6 +216,7 @@ const getFeaturedArtworks = async (): Promise<FeaturedArtwork[]> => {
       // Return formatted artwork with a price from our fixed price array
       return {
         id: artwork.id,
+        slug: artwork.slug,
         title: artwork.title,
         images: formattedImages,
         price: prices[index % prices.length] * 100, // Convert to cents as expected by ProductCard
@@ -234,6 +236,7 @@ const getFallbackArtworks = (): FeaturedArtwork[] => {
   // Create some placeholder artworks
   return Array(4).fill(null).map((_, index) => ({
     id: `fallback-${index + 1}`,
+    slug: `fallback-artwork-${index + 1}`,
     title: `Artwork ${index + 1}`,
     images: [
       {

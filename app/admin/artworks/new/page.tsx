@@ -7,6 +7,13 @@ import ImageUploader from '@/components/admin/image-uploader';
 import Link from 'next/link';
 import Image from 'next/image';
 
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
 interface SizeOption {
   size: string;
   price: number;
@@ -33,6 +40,8 @@ export default function NewArtwork() {
   // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [slug, setSlug] = useState('');
+  const [slugEditedManually, setSlugEditedManually] = useState(false);
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [medium, setMedium] = useState('');
   const [collectionId, setCollectionId] = useState<string>('');
@@ -197,11 +206,18 @@ export default function NewArtwork() {
         }
       }
 
+      const normalizedSlug = slugify(slug || title);
+      if (!normalizedSlug) {
+        throw new Error('Slug is required');
+      }
+      setSlug(normalizedSlug);
+
       // Create new artwork in database
       const { error } = await supabase
         .from('artworks')
         .insert([
           {
+            slug: normalizedSlug,
             title,
             description,
             year,
@@ -275,10 +291,35 @@ export default function NewArtwork() {
                 type="text"
                 id="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setTitle(value);
+                  if (!slugEditedManually) {
+                    setSlug(slugify(value));
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                 required
               />
+            </div>
+
+            <div>
+              <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
+                Slug *
+              </label>
+              <input
+                type="text"
+                id="slug"
+                value={slug}
+                onChange={(e) => {
+                  setSlug(slugify(e.target.value));
+                  setSlugEditedManually(true);
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                placeholder="artwork-slug"
+                required
+              />
+              <p className="mt-1 text-xs text-gray-500">This appears in the URL. Use lowercase letters, numbers, and hyphens only.</p>
             </div>
 
             <div>

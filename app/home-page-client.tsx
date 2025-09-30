@@ -25,6 +25,7 @@ type ArtworkSize = {
 
 type Artwork = {
   id: string;
+  slug: string;
   title: string;
   price: string | number;
   images: ArtworkImage[];
@@ -469,7 +470,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
               <div className="flex gap-8 py-2">
                 {recentArtworks.map((artwork, index) => (
                   <motion.div 
-                    key={artwork.id} 
+                    key={artwork.slug} 
                     className="min-w-[280px] sm:min-w-[320px] w-[320px] flex-shrink-0 flex flex-col"
                     variants={itemVariants}
                     custom={index as number}
@@ -477,7 +478,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
                     transition={{ duration: 0.2 }}
                   >
                     <ProductCard 
-                      id={artwork.id} 
+                      slug={artwork.slug}
                       title={artwork.title} 
                       images={artwork.images}
                       price={ensureNumericPrice(artwork.price)}

@@ -317,7 +317,7 @@ export default function HomePageStatic({ featuredArtworks, recentArtworks }: Hom
             {featuredArtworks.map((artwork) => (
               <div key={artwork.id}>
                 <ProductCard 
-                  id={artwork.id}
+                  slug={artwork.id}
                   title={artwork.title}
                   price={ensureNumericPrice(artwork.price)}
                   images={artwork.images}
@@ -351,7 +351,7 @@ export default function HomePageStatic({ featuredArtworks, recentArtworks }: Hom
             {recentArtworks.map((artwork) => (
               <div key={artwork.id} className="relative">
                 <ProductCard 
-                  id={artwork.id}
+                  slug={artwork.id}
                   title={artwork.title}
                   price={ensureNumericPrice(artwork.price)}
                   images={artwork.images}

@@ -27,7 +27,7 @@ export default function ArtworkStoryTabs({ tabs }: ArtworkStoryTabsProps) {
   const activeTabContent = tabs.find(tab => tab.id === activeTab);
 
   return (
-    <section className="w-full bg-[#EDE9E3] py-16 md:py-24">
+    <section className="w-full bg-[#ecebff] py-16 md:py-24">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Tabs Navigation */}
         <div className="flex flex-wrap border-b border-[#020312]/20 mb-12">

@@ -7,6 +7,13 @@ import ImageUploader from '@/components/admin/image-uploader';
 import Link from 'next/link';
 import Image from 'next/image';
 
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
 interface SizeOption {
   size: string;
   price: number;
@@ -30,6 +37,7 @@ interface ArtworkImage {
 
 interface Artwork {
   id: string;
+  slug: string;
   title: string;
   description: string;
   year: number;
@@ -65,6 +73,8 @@ export default function EditArtworkClient({ id }: { id: string }) {
   const [featured, setFeatured] = useState(false);
   const [images, setImages] = useState<ArtworkImage[]>([]);
   const [sizes, setSizes] = useState<SizeOption[]>([]);
+  const [slug, setSlug] = useState('');
+  const [slugEditedManually, setSlugEditedManually] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(false);
 
   // Fetch artwork data and collections on component mount
@@ -107,6 +117,8 @@ export default function EditArtworkClient({ id }: { id: string }) {
         setFeatured(artworkData.featured);
         setImages(artworkData.images || []);
         setSizes(artworkData.sizes || []);
+        setSlug(artworkData.slug || '');
+        setSlugEditedManually(true);
 
         // Fetch collections for dropdown
         const { data: collectionsData, error: collectionsError } = await supabase
@@ -256,8 +268,15 @@ export default function EditArtworkClient({ id }: { id: string }) {
         }
       }
 
+      const normalizedSlug = slugify(slug || title);
+      if (!normalizedSlug) {
+        throw new Error('Slug is required');
+      }
+      setSlug(normalizedSlug);
+
       // Prepare artwork data
       const artworkData = {
+        slug: normalizedSlug,
         title,
         description,
         year,
@@ -444,10 +463,35 @@ export default function EditArtworkClient({ id }: { id: string }) {
                 type="text"
                 id="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setTitle(value);
+                  if (!slugEditedManually) {
+                    setSlug(slugify(value));
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                 required
               />
+            </div>
+
+            <div>
+              <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
+                Slug *
+              </label>
+              <input
+                type="text"
+                id="slug"
+                value={slug}
+                onChange={(e) => {
+                  setSlug(slugify(e.target.value));
+                  setSlugEditedManually(true);
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                placeholder="artwork-slug"
+                required
+              />
+              <p className="mt-1 text-xs text-gray-500">Used in the URL. Only lowercase letters, numbers, and hyphens.</p>
             </div>
             
             <div>

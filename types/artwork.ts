@@ -13,6 +13,7 @@ export interface ArtworkSize {
 
 export interface Artwork {
   id: string;
+  slug?: string;
   title: string;
   description: string;
   year?: number;
@@ -26,6 +27,7 @@ export interface Artwork {
 
 export interface FormattedArtwork {
   id: string;
+  slug?: string;
   title: string;
   description: string;
   year?: number;

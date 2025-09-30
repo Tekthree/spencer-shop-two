@@ -18,6 +18,7 @@ interface ArtworkImage {
 
 interface ArtworkRecord {
   id: string;
+  slug: string;
   title: string;
   description: string;
   year: number;
@@ -35,6 +36,7 @@ interface ArtworkRecord {
 
 interface ArtworkData {
   id: string;
+  slug: string;
   title: string;
   description: string;
   year: number;
@@ -47,12 +49,12 @@ interface ArtworkData {
   created_at: string;
 }
 
-async function fetchArtwork(id: string): Promise<{ artwork: ArtworkData | null; error: string | null }> {
+async function fetchArtworkBySlug(slug: string): Promise<{ artwork: ArtworkData | null; error: string | null }> {
   try {
     const { data, error } = await supabase
       .from('artworks')
       .select('*, collections(name)')
-      .eq('id', id)
+      .eq('slug', slug)
       .maybeSingle();
 
     if (error) {
@@ -91,6 +93,7 @@ async function fetchArtwork(id: string): Promise<{ artwork: ArtworkData | null; 
 
     const formattedArtwork: ArtworkData = {
       id: record.id,
+      slug: record.slug,
       title: record.title,
       description: record.description,
       year: record.year,
@@ -111,12 +114,12 @@ async function fetchArtwork(id: string): Promise<{ artwork: ArtworkData | null; 
 }
 
 interface ArtworkPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
-  const { id } = await params;
-  const { artwork, error } = await fetchArtwork(id);
+  const { slug } = await params;
+  const { artwork, error } = await fetchArtworkBySlug(slug);
 
   if (!artwork && !error) {
     notFound();
@@ -126,11 +129,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
     ? [
         { name: 'Home', url: '/' },
         { name: 'Shop', url: '/shop' },
-        {
-          name: artwork.collection_name || 'Artworks',
-          url: artwork.collection_id ? `/collections/${artwork.collection_id}` : '/shop',
-        },
-        { name: artwork.title, url: `/artwork/${artwork.id}` },
+        { name: artwork.title, url: `/artwork/${artwork.slug}` },
       ]
     : [];
 
@@ -138,8 +137,8 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
     <>
       {artwork && (
         <>
-          <JsonLd id={`product-${artwork.id}`} data={productJsonLd(artwork)} />
-          <JsonLd id={`breadcrumb-${artwork.id}`} data={breadcrumbJsonLd(breadcrumbItems)} />
+          <JsonLd id={`product-${artwork.slug}`} data={productJsonLd(artwork)} />
+          <JsonLd id={`breadcrumb-${artwork.slug}`} data={breadcrumbJsonLd(breadcrumbItems)} />
         </>
       )}
       <ArtworkDetailClient artwork={artwork} error={error} />

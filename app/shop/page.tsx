@@ -7,6 +7,7 @@ import ShopPageClient from './shop-page-client';
 
 interface Artwork {
   id: string;
+  slug: string;
   title: string;
   year: number;
   medium: string;
@@ -29,7 +30,7 @@ export default function ShopAllArtPage() {
       try {
         const { data, error } = await supabase
           .from('artworks')
-          .select('id, title, year, medium, images, collection_id, sizes')
+          .select('id, slug, title, year, medium, images, collection_id, sizes')
           .order('created_at', { ascending: false });
 
         if (error) {

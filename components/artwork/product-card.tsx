@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 interface ProductCardProps {
-  id: string;
+  slug: string;
   title: string;
   images: { url: string; alt: string; type?: string }[];
   price?: number;
@@ -17,7 +17,7 @@ interface ProductCardProps {
  * Displays an artwork preview with hover image functionality
  * Used in "You may also like" sections and collection listings
  */
-export default function ProductCard({ id, title, images, price, className = '' }: ProductCardProps) {
+export default function ProductCard({ slug, title, images, price, className = '' }: ProductCardProps) {
   const [isHovering, setIsHovering] = useState(false);
   
   // Find main and hover images
@@ -33,7 +33,7 @@ export default function ProductCard({ id, title, images, price, className = '' }
     : null;
   
   return (
-    <Link href={`/artwork/${id}`}>
+    <Link href={`/artwork/${slug}`}>
       <div 
         className={`group relative ${className}`}
         onMouseEnter={() => setIsHovering(true)}

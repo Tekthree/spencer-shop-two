@@ -122,6 +122,7 @@ export function artistJsonLd() {
 // Define a type for artwork data
 type ArtworkData = {
   id: string;
+  slug?: string;
   title: string;
   description?: string;
   images?: Array<{ url: string }> | { url: string }[] | string[] | string;
@@ -130,6 +131,7 @@ type ArtworkData = {
 
 export function productJsonLd(artwork: ArtworkData) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
+  const slugOrId = artwork.slug || artwork.id;
 
   let imageUrl = `${baseUrl}/images/og-image.jpg`;
 
@@ -163,7 +165,7 @@ export function productJsonLd(artwork: ArtworkData) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    '@id': `${baseUrl}/artwork/${artwork.id}#product`,
+    '@id': `${baseUrl}/artwork/${slugOrId}#product`,
     name: artwork.title,
     image: absoluteImageUrl,
     description:
@@ -177,7 +179,7 @@ export function productJsonLd(artwork: ArtworkData) {
     },
     offers: {
       '@type': 'AggregateOffer',
-      url: `${baseUrl}/artwork/${artwork.id}`,
+      url: `${baseUrl}/artwork/${slugOrId}`,
       priceCurrency: 'USD',
       lowPrice: formattedLowPrice,
       highPrice: formattedHighPrice,

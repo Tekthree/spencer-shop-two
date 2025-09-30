@@ -7,6 +7,7 @@ import Image from 'next/image';
 
 interface Artwork {
   id: string;
+  slug: string;
   title: string;
   description: string;
   year: number;
@@ -197,7 +198,7 @@ export default function ArtworksAdmin() {
                       <Link href={`/admin/artworks/${artwork.id}`} className="text-black hover:text-gray-600 mr-4">
                         Edit
                       </Link>
-                      <Link href={`/artwork/${artwork.id}`} target="_blank" className="text-gray-600 hover:text-black">
+                      <Link href={`/artwork/${artwork.slug}`} target="_blank" className="text-gray-600 hover:text-black">
                         View
                       </Link>
                     </td>

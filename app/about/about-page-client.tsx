@@ -17,6 +17,7 @@ interface ContentSection {
 
 interface AboutPageArtwork {
   id: string;
+  slug: string;
   title: string;
   images: {
     url: string;
@@ -312,14 +313,14 @@ export default function AboutPageClient({
             {featuredArtworks?.map((artwork) => {
               return (
                 <motion.div 
-                  key={artwork.id} 
+                  key={artwork.slug || artwork.id} 
                   className="min-w-[280px] sm:min-w-[320px] w-[320px] flex-shrink-0 flex flex-col"
                   variants={itemVariants}
                   whileHover={{ y: -5 }}
                   transition={{ duration: 0.2 }}
                 >
                   <ProductCard 
-                    id={artwork.id} 
+                    slug={artwork.slug} 
                     title={artwork.title} 
                     images={artwork.images}
                     price={artwork.price}

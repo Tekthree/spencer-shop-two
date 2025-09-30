@@ -6,7 +6,7 @@ import Link from 'next/link';
 // Note: Image component will be needed when real artwork images are available
 
 interface ArtworkCardProps {
-  id: string;
+  slug: string;
   title: string;
   // image parameter is defined but not used yet - will be used when real images are available
   // image: string;
@@ -15,10 +15,10 @@ interface ArtworkCardProps {
   editionsSold: number;
 }
 
-export default function ArtworkCard({ id, title, year, editions, editionsSold }: ArtworkCardProps) {
+export default function ArtworkCard({ slug, title, year, editions, editionsSold }: ArtworkCardProps) {
   // Reason: Using placeholder div for now, will use image parameter with Image component when real images are available
   return (
-    <Link href={`/artwork/${id}`} className="group block">
+    <Link href={`/artwork/${slug}`} className="group block">
       <div className="bg-white border border-gray-100 overflow-hidden transition-all duration-300 group-hover:shadow-md">
         <div className="aspect-[4/5] w-full relative">
           {/* Placeholder div until real images are available */}

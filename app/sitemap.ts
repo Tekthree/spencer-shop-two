@@ -53,12 +53,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch all artwork IDs and their last modified dates
   const { data: artworks } = await supabase
     .from('artworks')
-    .select('id, created_at')
+    .select('id, slug, created_at')
     .order('created_at', { ascending: false });
 
   // Generate dynamic routes for artworks
   const artworkRoutes = artworks?.map((artwork) => ({
-    url: `${baseUrl}/artwork/${artwork.id}`,
+    url: `${baseUrl}/artwork/${artwork.slug || artwork.id}`,
     lastModified: new Date(artwork.created_at),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
