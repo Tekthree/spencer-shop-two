@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import Image from 'next/image';
 import type { BlogContentBlock } from '@/types/blog';
 import { resolveCoverImage } from './blog-post-card';

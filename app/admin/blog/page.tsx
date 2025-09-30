@@ -185,7 +185,7 @@ export default function BlogAdminPage() {
       const { data, error } = await supabaseClient
         .from('blog_posts')
         .select('id, title, slug, status, published_at, created_at, category, cover_image')
-        .order('published_at', { ascending: false, nullsLast: true })
+        .order('published_at', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -296,7 +296,7 @@ export default function BlogAdminPage() {
     const { data, error } = await supabaseClient
       .from('blog_posts')
       .select('id, title, slug, status, published_at, created_at, category, cover_image')
-      .order('published_at', { ascending: false, nullsLast: true })
+      .order('published_at', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false });
 
     if (error) {
