@@ -36,6 +36,23 @@ const checkoutSchema = z.object({
   }),
 });
 
+const getBaseUrl = (request: NextRequest) => {
+  // Prefer the incoming request origin so redirects match the live domain
+  const origin = request.headers.get('origin');
+  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const vercelUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : undefined;
+  const fallbackUrl =
+    process.env.NODE_ENV === 'development'
+      ? 'http://localhost:3000'
+      : 'https://www.spencergreyart.com';
+
+  const base = origin || configuredUrl || vercelUrl || fallbackUrl;
+
+  return base.endsWith('/') ? base.slice(0, -1) : base;
+};
+
 export async function POST(request: NextRequest) {
   try {
     // Parse the request body
@@ -102,13 +119,15 @@ export async function POST(request: NextRequest) {
       })
     );
 
+    const baseUrl = getBaseUrl(request);
+
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout`,
+      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/checkout`,
       customer_email: customerInfo.email,
       shipping_address_collection: {
         allowed_countries: ['US', 'CA', 'GB', 'AU'],
