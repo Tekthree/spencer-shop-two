@@ -13,14 +13,10 @@ import CartOverlay from "@/components/checkout/cart-overlay";
 // Import SEO components
 import DefaultJsonLd from "@/components/shared/default-json-ld";
 
-// Import debugging script - temporarily disabled
-// import Script from "next/script";
-
 // Custom fonts are loaded via @font-face in globals.css
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://spencergrey.com";
 const ogImagePath = "/images/og-image.jpg";
-
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   applicationName: "Spencer Grey Art",
@@ -85,9 +81,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/icons/apple-touch-icon.png",
+    icon: "/images/favicon.png",
+    shortcut: "/images/favicon.png",
+    apple: "/images/webclip.png",
   },
   manifest: "/manifest.json",
   themeColor: "#020312",
