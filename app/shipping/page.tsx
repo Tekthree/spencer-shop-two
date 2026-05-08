@@ -17,7 +17,7 @@ export default function ShippingPage() {
           <div className="space-y-4 text-sm text-[#020312]/70 leading-relaxed">
             <p>Each print is made to order. Most orders ship within 5–7 business days of purchase.</p>
             <p>Domestic delivery typically takes an additional 3–5 business days. International orders take 7–14 business days depending on destination.</p>
-            <p>Once your order ships, you'll receive a tracking number via email.</p>
+            <p>Once your order ships, you&apos;ll receive a tracking number via email.</p>
           </div>
         </section>
 
@@ -33,7 +33,7 @@ export default function ShippingPage() {
           <h2 className="text-lg font-medium text-[#020312] mb-4">Returns</h2>
           <div className="space-y-4 text-sm text-[#020312]/70 leading-relaxed">
             <p>We accept returns within 30 days of delivery for prints in original, undamaged condition. Custom framed prints are not eligible for return unless damaged in transit.</p>
-            <p>To initiate a return, please contact us before sending anything back. We'll walk you through the process.</p>
+            <p>To initiate a return, please contact us before sending anything back. We&apos;ll walk you through the process.</p>
             <p>Size exchanges are possible within 14 days of delivery, subject to availability. A price difference may apply when exchanging for a larger size.</p>
           </div>
         </section>
@@ -41,7 +41,7 @@ export default function ShippingPage() {
         <section className="mb-12">
           <h2 className="text-lg font-medium text-[#020312] mb-4">Damaged Orders</h2>
           <div className="space-y-4 text-sm text-[#020312]/70 leading-relaxed">
-            <p>If your print arrives damaged, photograph the damage and contact us within 48 hours of delivery. We'll arrange a replacement at no additional cost.</p>
+            <p>If your print arrives damaged, photograph the damage and contact us within 48 hours of delivery. We&apos;ll arrange a replacement at no additional cost.</p>
           </div>
         </section>
 
