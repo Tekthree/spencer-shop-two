@@ -125,7 +125,7 @@ const getFeaturedArtworks = async (): Promise<FeaturedArtwork[]> => {
     // Get all artworks instead of just featured ones to display more in the Shop section
     const { data, error } = await supabase
       .from('artworks')
-      .select('id, slug, title, images')
+      .select('id, slug, title, images, price')
       .order('created_at', { ascending: false })
       .limit(10); // Increased limit to show more artworks
 
@@ -136,9 +136,7 @@ const getFeaturedArtworks = async (): Promise<FeaturedArtwork[]> => {
 
     // Format artworks for ProductCard component
     return data.map((artwork, index: number) => {
-      // Set fixed prices that match the screenshot
-      const prices = [125, 150, 175, 200, 225];
-      
+
       // Format images for ProductCard component exactly as done in the home page
       let formattedImages: ArtworkImage[] = [];
       
@@ -219,7 +217,7 @@ const getFeaturedArtworks = async (): Promise<FeaturedArtwork[]> => {
         slug: artwork.slug,
         title: artwork.title,
         images: formattedImages,
-        price: prices[index % prices.length] * 100, // Convert to cents as expected by ProductCard
+        price: artwork.price ?? 17500,
         tag: index === 0 ? 'New' : index === 1 ? 'Popular' : undefined
       };
     });
