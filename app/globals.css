@@ -722,7 +722,12 @@ h1, h2, h3, h4, h5, h6, .font-serif {
 
 @layer components {
   .rte {
-    @apply space-y-8 text-base md:text-lg leading-8 text-[#020312]/85;
+    @apply text-base md:text-lg leading-8 text-[#020312]/85;
+    max-width: 65ch;
+  }
+
+  .rte > * + * {
+    margin-top: 1.75em;
   }
 
   .rte > *:first-child {
@@ -730,51 +735,84 @@ h1, h2, h3, h4, h5, h6, .font-serif {
   }
 
   .rte h2 {
-    @apply font-serif text-3xl md:text-[2.5rem] leading-tight text-[#020312] mt-16;
+    @apply font-serif text-3xl md:text-4xl leading-tight text-[#020312];
+    margin-top: 3.5rem;
+    scroll-margin-top: 7rem;
   }
 
   .rte h3 {
-    @apply font-serif text-2xl md:text-[2.25rem] leading-tight text-[#020312] mt-12;
+    @apply font-serif text-2xl md:text-3xl leading-tight text-[#020312];
+    margin-top: 2.5rem;
+    scroll-margin-top: 7rem;
   }
 
   .rte p {
     @apply leading-8 text-[#020312]/85;
+    text-wrap: pretty;
   }
 
   .rte a {
-    @apply underline underline-offset-4 decoration-[#020312]/30 transition-colors;
+    @apply underline underline-offset-4 decoration-[#020312]/30 hover:decoration-[#020312] transition-colors;
   }
 
-  .rte a:hover {
-    @apply text-[#020312];
-  }
-
+  /* Inverted pull-quote — no side stripe */
   .rte blockquote {
-    @apply border-l-4 border-[#020312] bg-[#F6F4F0] py-6 pl-6 pr-4 font-serif text-2xl md:text-[2rem] text-[#020312] leading-tight;
+    @apply bg-[#020312] px-10 py-10 font-serif text-2xl md:text-3xl text-white leading-snug;
+    position: relative;
+    overflow: hidden;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+  }
+
+  .rte blockquote::before {
+    content: '\201C';
+    font-family: var(--font-serif);
+    font-size: 8rem;
+    line-height: 1;
+    color: rgba(255,255,255,0.1);
+    position: absolute;
+    top: -1rem;
+    left: 1.25rem;
+    pointer-events: none;
   }
 
   .rte blockquote p {
     margin: 0;
+    position: relative;
+    z-index: 1;
   }
 
   .rte ul {
-    @apply list-disc pl-6 space-y-2;
+    @apply list-none pl-0 space-y-3;
+  }
+
+  .rte ul li {
+    @apply pl-5 relative;
+  }
+
+  .rte ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: rgba(2, 3, 18, 0.35);
   }
 
   .rte ol {
-    @apply list-decimal pl-6 space-y-2;
+    @apply list-decimal pl-6 space-y-3;
   }
 
   .rte li {
-    @apply leading-8 text-[#020312]/80;
+    @apply leading-7 text-[#020312]/80;
   }
 
   .rte figure {
     @apply space-y-3;
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
   }
 
   .rte .rte-image__media {
-    @apply relative overflow-hidden rounded-xl border border-[#020312]/10 bg-[#EDEAE4] aspect-[4/3] md:aspect-[16/9];
+    @apply relative overflow-hidden bg-[#EDEAE4] aspect-[4/3] md:aspect-[16/9];
   }
 
   .rte .rte-image__media img {
@@ -782,6 +820,12 @@ h1, h2, h3, h4, h5, h6, .font-serif {
   }
 
   .rte .rte-image__caption {
-    @apply text-sm text-[#020312]/60 leading-relaxed text-center;
+    @apply text-sm text-[#020312]/50 leading-relaxed;
+  }
+
+  .rte hr {
+    @apply border-[#020312]/10;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
   }
 }

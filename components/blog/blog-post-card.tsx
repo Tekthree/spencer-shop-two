@@ -30,7 +30,7 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
   return (
     <article className="group">
       <Link href={`/blog/${slug}`} className="block">
-        <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-[#EDEAE4]">
+        <div className="relative aspect-[16/10] overflow-hidden bg-[#EDEAE4]">
           {imageSrc ? (
             <Image
               src={imageSrc}
