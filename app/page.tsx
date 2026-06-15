@@ -51,9 +51,8 @@ export default async function Home() {
     const featuredArtworksData = await sql`
       SELECT id, slug, title, images, sizes, featured
       FROM artworks
-      WHERE featured = true
       ORDER BY created_at DESC
-      LIMIT 5
+      LIMIT 4
     ` as Artwork[];
 
     // Fetch recent artworks from Neon

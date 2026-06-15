@@ -74,45 +74,30 @@ function TabInterface() {
         {/* Column 1: Tab Navigation */}
         <div className="flex flex-col space-y-8 mb-8 lg:mb-0 justify-center">
           <div className="grid grid-cols-3 lg:grid-cols-1 gap-4 lg:gap-10">
-            {/* Limited Prints Tab */}
-            <button 
-              className={`flex flex-col items-center lg:items-start lg:flex-row lg:space-x-4 space-y-2 lg:space-y-0 ${activeTab === 'limited' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
+            <button
+              className={`text-left transition-opacity ${activeTab === 'limited' ? 'opacity-100' : 'opacity-35 hover:opacity-60'}`}
               onClick={() => setActiveTab('limited')}
             >
-              <div className="flex items-center justify-center w-10 h-10 lg:w-16 lg:h-16 border border-[#020312]/10 rounded-full">
-                <span className="font-serif text-base lg:text-2xl">1</span>
-              </div>
-              <h3 className={`font-serif text-base md:text-xl lg:text-4xl ${activeTab === 'limited' ? 'underline font-medium' : ''}`}>
-                <span className="md:hidden">LIMITED<br />PRINTS</span>
-                <span className="hidden md:inline">LIMITED PRINTS</span>
+              <h3 className={`font-serif text-lg md:text-2xl lg:text-4xl tracking-tight ${activeTab === 'limited' ? 'border-b border-[#020312]' : ''}`}>
+                Limited Prints
               </h3>
             </button>
-            
-            {/* Museum Quality Tab */}
-            <button 
-              className={`flex flex-col items-center lg:items-start lg:flex-row lg:space-x-4 space-y-2 lg:space-y-0 ${activeTab === 'museum' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
+
+            <button
+              className={`text-left transition-opacity ${activeTab === 'museum' ? 'opacity-100' : 'opacity-35 hover:opacity-60'}`}
               onClick={() => setActiveTab('museum')}
             >
-              <div className="flex items-center justify-center w-10 h-10 lg:w-16 lg:h-16 border border-[#020312]/10 rounded-full">
-                <span className="font-serif text-base lg:text-2xl">2</span>
-              </div>
-              <h3 className={`font-serif text-base md:text-xl lg:text-4xl ${activeTab === 'museum' ? 'underline font-medium' : ''}`}>
-                <span className="md:hidden">MUSEUM<br />QUALITY</span>
-                <span className="hidden md:inline">MUSEUM QUALITY</span>
+              <h3 className={`font-serif text-lg md:text-2xl lg:text-4xl tracking-tight ${activeTab === 'museum' ? 'border-b border-[#020312]' : ''}`}>
+                Museum Quality
               </h3>
             </button>
-            
-            {/* Print to Order Tab */}
-            <button 
-              className={`flex flex-col items-center lg:items-start lg:flex-row lg:space-x-4 space-y-2 lg:space-y-0 ${activeTab === 'order' ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}
+
+            <button
+              className={`text-left transition-opacity ${activeTab === 'order' ? 'opacity-100' : 'opacity-35 hover:opacity-60'}`}
               onClick={() => setActiveTab('order')}
             >
-              <div className="flex items-center justify-center w-10 h-10 lg:w-16 lg:h-16 border border-[#020312]/10 rounded-full">
-                <span className="font-serif text-base lg:text-2xl">3</span>
-              </div>
-              <h3 className={`font-serif text-base md:text-xl lg:text-4xl ${activeTab === 'order' ? 'underline font-medium' : ''}`}>
-                <span className="md:hidden">PRINT TO<br />ORDER</span>
-                <span className="hidden md:inline">PRINT TO ORDER</span>
+              <h3 className={`font-serif text-lg md:text-2xl lg:text-4xl tracking-tight ${activeTab === 'order' ? 'border-b border-[#020312]' : ''}`}>
+                Print to Order
               </h3>
             </button>
           </div>
@@ -354,51 +339,40 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       variants={pageVariants}
       className="min-h-screen bg-[#F6F4F0]"
     >
-      {/* Minimal Hero Section - "gallery vibes. at home." */}
-      <section className="pt-8 pb-0 md:pt-12 md:pb-0">
+      {/* Hero Section - full-bleed */}
+      <section className="pb-0">
         <MarqueeHeading speed="normal" className="" data-component-name="HomePageClient">
           <span className="clandyFontOverride">LOVE</span> Channeled Through Form
         </MarqueeHeading>
-        <div className="max-w-[1440px] mx-auto px-6">
-          
-          {/* Hero Image and Artist Statement */}
-          <motion.div 
-            className="mb-20"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <motion.div 
-              className="relative w-full aspect-[16/9] mb-10 overflow-hidden"
-              variants={itemVariants}
+
+        {/* Full-bleed hero image - no container padding */}
+        <motion.div
+          className="relative w-full overflow-hidden"
+          style={{ aspectRatio: '16/7' }}
+          variants={itemVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <Image
+            src="/hero-spencer.jpg"
+            alt="Spencer Grey artwork installed in a home"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-black/10" />
+          <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10">
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-2 text-white bg-black/60 backdrop-blur-sm px-5 py-3 text-sm uppercase tracking-wider hover:bg-black transition-colors"
             >
-              <div className="absolute inset-0 bg-[#F6F4F0]/50 flex items-center justify-center">
-                <div className="w-full h-full relative">
-                  <Image
-                    src="/hero-spencer.jpg"
-                    alt="Spencer Grey with artwork"
-                    fill
-                    className="object-cover"
-                  />
-                  <motion.div 
-                    className="absolute top-4 right-4 bg-[#F6F4F0] px-4 py-2 rounded-md shadow-sm"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Link href="/shop" className="text-sm font-medium flex items-center text-[#020312]">
-                      Shop the Art Prints
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
-                    </Link>
-                  </motion.div>
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* Empty space removed for consistent spacing */}
-          </motion.div>
-        </div>
+              Shop the Art Prints
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </Link>
+          </div>
+        </motion.div>
       </section>
 
       {/* Creative Process Section */}
@@ -411,7 +385,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           viewport={{ once: true, margin: "-100px" }}
         >
           <blockquote className="font-serif text-2xl md:text-3xl lg:text-4xl leading-relaxed mb-8 text-[#020312]">
-            &ldquo;Our relationship with transformative power of art to connect us with our deeper selves. My creative process involves layers of intuition, technique, and emotional resonance.&rdquo;
+            &ldquo;My creative process involves layers of intuition, technique, and emotional resonance. The work connects us to something deeper than what we can name.&rdquo;
           </blockquote>
           <motion.div 
             className="flex flex-col items-center justify-center gap-4"
@@ -438,8 +412,17 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       </section>
       
       {/* Featured Artworks Section */}
-      <section className="mb-16 md:mb-24">
+      <section className="py-16 md:py-24">
         <div className="max-w-[1440px] mx-auto px-6">
+          <motion.p
+            className="text-xs uppercase tracking-[0.2em] text-[#020312]/50 mb-10"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            The Collection
+          </motion.p>
           <ArtworkGrid artworks={featuredArtworks} />
         </div>
       </section>
@@ -447,14 +430,14 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       {/* Recent Artworks Section */}
       <section className="py-16 md:py-24 px-6 bg-[#F6F4F0]">
         <div className="max-w-[1440px] mx-auto">
-          <motion.h2 
-            className="font-serif text-3xl md:text-4xl text-center mb-12 text-[#020312]"
+          <motion.h2
+            className="font-serif text-3xl md:text-4xl mb-12 text-[#020312]"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             viewport={{ once: true, margin: "-100px" }}
           >
-            Recent Artworks
+            New Work
           </motion.h2>
           <motion.div
             variants={containerVariants}
@@ -510,7 +493,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           viewport={{ once: true, margin: "-100px" }}
         >
           <blockquote className="font-serif text-2xl md:text-3xl lg:text-4xl leading-relaxed mb-8 text-[#020312]">
-            &ldquo;My work is birthed from the delicate balance between chaos and order, finding beauty in the spaces between. Each piece is a meditation on form, color, and texture—an invitation to pause and reflect.&rdquo;
+            &ldquo;Each piece is born from the balance between chaos and order. A meditation on form, color, and texture. An invitation to stop and feel something.&rdquo;
           </blockquote>
           <motion.div
             className="flex flex-col items-center justify-center gap-4"

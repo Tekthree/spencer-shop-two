@@ -21,15 +21,15 @@ export default function Header() {
   };
 
   return (
-    <header className="py-8 px-6 border-b border-[#020312]/10 bg-[#F6F4F0]">
-      <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center">
+    <header className="py-5 px-6 border-b border-[#020312]/8 bg-[#F6F4F0]">
+      <div className="max-w-[1440px] mx-auto flex flex-row justify-between items-center">
         {/* Logo/Brand */}
-        <div className="mb-8 md:mb-0">
+        <div>
           <SpencerLogo size="extra-large" />
         </div>
-        
+
         {/* Main Navigation */}
-        <nav className="flex items-center space-x-12 text-sm font-medium">
+        <nav className="flex items-center space-x-8 md:space-x-12 text-sm font-medium">
           <Link 
             href="/shop" 
             className={`${isActive('/shop') ? 'text-[#020312]' : 'text-[#020312]/60'} hover:text-[#020312] transition-colors`}

@@ -96,24 +96,30 @@ export default function ShopPageClient({ artworks, error }: ShopPageClientProps)
       animate="visible"
       variants={pageVariants}
     >
-      {/* Hero Section */}
-      <motion.div 
-        className="mb-20 text-center"
+      {/* Shop Header */}
+      <motion.div
+        className="mb-16 border-b border-[#020312]/10 pb-10"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.h1 
-          className="text-4xl md:text-5xl font-serif mb-6 text-[#020312]"
+        <motion.p
+          className="text-xs uppercase tracking-[0.2em] text-[#020312]/40 mb-4"
           variants={itemVariants}
         >
-          Art Prints
+          Limited Edition
+        </motion.p>
+        <motion.h1
+          className="font-serif text-5xl md:text-7xl text-[#020312] tracking-tight"
+          variants={itemVariants}
+        >
+          The Prints
         </motion.h1>
-        <motion.p 
-          className="text-[#020312]/70 max-w-2xl mx-auto"
+        <motion.p
+          className="text-[#020312]/60 mt-4 max-w-md text-sm leading-relaxed"
           variants={itemVariants}
         >
-          Explore my collection of limited edition fine art prints. Each piece is meticulously crafted and individually numbered.
+          Each piece is numbered and printed once. When 150 are sold, the edition closes permanently.
         </motion.p>
       </motion.div>
 
