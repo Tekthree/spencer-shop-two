@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { supabase } from '@/lib/supabase/client';
+import sql from '@/lib/db/client';
 
 /**
  * Generates metadata for the about page
@@ -8,18 +8,19 @@ import { supabase } from '@/lib/supabase/client';
 export async function generateMetadata(): Promise<Metadata> {
   // Base URL from environment variable or default
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
-  
+
   // Try to fetch the artist statement from the database for a more personalized description
   let description = 'Learn about Spencer Grey, a contemporary artist creating minimalist fine art prints with a focus on quality and sustainability.';
-  
+
   try {
-    const { data } = await supabase
-      .from('page_content')
-      .select('content')
-      .eq('page', 'about')
-      .eq('section', 'artist_statement')
-      .single();
-    
+    const rows = await sql`
+      SELECT content FROM page_content
+      WHERE page = 'about'
+        AND section = 'artist_statement'
+      LIMIT 1
+    ` as { content: string }[];
+
+    const data = rows[0];
     if (data?.content) {
       // Use the first 160 characters of the artist statement as the description
       description = data.content.substring(0, 160) + (data.content.length > 160 ? '...' : '');
@@ -27,15 +28,15 @@ export async function generateMetadata(): Promise<Metadata> {
   } catch (error) {
     console.error('Error fetching about page content for metadata:', error);
   }
-  
+
   return {
     title: 'About | Spencer Grey Art',
     description,
     keywords: [
-      'Spencer Grey', 
-      'artist biography', 
-      'contemporary artist', 
-      'art philosophy', 
+      'Spencer Grey',
+      'artist biography',
+      'contemporary artist',
+      'art philosophy',
       'artist statement',
       'fine art prints',
       'artist background',

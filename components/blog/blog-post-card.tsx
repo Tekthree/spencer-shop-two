@@ -12,12 +12,12 @@ export function resolveCoverImage(src?: string) {
     return src;
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
   if (!baseUrl) {
     return `/${src}`;
   }
 
-  return `${baseUrl}/storage/v1/object/public/${src}`;
+  return `${baseUrl}/${src}`;
 }
 
 export default function BlogPostCard({ post }: { post: BlogPost }) {

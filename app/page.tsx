@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase/client";
+import sql from "@/lib/db/client";
 import HomePageClient from "./home-page-client";
 
 /**
@@ -47,23 +47,25 @@ interface FormattedArtwork {
 
 export default async function Home() {
   try {
-    // Fetch featured artworks from Supabase
-    const { data: featuredArtworksData } = await supabase
-      .from('artworks')
-      .select('id, slug, title, images, sizes, featured')
-      .eq('featured', true)
-      .order('created_at', { ascending: false })
-      .limit(5);
+    // Fetch featured artworks from Neon
+    const featuredArtworksData = await sql`
+      SELECT id, slug, title, images, sizes, featured
+      FROM artworks
+      WHERE featured = true
+      ORDER BY created_at DESC
+      LIMIT 5
+    ` as Artwork[];
 
-    // Fetch recent artworks from Supabase
-    const { data: recentArtworksData } = await supabase
-      .from('artworks')
-      .select('id, slug, title, images, sizes')
-      .order('created_at', { ascending: false })
-      .limit(5);
+    // Fetch recent artworks from Neon
+    const recentArtworksData = await sql`
+      SELECT id, slug, title, images, sizes
+      FROM artworks
+      ORDER BY created_at DESC
+      LIMIT 5
+    ` as Artwork[];
 
     // Format the featured artworks data
-    const formattedFeaturedArtworks: FormattedArtwork[] = featuredArtworksData?.map((artwork: Artwork) => ({
+    const formattedFeaturedArtworks: FormattedArtwork[] = featuredArtworksData.map((artwork: Artwork) => ({
       id: artwork.id,
       slug: artwork.slug,
       title: artwork.title,
@@ -77,12 +79,12 @@ export default async function Home() {
         type: img.type
       })),
       sizes: artwork.sizes || []
-    })) || [];
+    }));
 
     // Recent artworks don't need tags anymore
 
     // Format the recent artworks data
-    const formattedRecentArtworks = recentArtworksData?.map((artwork: Artwork) => ({
+    const formattedRecentArtworks = recentArtworksData.map((artwork: Artwork) => ({
       id: artwork.id,
       slug: artwork.slug,
       title: artwork.title,
@@ -98,7 +100,7 @@ export default async function Home() {
       })),
       sizes: artwork.sizes || [],
       hidePrice: true
-    })) || [];
+    }));
 
     return <HomePageClient 
       featuredArtworks={formattedFeaturedArtworks} 

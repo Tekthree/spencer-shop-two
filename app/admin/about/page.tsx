@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
 import ImageUploader from '@/components/admin/image-uploader';
 import ImageLibraryPickerModal from '@/components/admin/image-library-picker-modal';
-import { type StorageImage } from '@/lib/supabase/storage';
+import type { R2Image } from '@/lib/storage/r2';
 import Image from 'next/image';
 
 interface ContentSection {
@@ -33,15 +32,9 @@ export default function AboutPageAdmin() {
   useEffect(() => {
     const fetchSections = async () => {
       try {
-        const { data, error } = await supabase
-          .from('page_content')
-          .select('*')
-          .eq('page', 'about')
-          .order('order');
-
-        if (error) {
-          throw error;
-        }
+        const response = await fetch('/api/admin/about');
+        if (!response.ok) throw new Error('Failed to fetch sections');
+        const data = await response.json();
 
         if (data && data.length > 0) {
           setSections(data);
@@ -126,7 +119,7 @@ export default function AboutPageAdmin() {
     }
   };
 
-  const handleImageLibrarySelect = (image: StorageImage) => {
+  const handleImageLibrarySelect = (image: R2Image) => {
     if (libraryTargetIndex === null) return;
 
     const newSections = [...sections];
@@ -155,29 +148,18 @@ export default function AboutPageAdmin() {
 
       console.log('Saving about page content:', upsertData);
 
-      // First delete all existing content to avoid conflicts
-      const { error: deleteError } = await supabase
-        .from('page_content')
-        .delete()
-        .eq('page', 'about');
+      const response = await fetch('/api/admin/about', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sections: upsertData }),
+      });
 
-      if (deleteError) {
-        console.error('Error deleting existing content:', deleteError);
-        throw deleteError;
+      if (!response.ok) {
+        const body = await response.json();
+        throw new Error(body.error || 'Failed to save content');
       }
 
-      // Then insert the new content
-      const { data, error: insertError } = await supabase
-        .from('page_content')
-        .insert(upsertData)
-        .select();
-
-      if (insertError) {
-        console.error('Error inserting content:', insertError);
-        throw insertError;
-      }
-
-      console.log('Successfully saved content:', data);
+      console.log('Successfully saved content');
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);

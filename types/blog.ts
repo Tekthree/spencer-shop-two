@@ -2,7 +2,8 @@ export type BlogContentBlock =
   | { type: 'heading'; level?: 2 | 3 | 4; text: string }
   | { type: 'paragraph'; text: string }
   | { type: 'image'; url: string; alt: string; caption?: string }
-  | { type: 'quote'; text: string; attribution?: string };
+  | { type: 'quote'; text: string; attribution?: string }
+  | { type: 'rich_text'; html: string; raw?: string };
 
 export type BlogStatus = 'draft' | 'published' | 'scheduled';
 

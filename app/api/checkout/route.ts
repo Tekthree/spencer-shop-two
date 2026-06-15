@@ -5,8 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import stripe from '@/lib/stripe/stripe-server';
-// Import the createClient function with a relative path to avoid path alias issues
-import { createClient } from '../../../lib/supabase/server';
+import sql from '@/lib/db/client';
 import { z } from 'zod';
 
 // Define the schema for the checkout request
@@ -61,22 +60,19 @@ export async function POST(request: NextRequest) {
     // Validate the request body
     const { items, customerInfo } = checkoutSchema.parse(body);
     
-    // Initialize Supabase client
-    const supabase = createClient();
-    
     // Create line items for Stripe checkout
     const lineItems = await Promise.all(
       items.map(async (item) => {
         // Check if the artwork exists and has available editions
-        const { data: artwork, error } = await supabase
-          .from('artworks')
-          .select('id, title, sizes')
-          .eq('id', item.id)
-          .single();
+        const rows = await sql`
+          SELECT id, title, sizes FROM artworks WHERE id = ${item.id} LIMIT 1
+        `;
 
-        if (error || !artwork) {
+        if (!rows.length) {
           throw new Error(`Artwork with ID ${item.id} not found`);
         }
+
+        const artwork = rows[0] as { id: string; title: string; sizes: SizeInfo[] };
 
         // Find the selected size in the artwork sizes
         // Define a type for the size information
@@ -86,7 +82,7 @@ export async function POST(request: NextRequest) {
           edition_limit: number;
           editions_sold: number;
         };
-        
+
         const sizeInfo = artwork.sizes.find((s: SizeInfo) => s.size === item.size);
         
         if (!sizeInfo) {

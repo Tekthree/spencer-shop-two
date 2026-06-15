@@ -10,17 +10,10 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Get the directory name
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.join(__dirname, '..');
 
-/**
- * Runs a command and returns its output
- * @param {string} command - Command to execute
- * @param {Object} options - Options for execution
- * @returns {string} Command output
- */
 function runCommand(command, options = {}) {
   console.log(`Running: ${command}`);
   return execSync(command, {
@@ -30,85 +23,83 @@ function runCommand(command, options = {}) {
   });
 }
 
-/**
- * Checks if required environment variables are set
- * @returns {boolean} True if all required variables are set
- */
 function checkEnvVariables() {
   const requiredVars = [
-    'NEXT_PUBLIC_SUPABASE_URL',
-    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    'DATABASE_URL',
+    'SESSION_SECRET',
+    'ADMIN_EMAIL',
+    'ADMIN_PASSWORD_HASH',
+    'R2_ACCOUNT_ID',
+    'R2_ACCESS_KEY_ID',
+    'R2_SECRET_ACCESS_KEY',
+    'R2_BUCKET_NAME',
+    'R2_PUBLIC_URL',
+    'NEXT_PUBLIC_R2_PUBLIC_URL',
     'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
-    'STRIPE_SECRET_KEY'
+    'STRIPE_SECRET_KEY',
+    'STRIPE_WEBHOOK_SECRET'
   ];
-  
+
   const envPath = path.join(rootDir, '.env.local');
   if (!fs.existsSync(envPath)) {
-    console.error('❌ .env.local file not found!');
+    console.error('.env.local file not found!');
     return false;
   }
-  
+
   const envContent = fs.readFileSync(envPath, 'utf8');
   const missingVars = [];
-  
+
   for (const varName of requiredVars) {
     if (!envContent.includes(`${varName}=`)) {
       missingVars.push(varName);
     }
   }
-  
+
   if (missingVars.length > 0) {
-    console.error('❌ Missing required environment variables:');
+    console.error('Missing required environment variables:');
     missingVars.forEach(v => console.error(`  - ${v}`));
     return false;
   }
-  
+
   return true;
 }
 
-/**
- * Main deployment preparation function
- */
 async function deploy() {
-  console.log('🚀 Preparing Spencer Grey website for deployment...');
-  
-  // Check environment variables
+  console.log('Preparing Spencer Grey website for deployment...');
+
   if (!checkEnvVariables()) {
-    console.error('❌ Environment check failed. Please set all required variables in .env.local');
+    console.error('Environment check failed. Please set all required variables in .env.local');
     process.exit(1);
   }
-  
-  // Run lint
-  console.log('🧹 Running linter...');
+
+  console.log('Running linter...');
   try {
     runCommand('npm run lint');
   } catch {
-    console.error('❌ Linting failed. Please fix the issues before deploying.');
+    console.error('Linting failed. Please fix the issues before deploying.');
     process.exit(1);
   }
-  
-  // Run build
-  console.log('🏗️ Building the application...');
+
+  console.log('Building the application...');
   try {
     runCommand('npm run build');
   } catch {
-    console.error('❌ Build failed. Please fix the issues before deploying.');
+    console.error('Build failed. Please fix the issues before deploying.');
     process.exit(1);
   }
-  
-  console.log('✅ Build successful!');
+
+  console.log('Build successful!');
   console.log('');
-  console.log('🚀 Next steps for deployment:');
+  console.log('Next steps for deployment:');
   console.log('1. Push your code to GitHub');
   console.log('2. Connect your repository to Vercel');
   console.log('3. Configure environment variables in Vercel');
   console.log('4. Deploy your application');
   console.log('');
-  console.log('📖 For detailed instructions, see DEPLOYMENT.md');
+  console.log('For detailed instructions, see DEPLOYMENT.md');
 }
 
-// Run the deployment script
 deploy().catch(err => {
-  console.error('❌ Deployment preparation failed:', err);
+  console.error('Deployment preparation failed:', err);
   process.exit(1);
 });

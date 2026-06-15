@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
 
 import ImageUploader from '@/components/admin/image-uploader';
 import ImageLibraryPickerModal from '@/components/admin/image-library-picker-modal';
-import type { StorageImage } from '@/lib/supabase/storage';
+import type { R2Image } from '@/lib/storage/r2';
+import { createRichTextHtml } from '@/lib/blog/rich-text';
 import type { BlogContentBlock } from '@/types/blog';
 
 interface AdminBlogPost {
@@ -33,22 +33,25 @@ interface FormState {
   excerpt: string;
   coverImageUrl: string;
   coverImageAlt: string;
-  inlineImageUrl: string;
-  inlineImageAlt: string;
-  inlineImageCaption: string;
   authorName: string;
   authorRole: string;
   readTime: string;
   status: BlogStatus;
   publishAt: string;
-  introductionHeading: string;
-  introductionBody: string;
-  bodyContent: string;
-  quoteText: string;
-  quoteAttribution: string;
-  conclusionHeading: string;
-  conclusionBody: string;
+  richText: string;
 }
+
+const SAMPLE_RICH_TEXT = `# Introduction
+
+This is a starting paragraph for your journal story. Share the mood and set expectations for the reader.
+
+![Studio view inside Spencer's workspace](https://www.spencergreyart.com/_next/image?url=https%3A%2F%2Fudanlcylpsvxqlihcppb.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fartworks%2F39a6611c-98f7-4bf0-88a7-016a80edcdc5.jpg&w=2048&q=75 "Studio view inside Spencer's workspace")
+
+Add additional paragraphs after the image to go deeper into the narrative and process behind the work.
+
+## Closing thoughts
+
+Wrap up the entry with what's next, an invitation, or a reflection.`;
 
 const DEFAULT_FORM: FormState = {
   title: '',
@@ -57,21 +60,12 @@ const DEFAULT_FORM: FormState = {
   excerpt: '',
   coverImageUrl: '',
   coverImageAlt: '',
-  inlineImageUrl: '',
-  inlineImageAlt: '',
-  inlineImageCaption: '',
   authorName: 'Spencer Grey',
   authorRole: 'Artist & Founder',
   readTime: '4',
   status: 'published',
   publishAt: '',
-  introductionHeading: 'Introduction',
-  introductionBody: '',
-  bodyContent: '',
-  quoteText: '',
-  quoteAttribution: '',
-  conclusionHeading: 'Conclusion',
-  conclusionBody: '',
+  richText: SAMPLE_RICH_TEXT,
 };
 
 function slugify(value: string) {
@@ -82,67 +76,27 @@ function slugify(value: string) {
     .replace(/\s+/g, '-');
 }
 
-function splitParagraphs(text: string) {
-  return text
-    .split(/\n+/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-}
-
 function buildContentBlocks(form: FormState): BlogContentBlock[] {
-  const blocks: BlogContentBlock[] = [];
-
-  const introHeading = form.introductionHeading.trim();
-  if (introHeading) {
-    blocks.push({ type: 'heading', level: 2, text: introHeading });
+  const { html, raw } = createRichTextHtml(form.richText);
+  if (!html) {
+    return [];
   }
 
-  splitParagraphs(form.introductionBody).forEach((paragraph) => {
-    blocks.push({ type: 'paragraph', text: paragraph });
-  });
-
-  if (form.inlineImageUrl) {
-    const inlineAlt = form.inlineImageAlt.trim() || form.title;
-    const inlineCaption = form.inlineImageCaption.trim();
-
-    blocks.push({
-      type: 'image',
-      url: form.inlineImageUrl.trim(),
-      alt: inlineAlt,
-      caption: inlineCaption ? inlineCaption : undefined,
-    });
-  }
-
-  splitParagraphs(form.bodyContent).forEach((paragraph) => {
-    blocks.push({ type: 'paragraph', text: paragraph });
-  });
-
-  if (form.quoteText) {
-    blocks.push({
-      type: 'quote',
-      text: form.quoteText,
-      attribution: form.quoteAttribution || undefined,
-    });
-  }
-
-  const conclusionHeading = form.conclusionHeading.trim();
-  if (conclusionHeading) {
-    blocks.push({ type: 'heading', level: 2, text: conclusionHeading });
-  }
-
-  splitParagraphs(form.conclusionBody).forEach((paragraph) => {
-    blocks.push({ type: 'paragraph', text: paragraph });
-  });
-
-  return blocks;
+  return [
+    {
+      type: 'rich_text',
+      html,
+      raw,
+    },
+  ];
 }
 
 function resolveImage(src?: string | null) {
   if (!src) return null;
   if (src.startsWith('http') || src.startsWith('/')) return src;
-  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
   if (!baseUrl) return `/${src}`;
-  return `${baseUrl}/storage/v1/object/public/${src}`;
+  return `${baseUrl}/${src}`;
 }
 
 export default function BlogAdminPage() {
@@ -151,55 +105,33 @@ export default function BlogAdminPage() {
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [postsError, setPostsError] = useState<string | null>(null);
 
-  const [form, setForm] = useState<FormState>(DEFAULT_FORM);
+  const [form, setForm] = useState<FormState>({ ...DEFAULT_FORM });
   const [slugEditedManually, setSlugEditedManually] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isCoverLibraryOpen, setIsCoverLibraryOpen] = useState(false);
-  const [isInlineLibraryOpen, setIsInlineLibraryOpen] = useState(false);
-
-  const supabaseClient = useMemo(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Supabase credentials are missing in environment variables.');
-      return null;
-    }
-
-    return createClient(supabaseUrl, supabaseAnonKey);
-  }, []);
 
   useEffect(() => {
-    if (!supabaseClient) {
-      setPostsError('Supabase credentials are not configured.');
-      setLoadingPosts(false);
-      return;
-    }
-
     const fetchPosts = async () => {
       setLoadingPosts(true);
       setPostsError(null);
 
-      const { data, error } = await supabaseClient
-        .from('blog_posts')
-        .select('id, title, slug, status, published_at, created_at, category, cover_image')
-        .order('published_at', { ascending: false, nullsFirst: false })
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching blog posts:', error);
-        setPostsError('Unable to load blog posts. Please try again.');
-      } else {
+      try {
+        const response = await fetch('/api/admin/blog');
+        if (!response.ok) throw new Error('Unable to load blog posts');
+        const data = await response.json();
         setPosts(data ?? []);
+      } catch (err) {
+        console.error('Error fetching blog posts:', err);
+        setPostsError('Unable to load blog posts. Please try again.');
+      } finally {
+        setLoadingPosts(false);
       }
-
-      setLoadingPosts(false);
     };
 
     fetchPosts();
-  }, [supabaseClient]);
+  }, []);
 
   const handleInputChange = (field: keyof FormState) => (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -252,68 +184,36 @@ export default function BlogAdminPage() {
     }));
   };
 
-  const handleInlineUpload = (urls: string[]) => {
-    if (urls.length === 0) return;
-    const inlineUrl = urls[0];
-    const fallbackAlt = toReadableAlt(inlineUrl.split('/').pop() ?? '');
-    setForm((prev) => ({
-      ...prev,
-      inlineImageUrl: inlineUrl,
-      inlineImageAlt: resolveAlt(prev.inlineImageAlt, prev.title, fallbackAlt),
-    }));
-  };
-
-  const applyLibraryImage = (target: 'cover' | 'inline', image: StorageImage) => {
-    const fallbackAlt = toReadableAlt(image.name);
+  const applyLibraryImage = (image: R2Image) => {
+    const fallbackAlt = toReadableAlt(image.key.split('/').pop() ?? image.key);
 
     setForm((prev) => {
-      if (target === 'cover') {
-        return {
-          ...prev,
-          coverImageUrl: image.url,
-          coverImageAlt: resolveAlt(prev.coverImageAlt, prev.title, fallbackAlt),
-        };
-      }
-
       return {
         ...prev,
-        inlineImageUrl: image.url,
-        inlineImageAlt: resolveAlt(prev.inlineImageAlt, prev.title, fallbackAlt),
+        coverImageUrl: image.url,
+        coverImageAlt: resolveAlt(prev.coverImageAlt, prev.title, fallbackAlt),
       };
     });
   };
 
   const resetForm = () => {
-    setForm(DEFAULT_FORM);
+    setForm({ ...DEFAULT_FORM });
     setSlugEditedManually(false);
   };
 
   const refreshPosts = async () => {
-    if (!supabaseClient) {
-      return;
+    try {
+      const response = await fetch('/api/admin/blog');
+      if (!response.ok) return;
+      const data = await response.json();
+      setPosts(data ?? []);
+    } catch (err) {
+      console.error('Error refreshing blog posts:', err);
     }
-
-    const { data, error } = await supabaseClient
-      .from('blog_posts')
-      .select('id, title, slug, status, published_at, created_at, category, cover_image')
-      .order('published_at', { ascending: false, nullsFirst: false })
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error refreshing blog posts:', error);
-      return;
-    }
-
-    setPosts(data ?? []);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (!supabaseClient) {
-      setFormError('Supabase credentials are not configured.');
-      return;
-    }
 
     if (!form.title.trim()) {
       setFormError('Please add a title for the post.');
@@ -343,7 +243,7 @@ export default function BlogAdminPage() {
 
     const contentBlocks = buildContentBlocks(form);
     if (contentBlocks.length === 0) {
-      setFormError('Add at least one paragraph to the article.');
+      setFormError('Add the article body before publishing.');
       return;
     }
 
@@ -358,37 +258,33 @@ export default function BlogAdminPage() {
         : publishAt;
 
     const contentFormState = {
-      introductionHeading: form.introductionHeading.trim(),
-      introductionBody: form.introductionBody.trim(),
-      bodyContent: form.bodyContent.trim(),
-      quoteText: form.quoteText.trim(),
-      quoteAttribution: form.quoteAttribution.trim(),
-      conclusionHeading: form.conclusionHeading.trim(),
-      conclusionBody: form.conclusionBody.trim(),
-      inlineImageUrl: form.inlineImageUrl.trim(),
-      inlineImageAlt: form.inlineImageAlt.trim(),
-      inlineImageCaption: form.inlineImageCaption.trim(),
+      richText: form.richText.trim(),
     };
 
-    const { error } = await supabaseClient.from('blog_posts').insert({
-      title: form.title.trim(),
-      slug: slugify(form.slug),
-      excerpt: form.excerpt.trim(),
-      category: form.category.trim() || null,
-      cover_image: form.coverImageUrl.trim(),
-      cover_image_alt: form.coverImageAlt.trim() || null,
-      author_name: form.authorName.trim() || 'Spencer Grey',
-      author_role: form.authorRole.trim() || null,
-      read_time_minutes: readTimeMinutes,
-      status: form.status,
-      published_at: computedPublishedAt,
-      content: contentBlocks,
-      content_form: contentFormState,
+    const response = await fetch('/api/admin/blog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: form.title.trim(),
+        slug: slugify(form.slug),
+        excerpt: form.excerpt.trim(),
+        category: form.category.trim() || null,
+        cover_image: form.coverImageUrl.trim(),
+        cover_image_alt: form.coverImageAlt.trim() || null,
+        author_name: form.authorName.trim() || 'Spencer Grey',
+        author_role: form.authorRole.trim() || null,
+        read_time_minutes: readTimeMinutes,
+        status: form.status,
+        published_at: computedPublishedAt,
+        content: contentBlocks,
+        content_form: contentFormState,
+      }),
     });
 
-    if (error) {
-      console.error('Error creating blog post:', error);
-      setFormError(error.message || 'Unable to create blog post. Please try again.');
+    if (!response.ok) {
+      const body = await response.json();
+      console.error('Error creating blog post:', body);
+      setFormError(body.error || 'Unable to create blog post. Please try again.');
     } else {
       setFormSuccess('Blog post created successfully.');
       resetForm();
@@ -610,130 +506,24 @@ export default function BlogAdminPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-serif">Inline image (optional)</h2>
-          <div className="flex flex-wrap items-center gap-3">
-            <ImageUploader
-              bucketName="blog"
-              multiple={false}
-              onUploadComplete={handleInlineUpload}
-              className="bg-gray-50 flex-1"
-            />
-            <button
-              type="button"
-              onClick={() => setIsInlineLibraryOpen(true)}
-              className="text-sm font-medium text-gray-600 underline-offset-4 hover:text-black hover:underline"
-            >
-              Choose from Image Library
-            </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-              <input
-                type="text"
-                value={form.inlineImageUrl}
-                onChange={handleInputChange('inlineImageUrl')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                placeholder="https://..."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Alt text</label>
-              <input
-                type="text"
-                value={form.inlineImageAlt}
-                onChange={handleInputChange('inlineImageAlt')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                placeholder="Studio photograph description"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Caption</label>
-              <input
-                type="text"
-                value={form.inlineImageCaption}
-                onChange={handleInputChange('inlineImageCaption')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                placeholder="Optional caption"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-6">
-          <h2 className="text-xl font-serif">Article template</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Introduction heading</label>
-              <input
-                type="text"
-                value={form.introductionHeading}
-                onChange={handleInputChange('introductionHeading')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Conclusion heading</label>
-              <input
-                type="text"
-                value={form.conclusionHeading}
-                onChange={handleInputChange('conclusionHeading')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Introduction paragraphs</label>
-            <textarea
-              value={form.introductionBody}
-              onChange={handleInputChange('introductionBody')}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-              rows={4}
-              placeholder="Separate paragraphs with a new line."
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Main story</label>
-            <textarea
-              value={form.bodyContent}
-              onChange={handleInputChange('bodyContent')}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-              rows={6}
-              placeholder="Share your process, new collection details, or exhibition notes."
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Pull quote</label>
-              <textarea
-                value={form.quoteText}
-                onChange={handleInputChange('quoteText')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                rows={3}
-                placeholder="Add a standout sentence to highlight in the article."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Quote attribution</label>
-              <input
-                type="text"
-                value={form.quoteAttribution}
-                onChange={handleInputChange('quoteAttribution')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                placeholder="Spencer Grey"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Conclusion</label>
-            <textarea
-              value={form.conclusionBody}
-              onChange={handleInputChange('conclusionBody')}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-              rows={4}
-              placeholder="Wrap up with a call to action or thank you."
-            />
-          </div>
+          <h2 className="text-xl font-serif">Article body</h2>
+          <p className="text-sm text-gray-600">
+            Write the full story here. Separate paragraphs with a blank line. Start lines with <code>#</code> or
+            <code>##</code> for headings, use <code>&gt;</code> for pull quotes, and add inline images with{' '}
+            <code>![Alt text](https://image-url.jpg &quot;Optional caption&quot;)</code>. Keep a blank line before and after image
+            syntax for best results.
+          </p>
+          <textarea
+            value={form.richText}
+            onChange={handleInputChange('richText')}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black font-mono text-sm"
+            rows={16}
+            placeholder={SAMPLE_RICH_TEXT}
+          />
+          <p className="text-xs text-gray-400">
+            Formatting tips: blank lines create new paragraphs, numbered lists (e.g. <code>1.</code>) and bullet lists (e.g.
+            <code>-</code>) are supported.
+          </p>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -851,14 +641,7 @@ export default function BlogAdminPage() {
       <ImageLibraryPickerModal
         isOpen={isCoverLibraryOpen}
         onClose={() => setIsCoverLibraryOpen(false)}
-        onSelect={(image) => applyLibraryImage('cover', image)}
-        buckets={['blog', 'artworks', 'collections', 'about']}
-        initialBucket="blog"
-      />
-      <ImageLibraryPickerModal
-        isOpen={isInlineLibraryOpen}
-        onClose={() => setIsInlineLibraryOpen(false)}
-        onSelect={(image) => applyLibraryImage('inline', image)}
+        onSelect={applyLibraryImage}
         buckets={['blog', 'artworks', 'collections', 'about']}
         initialBucket="blog"
       />

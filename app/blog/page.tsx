@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import BlogPostCard from '@/components/blog/blog-post-card';
-import { fetchPublishedBlogPosts } from '@/lib/supabase/blog';
+import { fetchPublishedBlogPosts } from '@/lib/db/blog';
 
 export const metadata: Metadata = {
   title: 'Journal',

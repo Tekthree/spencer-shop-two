@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from '@/lib/supabase/auth';
 import Link from 'next/link';
 
 /**
@@ -26,19 +25,20 @@ export default function AdminLoginPage() {
     setError(null);
 
     try {
-      const { error } = await signIn(email, password);
-      
-      if (error) {
-        setError(error.message);
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? 'Invalid credentials');
         setLoading(false);
         return;
       }
-
-      // Redirect to admin dashboard on successful login
       router.push('/admin');
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
-      console.error('Login error:', err);
+      setError(err instanceof Error ? err.message : 'Invalid credentials');
       setLoading(false);
     }
   };

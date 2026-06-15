@@ -9,7 +9,7 @@ Use this checklist to ensure your website is ready for production deployment.
 - [ ] All tests pass successfully
 - [ ] Environment variables are properly configured
 - [ ] Stripe integration is tested in test mode
-- [ ] Supabase tables and RLS policies are correctly set up
+- [ ] Neon database tables are correctly set up (run `node scripts/apply-migrations.js`)
 - [ ] All images are optimized and using Next.js Image component
 - [ ] Responsive design works on all target devices
 - [ ] Admin routes are properly secured
@@ -18,13 +18,20 @@ Use this checklist to ensure your website is ready for production deployment.
 
 Ensure these environment variables are set in your deployment platform:
 
-- [ ] `NEXT_PUBLIC_SUPABASE_URL`
-- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- [ ] `SUPABASE_SERVICE_ROLE_KEY`
+- [ ] `DATABASE_URL`
+- [ ] `SESSION_SECRET`
+- [ ] `ADMIN_EMAIL`
+- [ ] `ADMIN_PASSWORD_HASH`
+- [ ] `R2_ACCOUNT_ID`
+- [ ] `R2_ACCESS_KEY_ID`
+- [ ] `R2_SECRET_ACCESS_KEY`
+- [ ] `R2_BUCKET_NAME`
+- [ ] `R2_PUBLIC_URL`
+- [ ] `NEXT_PUBLIC_R2_PUBLIC_URL`
 - [ ] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - [ ] `STRIPE_SECRET_KEY`
 - [ ] `STRIPE_WEBHOOK_SECRET`
-- [ ] `NEXT_PUBLIC_SITE_URL`
+- [ ] `NEXT_PUBLIC_APP_URL`
 
 ## Build and Deploy
 
@@ -41,7 +48,7 @@ Ensure these environment variables are set in your deployment platform:
 - [ ] Checkout process completes successfully
 - [ ] Admin dashboard is accessible and functional
 - [ ] Contact form submits correctly
-- [ ] Image uploads work in admin sections
+- [ ] Image uploads work in admin sections (R2)
 - [ ] Stripe webhooks are receiving events
 - [ ] 404 and error pages display correctly
 
@@ -50,8 +57,8 @@ Ensure these environment variables are set in your deployment platform:
 - [ ] Run Lighthouse audit and address critical issues
 - [ ] Verify SSL is properly configured
 - [ ] Check that sensitive API routes are protected
-- [ ] Ensure Supabase RLS policies are working as expected
 - [ ] Verify that admin routes require authentication
+- [ ] Confirm SESSION_SECRET is a strong, random value
 
 ## Final Steps
 

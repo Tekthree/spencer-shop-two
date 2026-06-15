@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 
 /**
@@ -19,30 +18,13 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch artwork count
-        const { count: artworksCount, error: artworksError } = await supabase
-          .from('artworks')
-          .select('*', { count: 'exact', head: true });
-
-        // Fetch collections count
-        const { count: collectionsCount, error: collectionsError } = await supabase
-          .from('collections')
-          .select('*', { count: 'exact', head: true });
-
-        // Fetch orders count
-        const { count: ordersCount, error: ordersError } = await supabase
-          .from('orders')
-          .select('*', { count: 'exact', head: true });
-
-        if (artworksError || collectionsError || ordersError) {
-          console.error('Error fetching stats:', { artworksError, collectionsError, ordersError });
-          return;
-        }
-
+        const response = await fetch('/api/admin/stats');
+        if (!response.ok) throw new Error('Failed to fetch stats');
+        const data = await response.json();
         setStats({
-          artworks: artworksCount || 0,
-          collections: collectionsCount || 0,
-          orders: ordersCount || 0,
+          artworks: data.artworks ?? 0,
+          collections: data.collections ?? 0,
+          orders: data.orders ?? 0,
         });
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
@@ -118,8 +100,8 @@ export default function AdminDashboard() {
         <h2 className="text-xl font-serif mb-6">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {quickLinks.map((link, index) => (
-            <Link 
-              key={index} 
+            <Link
+              key={index}
               href={link.href}
               className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
             >

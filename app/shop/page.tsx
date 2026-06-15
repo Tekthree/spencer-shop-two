@@ -1,8 +1,4 @@
-"use client";
-
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { ShopSkeleton } from '@/components/ui/skeleton';
+import sql from '@/lib/db/client';
 import ShopPageClient from './shop-page-client';
 
 interface Artwork {
@@ -20,40 +16,18 @@ interface Artwork {
  * Shop All Art Page
  * Displays a grid of all available artworks for purchase
  */
-export default function ShopAllArtPage() {
-  const [artworks, setArtworks] = useState<Artwork[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default async function ShopAllArtPage() {
+  try {
+    const artworks = await sql`
+      SELECT id, slug, title, year, medium, images, collection_id, sizes
+      FROM artworks
+      ORDER BY created_at DESC
+    ` as Artwork[];
 
-  useEffect(() => {
-    const fetchAllArtworks = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('artworks')
-          .select('id, slug, title, year, medium, images, collection_id, sizes')
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          throw error;
-        }
-
-        setArtworks(data || []);
-      } catch (err: unknown) {
-        const error = err as { message?: string };
-        console.error('Error fetching artworks:', error);
-        setError(error.message || 'Failed to load artworks');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllArtworks();
-  }, []);
-
-  if (loading) {
-    return <ShopSkeleton />;
+    return <ShopPageClient artworks={artworks} error={null} />;
+  } catch (err: unknown) {
+    const error = err as { message?: string };
+    console.error('Error fetching artworks:', error);
+    return <ShopPageClient artworks={[]} error={error.message || 'Failed to load artworks'} />;
   }
-
-  // Use the client component to handle animations
-  return <ShopPageClient artworks={artworks} error={error} />;
 }

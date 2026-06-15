@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { supabase } from '@/lib/supabase/client';
+import sql from '@/lib/db/client';
 
 /**
  * Generates metadata for artwork detail pages
@@ -9,44 +9,56 @@ import { supabase } from '@/lib/supabase/client';
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   // Base URL from environment variable or default
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
-  
+
   try {
     // Fetch artwork data
-    const { data: artwork } = await supabase
-      .from('artworks')
-      .select('*, collections(name)')
-      .eq('slug', params.slug)
-      .single();
-    
+    const rows = await sql`
+      SELECT a.*, c.name AS collection_name
+      FROM artworks a
+      LEFT JOIN collections c ON c.id = a.collection_id
+      WHERE a.slug = ${params.slug}
+      LIMIT 1
+    `;
+
+    const artwork = rows[0] as {
+      title: string;
+      description?: string;
+      medium?: string;
+      year?: number;
+      images?: { url: string }[];
+      sizes?: { price: number }[];
+      collection_name?: string;
+    } | undefined;
+
     if (!artwork) {
       return {
         title: 'Artwork Not Found',
         description: 'The requested artwork could not be found.',
       };
     }
-    
+
     // Get the first image URL or a placeholder
-    const imageUrl = artwork.images && artwork.images.length > 0 
-      ? artwork.images[0].url 
+    const imageUrl = artwork.images && artwork.images.length > 0
+      ? artwork.images[0].url
       : '/images/og-image.jpg';
-    
+
     // Format the absolute image URL
-    const absoluteImageUrl = imageUrl.startsWith('http') 
-      ? imageUrl 
+    const absoluteImageUrl = imageUrl.startsWith('http')
+      ? imageUrl
       : `${baseUrl}${imageUrl}`;
-    
+
     // Format price from cents to dollars
     const lowestPrice = artwork.sizes && artwork.sizes.length > 0
       ? Math.min(...artwork.sizes.map((size: { price: number }) => size.price))
       : 0;
-    
+
     const formattedPrice = (lowestPrice / 100).toFixed(2);
-    
+
     // Create a detailed description
-    const description = artwork.description 
+    const description = artwork.description
       ? `${artwork.title} - ${artwork.description}`
       : `Limited edition fine art print by Spencer Grey: ${artwork.title}. ${artwork.medium || 'Fine art print'}, ${artwork.year || ''}.`;
-    
+
     // Generate keywords based on artwork details
     const keywords = [
       'Spencer Grey',
@@ -54,10 +66,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       'limited edition prints',
       artwork.title,
       artwork.medium || 'art print',
-      artwork.collections?.name || 'art collection',
+      artwork.collection_name || 'art collection',
       `${artwork.year || ''} artwork`,
     ].filter(Boolean);
-    
+
     return {
       title: artwork.title,
       description: description.substring(0, 160), // Limit to 160 characters for SEO
@@ -93,7 +105,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
   } catch (error) {
     console.error('Error generating artwork metadata:', error);
-    
+
     return {
       title: 'Artwork | Spencer Grey Art',
       description: 'Discover limited edition fine art prints by Spencer Grey.',

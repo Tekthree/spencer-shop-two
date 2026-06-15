@@ -5,7 +5,8 @@ This guide outlines the steps to deploy the Spencer Grey artist website to produ
 ## Prerequisites
 
 - A Vercel account (recommended for Next.js applications)
-- A Supabase project set up with the required tables
+- A Neon database set up with the required tables
+- A Cloudflare R2 bucket for image storage
 - Stripe account with API keys
 - GitHub repository with your code
 
@@ -14,10 +15,21 @@ This guide outlines the steps to deploy the Spencer Grey artist website to produ
 The following environment variables need to be set in your deployment platform:
 
 ```
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+# Database (Neon)
+DATABASE_URL=your_neon_postgres_connection_string
+
+# Auth
+SESSION_SECRET=your_secret_string_32_chars_or_more
+ADMIN_EMAIL=your_admin_email
+ADMIN_PASSWORD_HASH=your_bcrypt_password_hash
+
+# Cloudflare R2
+R2_ACCOUNT_ID=your_r2_account_id
+R2_ACCESS_KEY_ID=your_r2_access_key_id
+R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
+R2_BUCKET_NAME=your_r2_bucket_name
+R2_PUBLIC_URL=https://your-r2-custom-domain.com
+NEXT_PUBLIC_R2_PUBLIC_URL=https://your-r2-custom-domain.com
 
 # Stripe
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
@@ -25,8 +37,17 @@ STRIPE_SECRET_KEY=your_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 
 # Site
-NEXT_PUBLIC_SITE_URL=your_production_site_url
+NEXT_PUBLIC_APP_URL=your_production_site_url
 ```
+
+## Database Setup
+
+1. Create a Neon project at https://neon.tech
+2. Copy the connection string into `DATABASE_URL`
+3. Run migrations:
+   ```
+   node scripts/apply-migrations.js
+   ```
 
 ## Deployment Steps for Vercel
 
@@ -61,21 +82,21 @@ NEXT_PUBLIC_SITE_URL=your_production_site_url
 1. Verify the site loads correctly
 2. Test the checkout process with Stripe's test mode
 3. Confirm that the admin dashboard is working
-4. Check that image uploads to Supabase storage are functioning
+4. Check that image uploads to R2 are functioning
 
 ## Optimizations
 
 1. **Image Optimization**:
    - Ensure all images use Next.js Image component
-   - Consider using a CDN for large media files
+   - R2 serves as CDN for media files
 
 2. **Performance**:
    - Run Lighthouse tests and address any issues
    - Enable caching where appropriate
 
 3. **Security**:
-   - Ensure Supabase Row Level Security policies are correctly set
    - Verify that admin routes are properly protected
+   - Confirm SESSION_SECRET is a strong, random value
 
 ## Troubleshooting
 
@@ -83,7 +104,7 @@ If you encounter issues during deployment:
 
 1. Check Vercel build logs for errors
 2. Verify all environment variables are correctly set
-3. Ensure Supabase and Stripe connections are working
+3. Ensure Neon and Stripe connections are working
 4. Check for any CORS issues with API endpoints
 
 ## Continuous Deployment
@@ -97,4 +118,4 @@ Vercel automatically deploys when changes are pushed to your main branch. To set
 
 1. Set up error tracking with Vercel Analytics
 2. Monitor Stripe webhook events for payment processing
-3. Set up database monitoring in Supabase
+3. Set up database monitoring in the Neon dashboard

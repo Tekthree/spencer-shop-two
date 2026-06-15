@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { supabase } from '@/lib/supabase/client';
+import sql from '@/lib/db/client';
 
 /**
  * Generates metadata for collection pages
@@ -9,27 +9,30 @@ import { supabase } from '@/lib/supabase/client';
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   // Base URL from environment variable or default
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
-  
+
   try {
     // Fetch collection data
-    const { data: collection } = await supabase
-      .from('collections')
-      .select('name, description')
-      .eq('id', params.id)
-      .single();
-    
+    const rows = await sql`
+      SELECT name, description
+      FROM collections
+      WHERE id = ${params.id}
+      LIMIT 1
+    ` as { name: string; description: string | null }[];
+
+    const collection = rows[0];
+
     if (!collection) {
       return {
         title: 'Collection Not Found',
         description: 'The requested collection could not be found.',
       };
     }
-    
+
     // Create a detailed description
-    const description = collection.description 
+    const description = collection.description
       ? collection.description.substring(0, 160) + (collection.description.length > 160 ? '...' : '')
       : `Explore the ${collection.name} collection by Spencer Grey - Limited edition fine art prints with a focus on quality and sustainability.`;
-    
+
     // Generate keywords based on collection details
     const keywords = [
       'Spencer Grey',
@@ -41,7 +44,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       'contemporary art',
       'minimalist art'
     ].filter(Boolean);
-    
+
     return {
       title: `${collection.name} Collection | Spencer Grey Art`,
       description,
@@ -73,7 +76,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     };
   } catch (error) {
     console.error('Error generating collection metadata:', error);
-    
+
     return {
       title: 'Collection | Spencer Grey Art',
       description: 'Explore art collections by Spencer Grey featuring limited edition fine art prints.',

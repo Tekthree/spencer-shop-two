@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
 import ProductCard from './product-card';
 
 interface Artwork {
@@ -40,43 +39,18 @@ export default function RelatedArtworks({
   useEffect(() => {
     const fetchRelatedArtworks = async () => {
       try {
-        let query = supabase
-          .from('artworks')
-          .select('id, slug, title, year, medium, images, collection_id, sizes')
-          .neq('id', currentArtworkId)
-          .order('created_at', { ascending: false })
-          .limit(limit);
-
-        // If collection ID is provided, filter by that collection
+        const params = new URLSearchParams({
+          currentId: currentArtworkId,
+          limit: String(limit),
+        });
         if (collectionId) {
-          query = query.eq('collection_id', collectionId);
+          params.set('collectionId', collectionId);
         }
 
-        const { data, error } = await query;
-
-        if (error) {
-          throw error;
-        }
-
-        // If we don't have enough artworks from the same collection,
-        // fetch more artworks regardless of collection
-        if (data.length < limit && collectionId) {
-          const { data: moreData, error: moreError } = await supabase
-            .from('artworks')
-            .select('id, slug, title, year, medium, images, collection_id, sizes')
-            .neq('id', currentArtworkId)
-            .neq('collection_id', collectionId)
-            .order('created_at', { ascending: false })
-            .limit(limit - data.length);
-
-          if (moreError) {
-            throw moreError;
-          }
-
-          setArtworks([...data, ...moreData]);
-        } else {
-          setArtworks(data || []);
-        }
+        const response = await fetch(`/api/artworks/related?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch related artworks');
+        const data = await response.json() as Artwork[];
+        setArtworks(data);
       } catch (err: unknown) {
         const error = err as { message?: string };
         console.error('Error fetching related artworks:', error);
@@ -112,7 +86,7 @@ export default function RelatedArtworks({
   }
 
   return (
-    <div className="mt-16">
+    <div className="mt-16 pb-32 md:pb-48 lg:pb-56">
       <h2 className="text-2xl font-serif mb-6">You may also like</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {artworks.map((artwork) => (

@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { supabase } from '@/lib/supabase/client';
+import sql from '@/lib/db/client';
 import { ArtworkImage } from '@/types/artwork';
 import AboutPageClient from './about-page-client';
 
@@ -37,23 +37,18 @@ export const metadata: Metadata = {
  */
 async function getAboutContent() {
   try {
-    const { data, error } = await supabase
-      .from('page_content')
-      .select('*')
-      .eq('page', 'about')
-      .order('order');
+    const data = await sql`
+      SELECT * FROM page_content
+      WHERE page = 'about'
+      ORDER BY "order"
+    ` as ContentSection[];
 
-    if (error) {
-      console.error('Error fetching about page content:', error);
-      return getFallbackContentSections();
-    }
-    
     if (!data || data.length === 0) {
       console.log('No about page content found, using fallback content');
       return getFallbackContentSections();
     }
 
-    return data as ContentSection[];
+    return data;
   } catch (err) {
     console.error('Error connecting to Supabase:', err);
     return getFallbackContentSections();
@@ -123,16 +118,12 @@ const getFallbackContentSections = (): ContentSection[] => {
 const getFeaturedArtworks = async (): Promise<FeaturedArtwork[]> => {
   try {
     // Get all artworks instead of just featured ones to display more in the Shop section
-    const { data, error } = await supabase
-      .from('artworks')
-      .select('id, slug, title, images, price')
-      .order('created_at', { ascending: false })
-      .limit(10); // Increased limit to show more artworks
-
-    if (error) {
-      console.error('Error fetching featured artworks:', error);
-      return getFallbackArtworks();
-    }
+    const data = await sql`
+      SELECT id, slug, title, images, price
+      FROM artworks
+      ORDER BY created_at DESC
+      LIMIT 10
+    ` as { id: string; slug: string; title: string; images: unknown; price?: number }[];
 
     // Format artworks for ProductCard component
     return data.map((artwork, index: number) => {
@@ -171,27 +162,28 @@ const getFeaturedArtworks = async (): Promise<FeaturedArtwork[]> => {
         }
         // Handle case where images is an object with main property
         else if (typeof artwork.images === 'object') {
+          const imgObj = artwork.images as Record<string, unknown>;
           // Try to extract main image
-          if (artwork.images.main) {
+          if (imgObj.main) {
             formattedImages.push({
-              url: artwork.images.main,
+              url: imgObj.main as string,
               alt: artwork.title || `Artwork ${index + 1}`,
               type: 'main'
             });
           }
-          
+
           // Try to extract hover image
-          if (artwork.images.hover) {
+          if (imgObj.hover) {
             formattedImages.push({
-              url: artwork.images.hover,
+              url: imgObj.hover as string,
               alt: `${artwork.title || `Artwork ${index + 1}`} hover view`,
               type: 'hover'
             });
           }
-          
+
           // Try to extract detail images
-          if (artwork.images.details && Array.isArray(artwork.images.details)) {
-            artwork.images.details.forEach((url: string, i: number) => {
+          if (imgObj.details && Array.isArray(imgObj.details)) {
+            (imgObj.details as string[]).forEach((url: string, i: number) => {
               formattedImages.push({
                 url: url,
                 alt: `${artwork.title || `Artwork ${index + 1}`} detail view ${i + 1}`,

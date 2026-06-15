@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
 import ImageUploader from '@/components/admin/image-uploader';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -36,7 +35,7 @@ export default function NewArtwork() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [collections, setCollections] = useState<Collection[]>([]);
-  
+
   // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -57,26 +56,10 @@ export default function NewArtwork() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        // Create a Supabase client instance
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        
-        if (!supabaseUrl || !supabaseAnonKey) {
-          throw new Error('Supabase environment variables are not set');
-        }
-        
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
-        
-        const { data, error } = await supabase
-          .from('collections')
-          .select('id, name')
-          .order('name');
-
-        if (error) {
-          throw error;
-        }
-
-        setCollections(data || []);
+        const response = await fetch('/api/admin/collections');
+        if (!response.ok) throw new Error('Failed to fetch collections');
+        const data = await response.json();
+        setCollections(data);
       } catch (err) {
         console.error('Error fetching collections:', err);
       }
@@ -105,7 +88,7 @@ export default function NewArtwork() {
   // Handle image type change
   const handleImageTypeChange = (index: number, type: string | undefined) => {
     const updatedImages = [...images];
-    
+
     // If setting to 'main', remove 'main' from any other image
     if (type === 'main') {
       updatedImages.forEach((img, i) => {
@@ -114,7 +97,7 @@ export default function NewArtwork() {
         }
       });
     }
-    
+
     updatedImages[index] = { ...updatedImages[index], type };
     setImages(updatedImages);
   };
@@ -124,21 +107,19 @@ export default function NewArtwork() {
     const updatedImages = [...images];
     const wasMain = images[index].type === 'main';
     updatedImages.splice(index, 1);
-    
+
     // If we removed the main image and have other images, set the first one as main
     if (wasMain && updatedImages.length > 0) {
       updatedImages[0] = { ...updatedImages[0], type: 'main' };
     }
-    
+
     setImages(updatedImages);
   };
-
-  // This function is replaced by handleRemoveImage
 
   // Update size option
   const updateSize = (index: number, field: keyof SizeOption, value: string | number) => {
     const newSizes = [...sizes];
-    
+
     // Convert string values to numbers for numeric fields
     if (field === 'price' || field === 'edition_limit' || field === 'editions_sold') {
       newSizes[index][field] = Number(value);
@@ -146,7 +127,7 @@ export default function NewArtwork() {
       // @ts-expect-error - TypeScript doesn't know we're only setting string fields with string values
       newSizes[index][field] = value;
     }
-    
+
     setSizes(newSizes);
   };
 
@@ -170,22 +151,12 @@ export default function NewArtwork() {
     setSuccess(false);
 
     try {
-      // Create a Supabase client instance
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      
-      if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Supabase environment variables are not set');
-      }
-      
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      
       // Validate form data
       if (!title) throw new Error('Title is required');
       if (!year) throw new Error('Year is required');
       if (images.length === 0) throw new Error('At least one image is required');
       if (sizes.length === 0) throw new Error('At least one size option is required');
-      
+
       // Validate that there is a main image
       const mainImage = images.find(img => img.type === 'main');
       if (!mainImage) {
@@ -194,7 +165,7 @@ export default function NewArtwork() {
         updatedImages[0] = { ...updatedImages[0], type: 'main' };
         setImages(updatedImages);
       }
-      
+
       // Validate each size option
       for (const size of sizes) {
         if (!size.size) throw new Error('Size name is required for all size options');
@@ -212,28 +183,29 @@ export default function NewArtwork() {
       }
       setSlug(normalizedSlug);
 
-      // Create new artwork in database
-      const { error } = await supabase
-        .from('artworks')
-        .insert([
-          {
-            slug: normalizedSlug,
-            title,
-            description,
-            year,
-            medium,
-            collection_id: collectionId || null,
-            featured,
-            images,
-            sizes
-          }
-        ])
-        .select();
+      const response = await fetch('/api/admin/artworks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: normalizedSlug,
+          title,
+          description,
+          year,
+          medium,
+          collection_id: collectionId || null,
+          featured,
+          images,
+          sizes,
+        }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create artwork');
+      }
 
       setSuccess(true);
-      
+
       // Redirect after a short delay to show success message
       setTimeout(() => {
         router.push('/admin/artworks');
@@ -281,7 +253,7 @@ export default function NewArtwork() {
         {/* Basic Details */}
         <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
           <h2 className="text-xl font-serif mb-6">Artwork Details</h2>
-          
+
           <div className="grid grid-cols-1 gap-6">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -409,13 +381,13 @@ export default function NewArtwork() {
             Upload images of the artwork. The main image will be displayed as the primary image on all pages.
             Hover images will be shown when a user hovers over the main image in product cards.
           </p>
-          
+
           <ImageUploader
             bucketName="artworks"
             onUploadComplete={handleImageUpload}
             className="mb-4"
           />
-          
+
           {images.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
               {images.map((image, index) => (
@@ -428,7 +400,7 @@ export default function NewArtwork() {
                       style={{ objectFit: 'contain' }}
                     />
                   </div>
-                  
+
                   <div className="mb-2">
                     <label htmlFor={`alt-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
                       Alt Text
@@ -442,7 +414,7 @@ export default function NewArtwork() {
                       placeholder="Describe the image"
                     />
                   </div>
-                  
+
                   <div className="mb-2">
                     <label htmlFor={`type-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
                       Image Type
@@ -458,7 +430,7 @@ export default function NewArtwork() {
                       <option value="hover">Hover Image</option>
                     </select>
                   </div>
-                  
+
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(index)}
@@ -468,13 +440,13 @@ export default function NewArtwork() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
-                  
+
                   {image.type === 'main' && (
                     <div className="absolute top-2 left-2 bg-black text-white text-xs px-2 py-1 rounded">
                       Main
                     </div>
                   )}
-                  
+
                   {image.type === 'hover' && (
                     <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
                       Hover

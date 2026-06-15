@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { getSession } from '@/lib/supabase/auth';
 import AdminSidebar from '@/components/admin/admin-sidebar';
 
 /**
@@ -22,10 +21,10 @@ export default function AdminLayout({
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const session = await getSession();
-        
-        // If no session and not on login page, redirect to login
-        if (!session && !pathname?.includes('/admin/login')) {
+        const res = await fetch('/api/auth/check');
+        const { isAdmin } = await res.json();
+
+        if (!isAdmin && !pathname?.includes('/admin/login')) {
           router.push('/admin/login');
         } else {
           setLoading(false);

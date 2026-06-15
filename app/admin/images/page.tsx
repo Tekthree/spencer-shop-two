@@ -1,23 +1,22 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { fetchImagesFromBuckets, type StorageImage } from '@/lib/supabase/storage';
+import type { R2Image } from '@/lib/storage/r2';
 import ImageUploader from '@/components/admin/image-uploader';
 import Image from 'next/image';
 
 /**
  * Image Library page
- * Centralized management for all uploaded images
+ * Centralised management for all uploaded images, now backed by R2.
  */
 export default function ImageLibrary() {
-  const [images, setImages] = useState<StorageImage[]>([]);
+  const [images, setImages] = useState<R2Image[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedBucket, setSelectedBucket] = useState<string>('all');
+  const [selectedPrefix, setSelectedPrefix] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('newest');
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [buckets] = useState<string[]>(['artworks', 'about', 'collections']);
 
@@ -26,10 +25,21 @@ export default function ImageLibrary() {
     setError(null);
 
     try {
-      const { images: results, errors: fetchErrors } = await fetchImagesFromBuckets(buckets);
+      const results: R2Image[] = [];
 
-      fetchErrors.forEach(({ bucket, error }) => {
-        console.error(`Error listing files in ${bucket}:`, error);
+      const settled = await Promise.allSettled(
+        buckets.map(prefix =>
+          fetch(`/api/images?prefix=${encodeURIComponent(prefix)}`)
+            .then(r => r.json() as Promise<R2Image[]>)
+        )
+      );
+
+      settled.forEach((result, i) => {
+        if (result.status === 'fulfilled' && Array.isArray(result.value)) {
+          results.push(...result.value);
+        } else if (result.status === 'rejected') {
+          console.error(`Error listing prefix ${buckets[i]}:`, result.reason);
+        }
       });
 
       setImages(results);
@@ -41,82 +51,84 @@ export default function ImageLibrary() {
     }
   }, [buckets]);
 
-  // Fetch images from Supabase Storage
   useEffect(() => {
     fetchAllImages();
   }, [fetchAllImages]);
 
-  // Handle image upload
   const handleImageUpload = () => {
     fetchAllImages();
   };
 
-  // Filter images based on selected bucket and search query
+  /** Derive the prefix (first path segment) from the key. */
+  const keyPrefix = (key: string) => key.split('/')[0] ?? '';
+
+  /** Derive a short display name from the R2 key (last path segment). */
+  const displayName = (key: string) => key.split('/').pop() ?? key;
+
+  // Filter images
   const filteredImages = images.filter((image) => {
-    const matchesBucket = selectedBucket === 'all' || image.bucket === selectedBucket;
-    const matchesSearch = searchQuery === '' || 
-      image.name.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    return matchesBucket && matchesSearch;
+    const matchesPrefix = selectedPrefix === 'all' || keyPrefix(image.key) === selectedPrefix;
+    const matchesSearch =
+      searchQuery === '' ||
+      displayName(image.key).toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesPrefix && matchesSearch;
   });
 
   // Sort images
   const sortedImages = [...filteredImages].sort((a, b) => {
     if (sortBy === 'newest') {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      return b.lastModified.getTime() - a.lastModified.getTime();
     } else if (sortBy === 'oldest') {
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      return a.lastModified.getTime() - b.lastModified.getTime();
     } else if (sortBy === 'name_asc') {
-      return a.name.localeCompare(b.name);
+      return displayName(a.key).localeCompare(displayName(b.key));
     } else if (sortBy === 'name_desc') {
-      return b.name.localeCompare(a.name);
+      return displayName(b.key).localeCompare(displayName(a.key));
     } else if (sortBy === 'size_asc') {
-      return a.metadata.size - b.metadata.size;
+      return a.size - b.size;
     } else if (sortBy === 'size_desc') {
-      return b.metadata.size - a.metadata.size;
+      return b.size - a.size;
     }
     return 0;
   });
 
-  // Toggle image selection
-  const toggleImageSelection = (imageId: string) => {
-    if (selectedImages.includes(imageId)) {
-      setSelectedImages(selectedImages.filter(id => id !== imageId));
+  const toggleImageSelection = (key: string) => {
+    if (selectedKeys.includes(key)) {
+      setSelectedKeys(selectedKeys.filter(k => k !== key));
     } else {
-      setSelectedImages([...selectedImages, imageId]);
+      setSelectedKeys([...selectedKeys, key]);
     }
   };
 
-  // Select all visible images
   const selectAllImages = () => {
-    if (selectedImages.length === sortedImages.length) {
-      setSelectedImages([]);
+    if (selectedKeys.length === sortedImages.length) {
+      setSelectedKeys([]);
     } else {
-      setSelectedImages(sortedImages.map(image => image.id));
+      setSelectedKeys(sortedImages.map(image => image.key));
     }
   };
 
-  // Delete selected images
   const deleteSelectedImages = async () => {
-    if (selectedImages.length === 0) return;
-    
+    if (selectedKeys.length === 0) return;
+
     setIsDeleting(true);
-    
+
     try {
-      for (const imageId of selectedImages) {
-        const [bucket, ...pathParts] = imageId.split('/');
-        const path = pathParts.join('/');
-        
-        const { error } = await supabase.storage.from(bucket).remove([path]);
-        
-        if (error) {
-          console.error(`Error deleting ${path} from ${bucket}:`, error);
-        }
-      }
-      
-      // Refresh image list
-      setImages(images.filter(image => !selectedImages.includes(image.id)));
-      setSelectedImages([]);
+      await Promise.all(
+        selectedKeys.map(key =>
+          fetch('/api/images', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key }),
+          }).then(r => {
+            if (!r.ok) console.error(`Error deleting ${key}: ${r.status}`);
+          })
+        )
+      );
+
+      setImages(images.filter(image => !selectedKeys.includes(image.key)));
+      setSelectedKeys([]);
     } catch (err) {
       console.error('Error deleting images:', err);
       setError('Failed to delete one or more images. Please try again.');
@@ -125,21 +137,18 @@ export default function ImageLibrary() {
     }
   };
 
-  // Format file size
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
-    
+
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Copy image URL to clipboard
   const copyImageUrl = (url: string) => {
     navigator.clipboard.writeText(url);
-    // Could add a toast notification here
   };
 
   return (
@@ -152,31 +161,31 @@ export default function ImageLibrary() {
       {/* Upload Section */}
       <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm mb-8">
         <h2 className="text-xl font-serif mb-6">Upload New Images</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <ImageUploader 
+            <ImageUploader
               multiple={true}
               onUploadComplete={(urls) => {
                 console.log('Uploaded images:', urls);
                 handleImageUpload();
               }}
-              bucketName={selectedBucket === 'all' ? 'artworks' : selectedBucket}
+              bucketName={selectedPrefix === 'all' ? 'artworks' : selectedPrefix}
               className="w-full"
             />
           </div>
-          
+
           <div>
             <label htmlFor="bucket" className="block text-sm font-medium text-gray-700 mb-1">
-              Select Bucket
+              Select Folder
             </label>
             <select
               id="bucket"
-              value={selectedBucket}
-              onChange={(e) => setSelectedBucket(e.target.value)}
+              value={selectedPrefix}
+              onChange={(e) => setSelectedPrefix(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
             >
-              <option value="all">All Buckets</option>
+              <option value="all">All Folders</option>
               {buckets.map((bucket) => (
                 <option key={bucket} value={bucket}>
                   {bucket.charAt(0).toUpperCase() + bucket.slice(1)}
@@ -184,7 +193,7 @@ export default function ImageLibrary() {
               ))}
             </select>
             <p className="mt-2 text-sm text-gray-500">
-              Select a bucket to organize your uploads. Images will be stored in this bucket.
+              Select a folder to organise your uploads.
             </p>
           </div>
         </div>
@@ -201,14 +210,14 @@ export default function ImageLibrary() {
       <div className="flex flex-col md:flex-row justify-between mb-4 gap-4">
         <div className="flex items-center space-x-4">
           <div>
-            <label htmlFor="filter-bucket" className="sr-only">Filter by Bucket</label>
+            <label htmlFor="filter-bucket" className="sr-only">Filter by Folder</label>
             <select
               id="filter-bucket"
-              value={selectedBucket}
-              onChange={(e) => setSelectedBucket(e.target.value)}
+              value={selectedPrefix}
+              onChange={(e) => setSelectedPrefix(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
             >
-              <option value="all">All Buckets</option>
+              <option value="all">All Folders</option>
               {buckets.map((bucket) => (
                 <option key={bucket} value={bucket}>
                   {bucket.charAt(0).toUpperCase() + bucket.slice(1)}
@@ -216,7 +225,7 @@ export default function ImageLibrary() {
               ))}
             </select>
           </div>
-          
+
           <div>
             <label htmlFor="sort-by" className="sr-only">Sort By</label>
             <select
@@ -234,7 +243,7 @@ export default function ImageLibrary() {
             </select>
           </div>
         </div>
-        
+
         <div className="relative">
           <input
             type="text"
@@ -252,10 +261,10 @@ export default function ImageLibrary() {
       </div>
 
       {/* Bulk Actions */}
-      {selectedImages.length > 0 && (
+      {selectedKeys.length > 0 && (
         <div className="bg-gray-50 p-3 rounded-md flex justify-between items-center mb-4">
           <div className="text-sm text-gray-700">
-            {selectedImages.length} {selectedImages.length === 1 ? 'image' : 'images'} selected
+            {selectedKeys.length} {selectedKeys.length === 1 ? 'image' : 'images'} selected
           </div>
           <button
             onClick={deleteSelectedImages}
@@ -292,30 +301,30 @@ export default function ImageLibrary() {
               onClick={selectAllImages}
               className="text-sm text-gray-700 hover:text-black"
             >
-              {selectedImages.length === sortedImages.length ? 'Deselect All' : 'Select All'}
+              {selectedKeys.length === sortedImages.length ? 'Deselect All' : 'Select All'}
             </button>
             <div className="text-sm text-gray-500">
               {sortedImages.length} {sortedImages.length === 1 ? 'image' : 'images'}
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {sortedImages.map((image) => (
-              <div 
-                key={image.id} 
+              <div
+                key={image.key}
                 className={`group relative bg-white rounded-md border overflow-hidden ${
-                  selectedImages.includes(image.id) ? 'ring-2 ring-black' : ''
+                  selectedKeys.includes(image.key) ? 'ring-2 ring-black' : ''
                 }`}
               >
                 <div className="absolute top-2 left-2 z-10">
                   <input
                     type="checkbox"
-                    checked={selectedImages.includes(image.id)}
-                    onChange={() => toggleImageSelection(image.id)}
+                    checked={selectedKeys.includes(image.key)}
+                    onChange={() => toggleImageSelection(image.key)}
                     className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
                   />
                 </div>
-                
+
                 <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => copyImageUrl(image.url)}
@@ -327,26 +336,26 @@ export default function ImageLibrary() {
                     </svg>
                   </button>
                 </div>
-                
+
                 <div className="aspect-square w-full overflow-hidden bg-gray-100 relative">
                   <Image
                     src={image.url}
-                    alt={image.name}
+                    alt={displayName(image.key)}
                     fill
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                     className="object-cover"
                     loading="lazy"
                   />
                 </div>
-                
+
                 <div className="p-2">
-                  <div className="text-sm font-medium text-gray-900 truncate" title={image.name}>
-                    {image.name}
+                  <div className="text-sm font-medium text-gray-900 truncate" title={displayName(image.key)}>
+                    {displayName(image.key)}
                   </div>
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>{formatFileSize(image.metadata.size)}</span>
+                    <span>{formatFileSize(image.size)}</span>
                     <span className="px-1.5 py-0.5 bg-gray-100 rounded-full">
-                      {image.bucket}
+                      {keyPrefix(image.key)}
                     </span>
                   </div>
                 </div>

@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { signOut } from '@/lib/supabase/auth';
 import { useRouter } from 'next/navigation';
 
 /**
@@ -21,7 +20,7 @@ export default function AdminSidebar() {
   // Handle logout
   const handleLogout = async () => {
     try {
-      await signOut();
+      await fetch('/api/auth/signout', { method: 'POST' });
       router.push('/admin/login');
     } catch (error) {
       console.error('Logout error:', error);

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
 import ImageUploader from '@/components/admin/image-uploader';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -61,9 +60,8 @@ export default function EditArtworkClient({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [collections, setCollections] = useState<Collection[]>([]);
-  // State to store the original artwork data for reference - used in the fetchData function
   const [artwork, setArtwork] = useState<Artwork | null>(null);
-  
+
   // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -81,33 +79,17 @@ export default function EditArtworkClient({ id }: { id: string }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Create a Supabase client instance
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        
-        if (!supabaseUrl || !supabaseAnonKey) {
-          throw new Error('Supabase environment variables are not set');
-        }
-        
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
-        
-        // Fetch artwork data
-        const { data: artworkData, error: artworkError } = await supabase
-          .from('artworks')
-          .select('*')
-          .eq('id', id)
-          .single();
+        // Fetch artwork data and collections in parallel
+        const [artworkResponse, collectionsResponse] = await Promise.all([
+          fetch(`/api/admin/artworks/${id}`),
+          fetch('/api/admin/collections'),
+        ]);
 
-        if (artworkError) {
-          throw artworkError;
-        }
-
-        if (!artworkData) {
-          throw new Error('Artwork not found');
-        }
+        if (!artworkResponse.ok) throw new Error('Artwork not found');
+        const artworkData = await artworkResponse.json() as Artwork;
 
         setArtwork(artworkData);
-        
+
         // Set form state
         setTitle(artworkData.title);
         setDescription(artworkData.description || '');
@@ -120,17 +102,10 @@ export default function EditArtworkClient({ id }: { id: string }) {
         setSlug(artworkData.slug || '');
         setSlugEditedManually(true);
 
-        // Fetch collections for dropdown
-        const { data: collectionsData, error: collectionsError } = await supabase
-          .from('collections')
-          .select('id, name')
-          .order('name');
-
-        if (collectionsError) {
-          throw collectionsError;
+        if (collectionsResponse.ok) {
+          const collectionsData = await collectionsResponse.json() as Collection[];
+          setCollections(collectionsData);
         }
-
-        setCollections(collectionsData || []);
       } catch (err: unknown) {
         const error = err as { message?: string };
         console.error('Error fetching data:', error);
@@ -145,19 +120,13 @@ export default function EditArtworkClient({ id }: { id: string }) {
 
   // Handle image upload completion
   const handleImageUpload = (urls: string[]) => {
-    // Create new images with proper typing
     const newImages: ArtworkImage[] = urls.map((url, index) => ({
       url,
-      alt: artwork?.title || '',  // Ensure alt is always a string, never undefined
+      alt: artwork?.title || '',
       type: (!artwork?.images || artwork.images.length === 0) && index === 0 ? 'main' : undefined
     }));
-    
-    // Combine existing and new images with proper typing
-    const updatedImages: ArtworkImage[] = [
-      ...images,
-      ...newImages
-    ];
-    
+
+    const updatedImages: ArtworkImage[] = [...images, ...newImages];
     setImages(updatedImages);
   };
 
@@ -170,9 +139,7 @@ export default function EditArtworkClient({ id }: { id: string }) {
 
   // Handle image type change
   const handleImageTypeChange = (index: number, type: ImageType) => {
-    // If setting a new main image, remove main from all other images
     if (type === 'main') {
-      // Use type assertion to ensure TypeScript understands this is an ArtworkImage[]
       const updatedImages: ArtworkImage[] = images.map(img => ({
         ...img,
         type: undefined as ImageType
@@ -180,7 +147,6 @@ export default function EditArtworkClient({ id }: { id: string }) {
       updatedImages[index].type = 'main';
       setImages(updatedImages);
     } else {
-      // Use type assertion to ensure TypeScript understands this is an ArtworkImage[]
       const updatedImages: ArtworkImage[] = [...images];
       updatedImages[index].type = type;
       setImages(updatedImages);
@@ -191,26 +157,25 @@ export default function EditArtworkClient({ id }: { id: string }) {
   const handleRemoveImage = (index: number) => {
     const updatedImages = [...images];
     const removedImage = updatedImages.splice(index, 1)[0];
-    
+
     // If removing the main image, set the first remaining image as main
     if (removedImage.type === 'main' && updatedImages.length > 0) {
       updatedImages[0].type = 'main' as ImageType;
     }
-    
+
     setImages(updatedImages);
   };
 
   // Update size option
   const updateSize = (index: number, field: keyof SizeOption, value: string | number) => {
     const updatedSizes = [...sizes];
-    
-    // Convert string values to numbers for numeric fields
+
     if (field === 'price' || field === 'edition_limit' || field === 'editions_sold') {
       updatedSizes[index][field] = Number(value);
     } else {
       updatedSizes[index][field] = value as string;
     }
-    
+
     setSizes(updatedSizes);
   };
 
@@ -234,30 +199,12 @@ export default function EditArtworkClient({ id }: { id: string }) {
     setSuccess(false);
 
     try {
-      // Create a Supabase client instance
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      
-      if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Supabase environment variables are not set');
-      }
       // Validate form
-      if (!title) {
-        throw new Error('Title is required');
-      }
-      
-      if (images.length === 0) {
-        throw new Error('At least one image is required');
-      }
-      
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-      // Validate form data
       if (!title) throw new Error('Title is required');
+      if (images.length === 0) throw new Error('At least one image is required');
       if (!year) throw new Error('Year is required');
       if (sizes.length === 0) throw new Error('At least one size option is required');
-      
-      // Validate each size option
+
       for (const size of sizes) {
         if (!size.size) throw new Error('Size name is required for all size options');
         if (size.price < 0) throw new Error('Price cannot be negative');
@@ -269,38 +216,35 @@ export default function EditArtworkClient({ id }: { id: string }) {
       }
 
       const normalizedSlug = slugify(slug || title);
-      if (!normalizedSlug) {
-        throw new Error('Slug is required');
-      }
+      if (!normalizedSlug) throw new Error('Slug is required');
       setSlug(normalizedSlug);
 
-      // Prepare artwork data
-      const artworkData = {
-        slug: normalizedSlug,
-        title,
-        description,
-        year,
-        medium,
-        collection_id: collectionId || null,
-        featured,
-        images,
-        sizes
-      };
+      const response = await fetch(`/api/admin/artworks/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: normalizedSlug,
+          title,
+          description,
+          year,
+          medium,
+          collection_id: collectionId || null,
+          featured,
+          images,
+          sizes,
+        }),
+      });
 
-      // Update artwork in database
-      const { error } = await supabase
-        .from('artworks')
-        .update(artworkData)
-        .eq('id', id);
-
-      if (error) throw error;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update artwork');
+      }
 
       setSuccess(true);
-      
-      // Redirect after a short delay to show success message
+
       setTimeout(() => {
         router.push('/admin/artworks');
-        router.refresh(); // Refresh the page to show updated data
+        router.refresh();
       }, 1500);
     } catch (err: unknown) {
       const error = err as { message?: string };
@@ -318,38 +262,12 @@ export default function EditArtworkClient({ id }: { id: string }) {
     setError(null);
 
     try {
-      // Create a Supabase client instance
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      
-      if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Supabase environment variables are not set');
-      }
-      
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-      // First check if this artwork is referenced in any orders
-      const { data: orderItems, error: orderCheckError } = await supabase
-        .from('order_items')
-        .select('id')
-        .eq('artwork_id', id);
-
-      if (orderCheckError) throw orderCheckError;
-
-      // If artwork is in orders, don't allow deletion
-      if (orderItems && orderItems.length > 0) {
-        throw new Error('Cannot delete artwork that has been purchased. Consider marking it as sold out instead.');
+      const response = await fetch(`/api/admin/artworks/${id}`, { method: 'DELETE' });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete artwork');
       }
 
-      // Delete the artwork
-      const { error: deleteError } = await supabase
-        .from('artworks')
-        .delete()
-        .eq('id', id);
-
-      if (deleteError) throw deleteError;
-
-      // Redirect to artworks list
       router.push('/admin/artworks');
       router.refresh();
     } catch (err: unknown) {
@@ -493,7 +411,7 @@ export default function EditArtworkClient({ id }: { id: string }) {
               />
               <p className="mt-1 text-xs text-gray-500">Used in the URL. Only lowercase letters, numbers, and hyphens.</p>
             </div>
-            
+
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 Description
@@ -506,7 +424,7 @@ export default function EditArtworkClient({ id }: { id: string }) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">
@@ -522,7 +440,7 @@ export default function EditArtworkClient({ id }: { id: string }) {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="medium" className="block text-sm font-medium text-gray-700 mb-1">
                   Medium
@@ -536,7 +454,7 @@ export default function EditArtworkClient({ id }: { id: string }) {
                   placeholder="e.g., Digital Print, Giclee, etc."
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="collection" className="block text-sm font-medium text-gray-700 mb-1">
                   Collection
@@ -556,7 +474,7 @@ export default function EditArtworkClient({ id }: { id: string }) {
                 </select>
               </div>
             </div>
-            
+
             <div>
               <div className="flex items-center">
                 <input
@@ -577,21 +495,21 @@ export default function EditArtworkClient({ id }: { id: string }) {
         {/* Images */}
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
           <h2 className="text-xl font-medium mb-4">Images</h2>
-          
+
           <div className="mb-6">
-            <ImageUploader 
+            <ImageUploader
               onUploadComplete={handleImageUpload}
               bucketName="artworks"
             />
           </div>
-          
+
           {images.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2">Current Images</h3>
               <p className="text-xs text-gray-500 mb-4">
                 Set one image as the main image. This will be used as the primary display image.
               </p>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {images.map((image, index) => (
                   <div key={index} className="border border-gray-200 rounded-md p-3">
@@ -604,7 +522,7 @@ export default function EditArtworkClient({ id }: { id: string }) {
                         className="object-cover"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -617,7 +535,7 @@ export default function EditArtworkClient({ id }: { id: string }) {
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md"
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">
                           Image Type
@@ -626,10 +544,9 @@ export default function EditArtworkClient({ id }: { id: string }) {
                           value={image.type || ''}
                           onChange={(e) => {
                             const value = e.target.value;
-                            // Cast the value to ImageType or undefined
-                            const imageType = value === '' ? undefined : 
-                                              value === 'main' ? 'main' : 
-                                              value === 'hover' ? 'hover' : 
+                            const imageType = value === '' ? undefined :
+                                              value === 'main' ? 'main' :
+                                              value === 'hover' ? 'hover' :
                                               value === 'detail' ? 'detail' : undefined;
                             handleImageTypeChange(index, imageType);
                           }}
@@ -641,7 +558,7 @@ export default function EditArtworkClient({ id }: { id: string }) {
                           <option value="detail">Detail</option>
                         </select>
                       </div>
-                      
+
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(index)}
@@ -672,7 +589,7 @@ export default function EditArtworkClient({ id }: { id: string }) {
               Add Size
             </button>
           </div>
-          
+
           <div className="space-y-4">
             {sizes.length === 0 ? (
               <div className="text-center py-4 text-gray-500">
@@ -763,7 +680,7 @@ export default function EditArtworkClient({ id }: { id: string }) {
           >
             Delete Artwork
           </button>
-          
+
           <div className="flex space-x-4">
             <Link
               href="/admin/artworks"

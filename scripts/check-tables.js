@@ -1,55 +1,34 @@
-// Check if tables were created correctly
+// Check tables and row counts via Neon
 import dotenv from 'dotenv';
-import { createClient } from '@supabase/supabase-js';
+import { neon } from '@neondatabase/serverless';
 
-// Load environment variables from .env.local
 dotenv.config({ path: '.env.local' });
 
-// Supabase client with service role key
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const sql = neon(process.env.DATABASE_URL);
 
 async function main() {
-  console.log('Checking Supabase tables...');
+  console.log('Checking Neon tables...');
 
   try {
-    // Check if page_content table exists
-    const { data: tables, error: tablesError } = await supabase
-      .from('information_schema.tables')
-      .select('table_name')
-      .eq('table_schema', 'public');
+    const tables = await sql`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE'
+      ORDER BY table_name
+    `;
 
-    if (tablesError) {
-      console.error('Error fetching tables:', tablesError);
+    if (tables.length === 0) {
+      console.log('No tables found in public schema.');
       return;
     }
 
     console.log('Tables in public schema:');
-    tables.forEach(table => console.log(`- ${table.table_name}`));
-
-    // Try to insert content directly
-    const testContent = {
-      id: 'test',
-      page: 'about',
-      title: 'Test Content',
-      content: 'This is a test content entry.',
-      order: 0
-    };
-
-    console.log('\nAttempting to insert test content...');
-    const { data: insertData, error: insertError } = await supabase
-      .from('page_content')
-      .insert([testContent])
-      .select();
-
-    if (insertError) {
-      console.error('Error inserting test content:', insertError);
-    } else {
-      console.log('Test content inserted successfully:', insertData);
+    for (const row of tables) {
+      const name = row.table_name;
+      const [{ count }] = await sql`SELECT COUNT(*) AS count FROM ${sql(name)}`;
+      console.log(`  ${name}: ${count} rows`);
     }
-
   } catch (error) {
     console.error('Script error:', error);
   }

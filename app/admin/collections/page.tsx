@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -28,55 +27,10 @@ export default function CollectionsAdmin() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        // Create a Supabase client instance within the component
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        
-        if (!supabaseUrl || !supabaseAnonKey) {
-          throw new Error('Supabase environment variables are not set');
-        }
-        
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
-        
-        // First get all collections
-        const { data: collectionsData, error: collectionsError } = await supabase
-          .from('collections')
-          .select('*')
-          .order('order', { ascending: true })
-          .order('name', { ascending: true });
-
-        if (collectionsError) {
-          throw collectionsError;
-        }
-
-        // Then get artwork counts for each collection
-        if (collectionsData && collectionsData.length > 0) {
-          const { data: artworksData, error: artworksError } = await supabase
-            .from('artworks')
-            .select('collection_id, id');
-
-          if (artworksError) {
-            throw artworksError;
-          }
-
-          // Count artworks per collection
-          const artworkCounts: Record<string, number> = {};
-          artworksData?.forEach(artwork => {
-            if (artwork.collection_id) {
-              artworkCounts[artwork.collection_id] = (artworkCounts[artwork.collection_id] || 0) + 1;
-            }
-          });
-
-          // Add artwork counts to collections
-          const collectionsWithCounts = collectionsData.map(collection => ({
-            ...collection,
-            artwork_count: artworkCounts[collection.id] || 0
-          }));
-
-          setCollections(collectionsWithCounts);
-        } else {
-          setCollections([]);
-        }
+        const response = await fetch('/api/admin/collections');
+        if (!response.ok) throw new Error('Failed to fetch collections');
+        const data = await response.json();
+        setCollections(data);
       } catch (err) {
         console.error('Error fetching collections:', err);
         setError('Failed to load collections. Please try again.');

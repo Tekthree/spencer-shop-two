@@ -2,10 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { v4 as uuidv4 } from 'uuid';
 
 /**
  * New Collection Page
@@ -44,28 +42,23 @@ export default function NewCollection() {
   };
 
   /**
-   * Upload image to Supabase storage
+   * Upload image to R2 via /api/upload
    */
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('prefix', 'collections');
 
-      const { error: uploadError } = await supabase.storage
-        .from('collections')
-        .upload(filePath, file);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
 
-      if (uploadError) {
-        throw uploadError;
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string };
+        throw new Error(body.error ?? `Upload failed: ${res.status}`);
       }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('collections')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
+      const { url } = await res.json() as { url: string };
+      return url;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Error uploading image';
       console.error('Error uploading image:', error);
@@ -93,18 +86,21 @@ export default function NewCollection() {
       }
 
       // Create collection in database
-      const { error: insertError } = await supabase
-        .from('collections')
-        .insert({
+      const response = await fetch('/api/admin/collections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name,
           description: description || null,
           order: order !== '' ? Number(order) : null,
           featured,
-          cover_image: coverImageUrl
-        });
+          cover_image: coverImageUrl,
+        }),
+      });
 
-      if (insertError) {
-        throw insertError;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create collection');
       }
 
       // Redirect to collections list

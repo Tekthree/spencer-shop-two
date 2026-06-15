@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
-import { v4 as uuidv4 } from 'uuid';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,6 +16,7 @@ interface Collection {
   cover_image: string | null;
   order: number | null;
   created_at: string;
+  artwork_count?: number;
 }
 
 // Form validation schema
@@ -48,11 +47,11 @@ export default function EditCollectionClient({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [artworkCount, setArtworkCount] = useState(0);
-  
+
   // Form validation with react-hook-form and zod
-  const { 
-    register, 
-    handleSubmit, 
+  const {
+    register,
+    handleSubmit,
     formState: { errors },
     reset
   } = useForm<CollectionFormValues>({
@@ -72,19 +71,14 @@ export default function EditCollectionClient({ id }: { id: string }) {
     async function fetchCollection() {
       try {
         setLoading(true);
-        
-        // Fetch collection details
-        const { data: collectionData, error: collectionError } = await supabase
-          .from('collections')
-          .select('*')
-          .eq('id', id)
-          .single();
-        
-        if (collectionError) throw collectionError;
-        if (!collectionData) throw new Error('Collection not found');
-        
+
+        const response = await fetch(`/api/admin/collections/${id}`);
+        if (!response.ok) throw new Error('Collection not found');
+        const collectionData = await response.json() as Collection & { artwork_count?: number };
+
         setCollection(collectionData);
-        
+        setArtworkCount(collectionData.artwork_count ?? 0);
+
         // Set form values
         reset({
           name: collectionData.name,
@@ -92,21 +86,12 @@ export default function EditCollectionClient({ id }: { id: string }) {
           order: collectionData.order !== null ? collectionData.order : '',
           featured: collectionData.featured
         });
-        
+
         // Set cover image preview if exists
         if (collectionData.cover_image) {
           setCoverImagePreview(collectionData.cover_image);
         }
-        
-        // Count artworks in this collection
-        const { count, error: countError } = await supabase
-          .from('artworks')
-          .select('*', { count: 'exact', head: true })
-          .eq('collection_id', id);
-        
-        if (countError) throw countError;
-        setArtworkCount(count || 0);
-        
+
       } catch (err) {
         console.error('Error fetching collection:', err);
         setError('Failed to load collection data');
@@ -114,7 +99,7 @@ export default function EditCollectionClient({ id }: { id: string }) {
         setLoading(false);
       }
     }
-    
+
     fetchCollection();
   }, [id, reset]);
 
@@ -124,9 +109,9 @@ export default function EditCollectionClient({ id }: { id: string }) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     setCoverImage(file);
-    
+
     // Create preview URL
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -136,17 +121,6 @@ export default function EditCollectionClient({ id }: { id: string }) {
   };
 
   /**
-   * Define interface for collection update data
-   */
-  interface CollectionUpdateData {
-    name: string;
-    description: string | null;
-    featured: boolean;
-    order: number | null;
-    cover_image?: string;
-  }
-
-  /**
    * Handle form submission
    */
   const onSubmit = async (data: CollectionFormValues) => {
@@ -154,57 +128,51 @@ export default function EditCollectionClient({ id }: { id: string }) {
       setSaving(true);
       setError(null);
       setSuccess(null);
-      
-      // Prepare update data
-      const updateData: CollectionUpdateData = {
-        name: data.name,
-        description: data.description || null,
-        featured: data.featured,
-        order: data.order === '' ? null : Number(data.order)
-      };
-      
+
+      let coverImageUrl = collection?.cover_image ?? null;
+
       // Handle image upload if new image selected
       if (coverImage) {
-        const fileExt = coverImage.name.split('.').pop();
-        const fileName = `${uuidv4()}.${fileExt}`;
-        const filePath = `collections/${fileName}`;
-        
-        // Upload to storage
-        const { error: uploadError } = await supabase.storage
-          .from('images')
-          .upload(filePath, coverImage);
-        
-        if (uploadError) throw uploadError;
-        
-        // Get public URL
-        const { data: publicUrlData } = supabase.storage
-          .from('images')
-          .getPublicUrl(filePath);
-        
-        updateData.cover_image = publicUrlData.publicUrl;
+        const formData = new FormData();
+        formData.append('file', coverImage);
+        formData.append('prefix', 'collections');
+
+        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (!uploadRes.ok) {
+          const body = await uploadRes.json().catch(() => ({})) as { error?: string };
+          throw new Error(body.error ?? `Upload failed: ${uploadRes.status}`);
+        }
+        const { url: uploadedUrl } = await uploadRes.json() as { url: string };
+        coverImageUrl = uploadedUrl;
       }
-      
+
       // Update collection in database
-      const { error: updateError } = await supabase
-        .from('collections')
-        .update(updateData)
-        .eq('id', id);
-      
-      if (updateError) throw updateError;
-      
+      const response = await fetch(`/api/admin/collections/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          description: data.description || null,
+          featured: data.featured,
+          order: data.order === '' ? null : Number(data.order),
+          cover_image: coverImageUrl,
+        }),
+      });
+
+      if (!response.ok) {
+        const body = await response.json();
+        throw new Error(body.error || 'Failed to update collection');
+      }
+
       setSuccess('Collection updated successfully');
-      
+
       // Refresh collection data
-      const { data: refreshedData, error: refreshError } = await supabase
-        .from('collections')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (!refreshError && refreshedData) {
+      const refreshed = await fetch(`/api/admin/collections/${id}`);
+      if (refreshed.ok) {
+        const refreshedData = await refreshed.json() as Collection & { artwork_count?: number };
         setCollection(refreshedData);
       }
-      
+
     } catch (err) {
       console.error('Error updating collection:', err);
       setError('Failed to update collection');
@@ -222,25 +190,23 @@ export default function EditCollectionClient({ id }: { id: string }) {
       setError('Cannot delete collection with artworks. Remove artworks first.');
       return;
     }
-    
+
     if (!window.confirm('Are you sure you want to delete this collection? This action cannot be undone.')) {
       return;
     }
-    
+
     try {
       setSaving(true);
-      
-      // Delete collection from database
-      const { error: deleteError } = await supabase
-        .from('collections')
-        .delete()
-        .eq('id', id);
-      
-      if (deleteError) throw deleteError;
-      
+
+      const response = await fetch(`/api/admin/collections/${id}`, { method: 'DELETE' });
+      if (!response.ok) {
+        const body = await response.json();
+        throw new Error(body.error || 'Failed to delete collection');
+      }
+
       // Redirect to collections list
       router.push('/admin/collections');
-      
+
     } catch (err) {
       console.error('Error deleting collection:', err);
       setError('Failed to delete collection');
@@ -264,19 +230,19 @@ export default function EditCollectionClient({ id }: { id: string }) {
         <h1 className="text-2xl font-semibold mb-2">Edit Collection</h1>
         <p className="text-gray-600">Update collection details or manage artworks</p>
       </div>
-      
+
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-600">
           {error}
         </div>
       )}
-      
+
       {success && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md text-green-600">
           {success}
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -294,7 +260,7 @@ export default function EditCollectionClient({ id }: { id: string }) {
                 <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
               )}
             </div>
-            
+
             <div className="mb-6">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 Description
@@ -306,7 +272,7 @@ export default function EditCollectionClient({ id }: { id: string }) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
               />
             </div>
-            
+
             <div className="mb-6">
               <label htmlFor="order" className="block text-sm font-medium text-gray-700 mb-1">
                 Display Order
@@ -323,7 +289,7 @@ export default function EditCollectionClient({ id }: { id: string }) {
               )}
               <p className="mt-1 text-sm text-gray-500">Lower numbers appear first (0 is highest priority)</p>
             </div>
-            
+
             <div className="mb-6">
               <div className="flex items-center">
                 <input
@@ -339,19 +305,19 @@ export default function EditCollectionClient({ id }: { id: string }) {
               <p className="mt-1 text-sm text-gray-500">Featured collections appear on the homepage</p>
             </div>
           </div>
-          
+
           <div>
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Cover Image
               </label>
-              
+
               {coverImagePreview ? (
                 <div className="mb-4">
                   <div className="relative w-full aspect-[3/2] bg-gray-100 rounded-md overflow-hidden">
-                    <Image 
-                      src={coverImagePreview} 
-                      alt="Collection cover" 
+                    <Image
+                      src={coverImagePreview}
+                      alt="Collection cover"
                       fill
                       className="object-cover"
                     />
@@ -362,11 +328,11 @@ export default function EditCollectionClient({ id }: { id: string }) {
                   <p className="text-gray-500">No cover image</p>
                 </div>
               )}
-              
+
               <label className="block w-full">
                 <span className="sr-only">Choose file</span>
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   accept="image/*"
                   onChange={handleFileChange}
                   className="block w-full text-sm text-gray-500
@@ -378,29 +344,29 @@ export default function EditCollectionClient({ id }: { id: string }) {
                   "
                 />
               </label>
-              <p className="mt-1 text-sm text-gray-500">Recommended: 1200 × 800 pixels</p>
+              <p className="mt-1 text-sm text-gray-500">Recommended: 1200 x 800 pixels</p>
             </div>
-            
+
             <div className="mt-6 p-4 bg-gray-50 rounded-md">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Collection Statistics</h3>
               <p className="text-sm text-gray-600">
                 <span className="font-medium">{artworkCount}</span> artworks in this collection
               </p>
-              
+
               {collection && (
                 <div className="mt-4">
                   <Link
                     href={`/admin/artworks?collection=${collection.id}`}
                     className="text-sm text-black hover:underline"
                   >
-                    Manage artworks in this collection →
+                    Manage artworks in this collection &rarr;
                   </Link>
                 </div>
               )}
             </div>
           </div>
         </div>
-        
+
         <div className="pt-5 border-t border-gray-200 mt-8 flex justify-between">
           <button
             type="button"
@@ -410,7 +376,7 @@ export default function EditCollectionClient({ id }: { id: string }) {
           >
             {artworkCount > 0 ? 'Cannot Delete (Has Artworks)' : 'Delete Collection'}
           </button>
-          
+
           <div className="flex">
             <Link
               href="/admin/collections"

@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { createClient } from '@supabase/supabase-js';
 
 import ImageUploader from '@/components/admin/image-uploader';
 import ImageLibraryPickerModal from '@/components/admin/image-library-picker-modal';
-import type { StorageImage } from '@/lib/supabase/storage';
+import type { R2Image } from '@/lib/storage/r2';
+import { createRichTextHtml } from '@/lib/blog/rich-text';
 import type { BlogContentBlock } from '@/types/blog';
 
 interface BlogPostRecord {
@@ -39,21 +39,12 @@ type FormState = {
   excerpt: string;
   coverImageUrl: string;
   coverImageAlt: string;
-  inlineImageUrl: string;
-  inlineImageAlt: string;
-  inlineImageCaption: string;
   authorName: string;
   authorRole: string;
   readTime: string;
   status: BlogStatus;
   publishAt: string;
-  introductionHeading: string;
-  introductionBody: string;
-  bodyContent: string;
-  quoteText: string;
-  quoteAttribution: string;
-  conclusionHeading: string;
-  conclusionBody: string;
+  richText: string;
 };
 
 const DEFAULT_FORM: FormState = {
@@ -63,22 +54,25 @@ const DEFAULT_FORM: FormState = {
   excerpt: '',
   coverImageUrl: '',
   coverImageAlt: '',
-  inlineImageUrl: '',
-  inlineImageAlt: '',
-  inlineImageCaption: '',
   authorName: 'Spencer Grey',
   authorRole: 'Artist & Founder',
   readTime: '4',
   status: 'draft',
   publishAt: '',
-  introductionHeading: 'Introduction',
-  introductionBody: '',
-  bodyContent: '',
-  quoteText: '',
-  quoteAttribution: '',
-  conclusionHeading: 'Conclusion',
-  conclusionBody: '',
+  richText: '',
 };
+
+const SAMPLE_RICH_TEXT = `# Introduction
+
+This is a starting paragraph for your journal story. Share the mood and set expectations for the reader.
+
+![Studio view inside Spencer's workspace](https://www.spencergreyart.com/_next/image?url=https%3A%2F%2Fudanlcylpsvxqlihcppb.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fartworks%2F39a6611c-98f7-4bf0-88a7-016a80edcdc5.jpg&w=2048&q=75 "Studio view inside Spencer's workspace")
+
+Add additional paragraphs after the image to go deeper into the narrative and process behind the work.
+
+## Closing thoughts
+
+Wrap up the entry with what's next, an invitation, or a reflection.`;
 
 function slugify(value: string) {
   return value
@@ -88,59 +82,19 @@ function slugify(value: string) {
     .replace(/\s+/g, '-');
 }
 
-function splitParagraphs(text: string) {
-  return text
-    .split(/\n+/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-}
-
 function buildContentBlocks(form: FormState): BlogContentBlock[] {
-  const blocks: BlogContentBlock[] = [];
-
-  const introHeading = form.introductionHeading.trim();
-  if (introHeading) {
-    blocks.push({ type: 'heading', level: 2, text: introHeading });
+  const { html, raw } = createRichTextHtml(form.richText);
+  if (!html) {
+    return [];
   }
 
-  splitParagraphs(form.introductionBody).forEach((paragraph) => {
-    blocks.push({ type: 'paragraph', text: paragraph });
-  });
-
-  if (form.inlineImageUrl.trim()) {
-    const inlineAlt = form.inlineImageAlt.trim() || form.title.trim();
-    const inlineCaption = form.inlineImageCaption.trim();
-
-    blocks.push({
-      type: 'image',
-      url: form.inlineImageUrl.trim(),
-      alt: inlineAlt,
-      caption: inlineCaption ? inlineCaption : undefined,
-    });
-  }
-
-  splitParagraphs(form.bodyContent).forEach((paragraph) => {
-    blocks.push({ type: 'paragraph', text: paragraph });
-  });
-
-  if (form.quoteText.trim()) {
-    blocks.push({
-      type: 'quote',
-      text: form.quoteText.trim(),
-      attribution: form.quoteAttribution.trim() || undefined,
-    });
-  }
-
-  const conclusionHeading = form.conclusionHeading.trim();
-  if (conclusionHeading) {
-    blocks.push({ type: 'heading', level: 2, text: conclusionHeading });
-  }
-
-  splitParagraphs(form.conclusionBody).forEach((paragraph) => {
-    blocks.push({ type: 'paragraph', text: paragraph });
-  });
-
-  return blocks;
+  return [
+    {
+      type: 'rich_text',
+      html,
+      raw,
+    },
+  ];
 }
 
 function normalizeContent(rawContent: BlogPostRecord['content']) {
@@ -156,8 +110,17 @@ function normalizeContent(rawContent: BlogPostRecord['content']) {
     try {
       const parsed = JSON.parse(rawContent);
       return Array.isArray(parsed) ? (parsed as BlogContentBlock[]) : [];
-    } catch (error) {
-      console.error('Failed to parse blog post content JSON:', error);
+    } catch {
+      const { html, raw } = createRichTextHtml(rawContent);
+      if (html) {
+        return [
+          {
+            type: 'rich_text',
+            html,
+            raw,
+          } as BlogContentBlock,
+        ];
+      }
       return [];
     }
   }
@@ -165,111 +128,125 @@ function normalizeContent(rawContent: BlogPostRecord['content']) {
   return [] as BlogContentBlock[];
 }
 
-function extractFormFromStoredState(contentForm: Record<string, unknown> | null | undefined, content: BlogPostRecord['content']) {
-  if (contentForm && Object.keys(contentForm).length > 0) {
+function decodeHtmlEntities(value: string) {
+  return value
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&');
+}
+
+function convertHtmlToRaw(html: string) {
+  if (!html) {
+    return '';
+  }
+
+  const withLineBreaks = html
+    .replace(/<\/(p|h2|h3|h4|blockquote|ul|ol)>/gi, '</$1>\n\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<li>/gi, '- ')
+    .replace(/<\/li>/gi, '\n');
+
+  const withoutTags = withLineBreaks.replace(/<[^>]+>/g, '');
+  return decodeHtmlEntities(withoutTags).replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function blocksToRichText(blocks: BlogContentBlock[]): string {
+  const segments: string[] = [];
+
+  const escapeAlt = (value: string) => value.replace(/]/g, '\\]');
+  const escapeCaption = (value: string) => value.replace(/"/g, '\\"');
+
+  blocks.forEach((block) => {
+    if (block.type === 'heading') {
+      const level = block.level ?? 2;
+      const marker = '#'.repeat(Math.max(1, Math.min(level - 1, 3)));
+      segments.push(`${marker} ${block.text}`);
+      return;
+    }
+
+    if (block.type === 'paragraph') {
+      segments.push(block.text);
+      return;
+    }
+
+    if (block.type === 'quote') {
+      const lines = block.text
+        .split('\n')
+        .map((line) => `> ${line.trim()}`)
+        .join('\n');
+      segments.push(lines);
+      return;
+    }
+
+    if (block.type === 'image') {
+      const caption = block.caption ? ` "${escapeCaption(block.caption)}"` : '';
+      segments.push(`![${escapeAlt(block.alt)}](${block.url}${caption})`);
+      return;
+    }
+
+    if (block.type === 'rich_text') {
+      const raw = 'raw' in block && typeof block.raw === 'string' ? block.raw : '';
+      if (raw) {
+        segments.push(raw);
+      } else if ('html' in block && typeof block.html === 'string') {
+        segments.push(convertHtmlToRaw(block.html));
+      }
+    }
+  });
+
+  return segments.filter(Boolean).join('\n\n').trim();
+}
+
+function extractFormFromStoredState(
+  contentForm: Record<string, unknown> | null | undefined,
+  content: BlogPostRecord['content'],
+) {
+  if (contentForm && typeof contentForm.richText === 'string') {
     return {
-      introductionHeading: String(contentForm.introductionHeading ?? ''),
-      introductionBody: String(contentForm.introductionBody ?? ''),
-      bodyContent: String(contentForm.bodyContent ?? ''),
-      quoteText: String(contentForm.quoteText ?? ''),
-      quoteAttribution: String(contentForm.quoteAttribution ?? ''),
-      conclusionHeading: String(contentForm.conclusionHeading ?? ''),
-      conclusionBody: String(contentForm.conclusionBody ?? ''),
-      inlineImageUrl: String(contentForm.inlineImageUrl ?? ''),
-      inlineImageAlt: String(contentForm.inlineImageAlt ?? ''),
-      inlineImageCaption: String(contentForm.inlineImageCaption ?? ''),
+      richText: String(contentForm.richText),
     };
   }
 
   const blocks = normalizeContent(content);
-  const introductionParagraphs: string[] = [];
-  const bodyParagraphs: string[] = [];
-  const conclusionParagraphs: string[] = [];
-  let introductionHeading = '';
-  let conclusionHeading = '';
-  let inlineImageUrl = '';
-  let inlineImageAlt = '';
-  let inlineImageCaption = '';
-  let quoteText = '';
-  let quoteAttribution = '';
-  let seenImageOrBody = false;
-  let inConclusion = false;
+  if (blocks.length === 0) {
+    return {
+      richText: '',
+    };
+  }
 
-  for (const block of blocks) {
-    if (block.type === 'heading') {
-      if (!introductionHeading) {
-        introductionHeading = block.text;
-      } else {
-        conclusionHeading = block.text;
-        inConclusion = true;
-      }
-      continue;
+  const richBlock = blocks.find((block) => block.type === 'rich_text') as
+    | (BlogContentBlock & { raw?: string; html?: string })
+    | undefined;
+
+  if (richBlock) {
+    if (typeof richBlock.raw === 'string' && richBlock.raw.trim().length > 0) {
+      return { richText: richBlock.raw };
     }
 
-    if (block.type === 'image') {
-      inlineImageUrl = block.url;
-      inlineImageAlt = block.alt;
-      inlineImageCaption = block.caption ?? '';
-      seenImageOrBody = true;
-      continue;
-    }
-
-    if (block.type === 'quote') {
-      quoteText = block.text;
-      quoteAttribution = block.attribution ?? '';
-      seenImageOrBody = true;
-      continue;
-    }
-
-    if (block.type === 'paragraph') {
-      if (inConclusion) {
-        conclusionParagraphs.push(block.text);
-      } else if (seenImageOrBody) {
-        bodyParagraphs.push(block.text);
-      } else {
-        introductionParagraphs.push(block.text);
-      }
+    if (typeof richBlock.html === 'string') {
+      return { richText: convertHtmlToRaw(richBlock.html) };
     }
   }
 
   return {
-    introductionHeading,
-    introductionBody: introductionParagraphs.join('\n'),
-    bodyContent: bodyParagraphs.join('\n'),
-    quoteText,
-    quoteAttribution,
-    conclusionHeading,
-    conclusionBody: conclusionParagraphs.join('\n'),
-    inlineImageUrl,
-    inlineImageAlt,
-    inlineImageCaption,
+    richText: blocksToRichText(blocks),
   };
 }
 
 function resolveImage(src?: string | null) {
   if (!src) return null;
   if (src.startsWith('http') || src.startsWith('/')) return src;
-  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
   if (!baseUrl) return `/${src}`;
-  return `${baseUrl}/storage/v1/object/public/${src}`;
+  return `${baseUrl}/${src}`;
 }
 
 export default function EditBlogPostPage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
   const slugParam = params?.slug;
-
-  const supabaseClient = useMemo(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Supabase credentials are missing in environment variables.');
-      return null;
-    }
-
-    return createClient(supabaseUrl, supabaseAnonKey);
-  }, []);
 
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [slugEditedManually, setSlugEditedManually] = useState(true);
@@ -281,71 +258,51 @@ export default function EditBlogPostPage() {
   const [postId, setPostId] = useState<string | null>(null);
   const [initialPublishedAt, setInitialPublishedAt] = useState<string | null>(null);
   const [isCoverLibraryOpen, setIsCoverLibraryOpen] = useState(false);
-  const [isInlineLibraryOpen, setIsInlineLibraryOpen] = useState(false);
 
   useEffect(() => {
-    if (!supabaseClient || !slugParam) {
-      return;
-    }
+    if (!slugParam) return;
 
     const fetchPost = async () => {
       setLoading(true);
       setLoadError(null);
 
-      const { data, error } = await supabaseClient
-        .from('blog_posts')
-        .select('*')
-        .eq('slug', slugParam)
-        .maybeSingle();
+      try {
+        const response = await fetch(`/api/admin/blog/${slugParam}`);
+        if (!response.ok) {
+          setLoadError(response.status === 404 ? 'Post not found.' : 'Unable to load this post. Please try again.');
+          return;
+        }
 
-      if (error) {
-        console.error('Error loading blog post:', error);
+        const data = await response.json() as BlogPostRecord;
+        setPostId(data.id);
+        setInitialPublishedAt(data.published_at);
+
+        const hydrated = extractFormFromStoredState(data.content_form, data.content);
+
+        setForm({
+          title: data.title ?? '',
+          slug: data.slug ?? '',
+          category: data.category ?? '',
+          excerpt: data.excerpt ?? '',
+          coverImageUrl: data.cover_image ?? '',
+          coverImageAlt: data.cover_image_alt ?? '',
+          authorName: data.author_name ?? 'Spencer Grey',
+          authorRole: data.author_role ?? 'Artist & Founder',
+          readTime: data.read_time_minutes ? String(data.read_time_minutes) : '4',
+          status: (data.status as BlogStatus) ?? 'draft',
+          publishAt: data.published_at ? new Date(data.published_at).toISOString().slice(0, 16) : '',
+          richText: hydrated.richText ?? '',
+        });
+      } catch (err) {
+        console.error('Error loading blog post:', err);
         setLoadError('Unable to load this post. Please try again.');
+      } finally {
         setLoading(false);
-        return;
       }
-
-      if (!data) {
-        setLoadError('Post not found.');
-        setLoading(false);
-        return;
-      }
-
-      const record = data as BlogPostRecord;
-      setPostId(record.id);
-      setInitialPublishedAt(record.published_at);
-
-      const hydrated = extractFormFromStoredState(record.content_form, record.content);
-
-      setForm({
-        title: record.title ?? '',
-        slug: record.slug ?? '',
-        category: record.category ?? '',
-        excerpt: record.excerpt ?? '',
-        coverImageUrl: record.cover_image ?? '',
-        coverImageAlt: record.cover_image_alt ?? '',
-        inlineImageUrl: hydrated.inlineImageUrl ?? '',
-        inlineImageAlt: hydrated.inlineImageAlt ?? '',
-        inlineImageCaption: hydrated.inlineImageCaption ?? '',
-        authorName: record.author_name ?? 'Spencer Grey',
-        authorRole: record.author_role ?? 'Artist & Founder',
-        readTime: record.read_time_minutes ? String(record.read_time_minutes) : '4',
-        status: (record.status as BlogStatus) ?? 'draft',
-        publishAt: record.published_at ? new Date(record.published_at).toISOString().slice(0, 16) : '',
-        introductionHeading: hydrated.introductionHeading || 'Introduction',
-        introductionBody: hydrated.introductionBody || '',
-        bodyContent: hydrated.bodyContent || '',
-        quoteText: hydrated.quoteText || '',
-        quoteAttribution: hydrated.quoteAttribution || '',
-        conclusionHeading: hydrated.conclusionHeading || 'Conclusion',
-        conclusionBody: hydrated.conclusionBody || '',
-      });
-
-      setLoading(false);
     };
 
     fetchPost();
-  }, [slugParam, supabaseClient]);
+  }, [slugParam]);
 
   const handleInputChange = (field: keyof FormState) => (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -398,33 +355,14 @@ export default function EditBlogPostPage() {
     }));
   };
 
-  const handleInlineUpload = (urls: string[]) => {
-    if (urls.length === 0) return;
-    const inlineUrl = urls[0];
-    const fallbackAlt = toReadableAlt(inlineUrl.split('/').pop() ?? '');
-    setForm((prev) => ({
-      ...prev,
-      inlineImageUrl: inlineUrl,
-      inlineImageAlt: resolveAlt(prev.inlineImageAlt, prev.title, fallbackAlt),
-    }));
-  };
-
-  const applyLibraryImage = (target: 'cover' | 'inline', image: StorageImage) => {
-    const fallbackAlt = toReadableAlt(image.name);
+  const applyLibraryImage = (image: R2Image) => {
+    const fallbackAlt = toReadableAlt(image.key.split('/').pop() ?? image.key);
 
     setForm((prev) => {
-      if (target === 'cover') {
-        return {
-          ...prev,
-          coverImageUrl: image.url,
-          coverImageAlt: resolveAlt(prev.coverImageAlt, prev.title, fallbackAlt),
-        };
-      }
-
       return {
         ...prev,
-        inlineImageUrl: image.url,
-        inlineImageAlt: resolveAlt(prev.inlineImageAlt, prev.title, fallbackAlt),
+        coverImageUrl: image.url,
+        coverImageAlt: resolveAlt(prev.coverImageAlt, prev.title, fallbackAlt),
       };
     });
   };
@@ -432,8 +370,8 @@ export default function EditBlogPostPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!supabaseClient || !postId) {
-      setSaveError('Supabase is not configured.');
+    if (!postId) {
+      setSaveError('Post ID not loaded yet.');
       return;
     }
 
@@ -473,7 +411,7 @@ export default function EditBlogPostPage() {
 
     const contentBlocks = buildContentBlocks(form);
     if (contentBlocks.length === 0) {
-      setSaveError('Add at least one paragraph to the article.');
+      setSaveError('Add the article body before saving.');
       return;
     }
 
@@ -488,21 +426,13 @@ export default function EditBlogPostPage() {
           : null;
 
     const contentFormState = {
-      introductionHeading: form.introductionHeading.trim(),
-      introductionBody: form.introductionBody.trim(),
-      bodyContent: form.bodyContent.trim(),
-      quoteText: form.quoteText.trim(),
-      quoteAttribution: form.quoteAttribution.trim(),
-      conclusionHeading: form.conclusionHeading.trim(),
-      conclusionBody: form.conclusionBody.trim(),
-      inlineImageUrl: form.inlineImageUrl.trim(),
-      inlineImageAlt: form.inlineImageAlt.trim(),
-      inlineImageCaption: form.inlineImageCaption.trim(),
+      richText: form.richText.trim(),
     };
 
-    const { error } = await supabaseClient
-      .from('blog_posts')
-      .update({
+    const updateResponse = await fetch(`/api/admin/blog/${slugParam}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         title: form.title.trim(),
         slug: slugify(form.slug),
         excerpt: form.excerpt.trim(),
@@ -516,12 +446,13 @@ export default function EditBlogPostPage() {
         published_at: computedPublishedAt,
         content: contentBlocks,
         content_form: contentFormState,
-      })
-      .eq('id', postId);
+      }),
+    });
 
-    if (error) {
-      console.error('Error updating blog post:', error);
-      setSaveError(error.message || 'Unable to update the post. Please try again.');
+    if (!updateResponse.ok) {
+      const body = await updateResponse.json();
+      console.error('Error updating blog post:', body);
+      setSaveError(body.error || 'Unable to update the post. Please try again.');
     } else {
       setSaveSuccess('Post updated successfully.');
       router.refresh();
@@ -656,130 +587,24 @@ export default function EditBlogPostPage() {
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-serif">Inline image (optional)</h2>
-            <div className="flex flex-wrap items-center gap-3">
-              <ImageUploader
-                bucketName="blog"
-                multiple={false}
-                onUploadComplete={handleInlineUpload}
-                className="bg-gray-50 flex-1"
-              />
-              <button
-                type="button"
-                onClick={() => setIsInlineLibraryOpen(true)}
-                className="text-sm font-medium text-gray-600 underline-offset-4 hover:text-black hover:underline"
-              >
-                Choose from Image Library
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-                <input
-                  type="text"
-                  value={form.inlineImageUrl}
-                  onChange={handleInputChange('inlineImageUrl')}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                  placeholder="https://..."
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Alt text</label>
-                <input
-                  type="text"
-                  value={form.inlineImageAlt}
-                  onChange={handleInputChange('inlineImageAlt')}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                  placeholder="Studio photograph description"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Caption</label>
-                <input
-                  type="text"
-                  value={form.inlineImageCaption}
-                  onChange={handleInputChange('inlineImageCaption')}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                  placeholder="Optional caption"
-                />
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-6">
-            <h2 className="text-xl font-serif">Article template</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Introduction heading</label>
-                <input
-                  type="text"
-                  value={form.introductionHeading}
-                  onChange={handleInputChange('introductionHeading')}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Conclusion heading</label>
-                <input
-                  type="text"
-                  value={form.conclusionHeading}
-                  onChange={handleInputChange('conclusionHeading')}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Introduction paragraphs</label>
-              <textarea
-                value={form.introductionBody}
-                onChange={handleInputChange('introductionBody')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                rows={4}
-                placeholder="Separate paragraphs with a new line."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Main story</label>
-              <textarea
-                value={form.bodyContent}
-                onChange={handleInputChange('bodyContent')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                rows={6}
-                placeholder="Share your process, new collection details, or exhibition notes."
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pull quote</label>
-                <textarea
-                  value={form.quoteText}
-                  onChange={handleInputChange('quoteText')}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                  rows={3}
-                  placeholder="Add a standout sentence to highlight in the article."
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quote attribution</label>
-                <input
-                  type="text"
-                  value={form.quoteAttribution}
-                  onChange={handleInputChange('quoteAttribution')}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                  placeholder="Spencer Grey"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Conclusion</label>
-              <textarea
-                value={form.conclusionBody}
-                onChange={handleInputChange('conclusionBody')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
-                rows={4}
-                placeholder="Wrap up with a call to action or thank you."
-              />
-            </div>
+            <h2 className="text-xl font-serif">Article body</h2>
+            <p className="text-sm text-gray-600">
+              Write the full story here. Separate paragraphs with a blank line. Start lines with <code>#</code> or
+              <code>##</code> for headings, use <code>&gt;</code> for pull quotes, and add inline images with{' '}
+              <code>![Alt text](https://image-url.jpg &quot;Optional caption&quot;)</code>. Keep a blank line before and after image
+              syntax for best results.
+            </p>
+            <textarea
+              value={form.richText}
+              onChange={handleInputChange('richText')}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black font-mono text-sm"
+              rows={16}
+              placeholder={SAMPLE_RICH_TEXT}
+            />
+            <p className="text-xs text-gray-400">
+              Formatting tips: blank lines create new paragraphs, numbered lists (e.g. <code>1.</code>) and bullet lists
+              (e.g. <code>-</code>) are supported.
+            </p>
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -874,14 +699,7 @@ export default function EditBlogPostPage() {
       <ImageLibraryPickerModal
         isOpen={isCoverLibraryOpen}
         onClose={() => setIsCoverLibraryOpen(false)}
-        onSelect={(image) => applyLibraryImage('cover', image)}
-        buckets={['blog', 'artworks', 'collections', 'about']}
-        initialBucket="blog"
-      />
-      <ImageLibraryPickerModal
-        isOpen={isInlineLibraryOpen}
-        onClose={() => setIsInlineLibraryOpen(false)}
-        onSelect={(image) => applyLibraryImage('inline', image)}
+        onSelect={applyLibraryImage}
         buckets={['blog', 'artworks', 'collections', 'about']}
         initialBucket="blog"
       />

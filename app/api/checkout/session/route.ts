@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import stripe from '@/lib/stripe/stripe-server';
-import { createClient } from '@/lib/supabase/server';
+import sql from '@/lib/db/client';
 import Stripe from 'stripe';
 
 export async function GET(request: NextRequest) {
@@ -37,17 +37,11 @@ export async function GET(request: NextRequest) {
     });
     
     // Check if there's an order in the database for this session
-    const supabase = createClient();
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('payment_intent', session.payment_intent as string)
-      .single();
-    
-    if (orderError && orderError.code !== 'PGRST116') { // PGRST116 is the "not found" error
-      console.error('Error fetching order from database:', orderError);
-    }
-    
+    const orderRows = await sql`
+      SELECT * FROM orders WHERE payment_intent = ${session.payment_intent as string} LIMIT 1
+    `;
+    const order = orderRows[0] ?? null;
+
     if (order) {
       console.log('Found order in database:', { id: order.id, status: order.status });
     } else {

@@ -719,3 +719,69 @@ h1, h2, h3, h4, h5, h6, .font-serif {
     100% { transform: translateX(-50%); } /* Move exactly half the width for perfect looping */
   }
 }
+
+@layer components {
+  .rte {
+    @apply space-y-8 text-base md:text-lg leading-8 text-[#020312]/85;
+  }
+
+  .rte > *:first-child {
+    margin-top: 0;
+  }
+
+  .rte h2 {
+    @apply font-serif text-3xl md:text-[2.5rem] leading-tight text-[#020312] mt-16;
+  }
+
+  .rte h3 {
+    @apply font-serif text-2xl md:text-[2.25rem] leading-tight text-[#020312] mt-12;
+  }
+
+  .rte p {
+    @apply leading-8 text-[#020312]/85;
+  }
+
+  .rte a {
+    @apply underline underline-offset-4 decoration-[#020312]/30 transition-colors;
+  }
+
+  .rte a:hover {
+    @apply text-[#020312];
+  }
+
+  .rte blockquote {
+    @apply border-l-4 border-[#020312] bg-[#F6F4F0] py-6 pl-6 pr-4 font-serif text-2xl md:text-[2rem] text-[#020312] leading-tight;
+  }
+
+  .rte blockquote p {
+    margin: 0;
+  }
+
+  .rte ul {
+    @apply list-disc pl-6 space-y-2;
+  }
+
+  .rte ol {
+    @apply list-decimal pl-6 space-y-2;
+  }
+
+  .rte li {
+    @apply leading-8 text-[#020312]/80;
+  }
+
+  .rte figure {
+    @apply space-y-3;
+  }
+
+  .rte .rte-image__media {
+    @apply relative overflow-hidden rounded-xl border border-[#020312]/10 bg-[#EDEAE4] aspect-[4/3] md:aspect-[16/9];
+  }
+
+  .rte .rte-image__media img {
+    @apply h-full w-full object-cover;
+  }
+
+  .rte .rte-image__caption {
+    @apply text-sm text-[#020312]/60 leading-relaxed text-center;
+  }
+}

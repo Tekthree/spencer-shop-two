@@ -2,25 +2,26 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import {
-  fetchImagesFromBuckets,
-  type StorageImage,
-} from '@/lib/supabase/storage';
+import type { R2Image } from '@/lib/storage/r2';
 
 interface ImageLibraryPickerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (image: StorageImage) => void;
-  /** Buckets to include when populating the library */
+  onSelect: (image: R2Image) => void;
+  /**
+   * Key prefixes to load (analogous to the old bucket names).
+   * Each prefix is fetched as a separate /api/images?prefix=... request.
+   */
   buckets?: string[];
-  /** Bucket to highlight by default */
+  /** Prefix to highlight by default */
   initialBucket?: string;
 }
 
 const DEFAULT_BUCKETS = ['artworks', 'about', 'collections'];
 
 /**
- * Lightweight modal that mirrors the media library listing so editors can reuse existing assets.
+ * Lightweight modal that mirrors the media library so editors can reuse existing assets.
+ * Now backed by R2 instead of Supabase Storage.
  */
 export default function ImageLibraryPickerModal({
   isOpen,
@@ -29,10 +30,10 @@ export default function ImageLibraryPickerModal({
   buckets = DEFAULT_BUCKETS,
   initialBucket = 'about',
 }: ImageLibraryPickerModalProps) {
-  const [images, setImages] = useState<StorageImage[]>([]);
+  const [images, setImages] = useState<R2Image[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedBucket, setSelectedBucket] = useState<string>('all');
+  const [selectedPrefix, setSelectedPrefix] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const loadImages = useCallback(async () => {
@@ -40,27 +41,51 @@ export default function ImageLibraryPickerModal({
     setError(null);
 
     try {
-      const { images: allImages, errors } = await fetchImagesFromBuckets(buckets);
+      const results: R2Image[] = [];
 
-      errors.forEach(({ bucket, error: bucketError }) => {
-        console.error(`Error fetching bucket ${bucket}:`, bucketError);
-      });
+      if (selectedPrefix === 'all') {
+        // Fetch all prefixes in parallel
+        const settled = await Promise.allSettled(
+          buckets.map(prefix =>
+            fetch(`/api/images?prefix=${encodeURIComponent(prefix)}`)
+              .then(r => r.json() as Promise<R2Image[]>)
+          )
+        );
 
-      setImages(allImages);
+        settled.forEach((result, i) => {
+          if (result.status === 'fulfilled' && Array.isArray(result.value)) {
+            results.push(...result.value);
+          } else if (result.status === 'rejected') {
+            console.error(`Error fetching prefix ${buckets[i]}:`, result.reason);
+          }
+        });
+      } else {
+        const data = await fetch(`/api/images?prefix=${encodeURIComponent(selectedPrefix)}`)
+          .then(r => r.json() as Promise<R2Image[]>);
+        if (Array.isArray(data)) {
+          results.push(...data);
+        }
+      }
+
+      setImages(results);
     } catch (err) {
       console.error('Error loading images from library:', err);
       setError('Unable to load images. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [buckets]);
+  }, [buckets, selectedPrefix]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setSelectedPrefix(initialBucket ?? 'all');
+  }, [isOpen, initialBucket]);
 
   useEffect(() => {
     if (!isOpen) return;
 
     let isMounted = true;
-
-    setSelectedBucket(initialBucket ?? 'all');
 
     loadImages().catch((err) => {
       if (!isMounted) return;
@@ -71,7 +96,7 @@ export default function ImageLibraryPickerModal({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, initialBucket, loadImages]);
+  }, [isOpen, loadImages]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -79,16 +104,23 @@ export default function ImageLibraryPickerModal({
     }
   }, [isOpen]);
 
+  /** Derive a short display name from the R2 key (last path segment, no extension). */
+  const displayName = (key: string) => key.split('/').pop() ?? key;
+
+  /** Derive the prefix (first path segment) from the key. */
+  const keyPrefix = (key: string) => key.split('/')[0] ?? '';
+
   const filteredImages = useMemo(() => {
     return images.filter((image) => {
-      const matchesBucket = selectedBucket === 'all' || image.bucket === selectedBucket;
+      const matchesPrefix = selectedPrefix === 'all' || keyPrefix(image.key) === selectedPrefix;
+      const name = displayName(image.key);
       const matchesSearch =
         searchQuery.trim().length === 0 ||
-        image.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
+        name.toLowerCase().includes(searchQuery.trim().toLowerCase());
 
-      return matchesBucket && matchesSearch;
+      return matchesPrefix && matchesSearch;
     });
-  }, [images, searchQuery, selectedBucket]);
+  }, [images, searchQuery, selectedPrefix]);
 
   if (!isOpen) {
     return null;
@@ -118,15 +150,15 @@ export default function ImageLibraryPickerModal({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <label htmlFor="bucket-filter" className="sr-only">
-                Filter by bucket
+                Filter by prefix
               </label>
               <select
                 id="bucket-filter"
-                value={selectedBucket}
-                onChange={(event) => setSelectedBucket(event.target.value)}
+                value={selectedPrefix}
+                onChange={(event) => setSelectedPrefix(event.target.value)}
                 className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
               >
-                <option value="all">All buckets</option>
+                <option value="all">All</option>
                 {buckets.map((bucket) => (
                   <option key={bucket} value={bucket}>
                     {bucket.charAt(0).toUpperCase() + bucket.slice(1)}
@@ -172,14 +204,14 @@ export default function ImageLibraryPickerModal({
             <div className="flex h-full flex-col items-center justify-center rounded-md border border-dashed border-gray-200 p-8 text-center">
               <h3 className="text-base font-medium text-gray-900">No images found</h3>
               <p className="mt-1 text-sm text-gray-500">
-                Try a different search term or choose another bucket.
+                Try a different search term or choose another folder.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {filteredImages.map((image) => (
                 <button
-                  key={image.id}
+                  key={image.key}
                   type="button"
                   onClick={() => {
                     onSelect(image);
@@ -190,18 +222,18 @@ export default function ImageLibraryPickerModal({
                   <div className="relative aspect-square w-full bg-gray-100">
                     <Image
                       src={image.url}
-                      alt={image.name}
+                      alt={displayName(image.key)}
                       fill
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                       className="object-cover"
                     />
                   </div>
                   <div className="flex items-center justify-between px-2 py-2 text-xs text-gray-600">
-                    <span className="truncate" title={image.name}>
-                      {image.name}
+                    <span className="truncate" title={displayName(image.key)}>
+                      {displayName(image.key)}
                     </span>
                     <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-gray-500">
-                      {image.bucket}
+                      {keyPrefix(image.key)}
                     </span>
                   </div>
                 </button>

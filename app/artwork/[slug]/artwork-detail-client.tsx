@@ -712,21 +712,21 @@ export default function ArtworkDetailClient({ artwork, error }: ArtworkDetailCli
                 title: "MY STORY",
                 content:
                   "This artistic journey began long before I understood what it meant to create. From elementary school comic strips to train-hopping rebellion, from punk rock squats to spiritual awakening, each chapter has shaped the visions that flow through these hands. The name Grey found me during a mushroom-guided conversation with dear friends who recognized the frequency I carried. Since adopting this name at nineteen, I've navigated fatherhood, sobriety, heartbreak, romance, and the beautiful tension between what society calls failure and success. Every experience becomes paint. Every moment becomes portal. This work is the physical manifestation of a life lived fully, consciously, gratefully.",
-                image: "https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/my-story.jpg",
+                image: "https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/my-story.jpg", // TODO: re-upload to R2 and update URL
               },
               {
                 id: "process",
                 title: "MY PROCESS",
                 content:
                   "Each piece begins in meditation, allowing cosmic frequencies to reveal themselves before brush touches surface. I work primarily with acrylic ink and acrylic paint, layering intricate details that reward extended viewing. The process demands presence; rushing disrupts the channel. Sometimes a painting manifests in hours during live sessions with music pulsing. Other times, a single piece evolves over months or years as I return to add new dimensions revealed through continued spiritual exploration. My hands serve as conduits. The active imagination that has driven me since childhood combines with decades of technical refinement to translate invisible energies into visible form.",
-                image: "https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/my-process.jpg",
+                image: "https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/my-process.jpg", // TODO: re-upload to R2 and update URL
               },
               {
                 id: "inspiration",
                 title: "INSPIRATION",
                 content:
                   "Music, dance, mythology, theology, the occult, nature's peace, historical architecture, and ancient books all flow through this work. I draw from the mystical experiences that occur when consciousness expands beyond ordinary perception. The intricate patterns in Gothic cathedrals, the symbolism in old occult texts, the raw energy of electronic music gatherings, the quiet wisdom found alone in forests - these all become source material. But the deepest inspiration comes from Love itself and the desire to share that vibration with fellow travelers. Each painting asks: what lies beyond the veil? The answer emerges through color, line, and form.",
-                image: "https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/inspiration.jpg",
+                image: "https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/inspiration.jpg", // TODO: re-upload to R2 and update URL
               },
             ]}
           />

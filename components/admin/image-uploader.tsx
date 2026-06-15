@@ -1,30 +1,32 @@
 "use client";
 
 import { useState, useRef } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { v4 as uuidv4 } from 'uuid';
 import Image from 'next/image';
 
 interface ImageUploaderProps {
   /** Callback when images are uploaded successfully */
   onUploadComplete: (urls: string[]) => void;
-  /** Bucket name in Supabase storage */
-  bucketName: string;
+  /**
+   * Prefix (formerly bucket name) used to organise images in R2.
+   * Defaults to "uploads" if omitted.
+   */
+  bucketName?: string;
   /** Allow multiple file selection */
   multiple?: boolean;
-  /** Folder path in the bucket */
+  /** Folder path — appended to the prefix as a sub-folder */
   folderPath?: string;
   /** Additional CSS classes */
   className?: string;
 }
 
 /**
- * Reusable image uploader component
- * Supports drag and drop and single image upload
+ * Reusable image uploader component.
+ * Uploads via /api/upload (server-side R2 handler).
+ * Supports drag and drop and single image upload.
  */
 export default function ImageUploader({
   onUploadComplete,
-  bucketName,
+  bucketName = 'uploads',
   multiple = true,
   folderPath = '',
   className = '',
@@ -44,7 +46,6 @@ export default function ImageUploader({
     const newFiles: File[] = [];
     const newPreviews: string[] = [];
 
-    // Process each selected file
     Array.from(selectedFiles).forEach(file => {
       if (file.type.startsWith('image/')) {
         newFiles.push(file);
@@ -65,7 +66,7 @@ export default function ImageUploader({
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
     } else if (e.type === 'dragleave') {
@@ -78,14 +79,13 @@ export default function ImageUploader({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     const droppedFiles = e.dataTransfer.files;
     if (droppedFiles.length === 0) return;
 
     const newFiles: File[] = [];
     const newPreviews: string[] = [];
 
-    // Process each dropped file
     Array.from(droppedFiles).forEach(file => {
       if (file.type.startsWith('image/')) {
         newFiles.push(file);
@@ -106,59 +106,57 @@ export default function ImageUploader({
   const removeFile = (index: number) => {
     const newFiles = [...files];
     const newPreviews = [...previews];
-    
-    // Revoke the object URL to avoid memory leaks
+
     URL.revokeObjectURL(newPreviews[index]);
-    
+
     newFiles.splice(index, 1);
     newPreviews.splice(index, 1);
-    
+
     setFiles(newFiles);
     setPreviews(newPreviews);
   };
 
-  // Trigger file input click
   const onButtonClick = () => {
     inputRef.current?.click();
   };
 
-  // Upload files to Supabase storage
+  // Upload files to R2 via /api/upload
   const uploadFiles = async () => {
     if (files.length === 0) {
       setError('Please select at least one image to upload');
       return;
     }
-    
+
     setUploading(true);
     setError(null);
     const uploadedUrls: string[] = [];
-    
+
     try {
+      const prefix = folderPath ? `${bucketName}/${folderPath}` : bucketName;
+
       for (const file of files) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${uuidv4()}.${fileExt}`;
-        const filePath = folderPath ? `${folderPath}/${fileName}` : fileName;
-        
-        const { error: uploadError } = await supabase.storage
-          .from(bucketName)
-          .upload(filePath, file);
-        
-        if (uploadError) {
-          throw uploadError;
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('prefix', prefix);
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({})) as { error?: string };
+          throw new Error(body.error ?? `Upload failed: ${res.status}`);
         }
-        
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from(bucketName)
-          .getPublicUrl(filePath);
-        
-        uploadedUrls.push(publicUrl);
+
+        const { url } = await res.json() as { url: string };
+        uploadedUrls.push(url);
       }
-      
-      // Call the callback with all URLs
+
       onUploadComplete(uploadedUrls);
-      
-      // Reset state
+
+      // Revoke object URLs and reset
+      previews.forEach(p => URL.revokeObjectURL(p));
       setFiles([]);
       setPreviews([]);
     } catch (err) {
@@ -190,7 +188,7 @@ export default function ImageUploader({
           onChange={handleFileChange}
           className="hidden"
         />
-        
+
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="mx-auto h-12 w-12 text-gray-400"
@@ -205,7 +203,7 @@ export default function ImageUploader({
             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
           />
         </svg>
-        
+
         <p className="mt-2 text-sm font-medium text-gray-900">
           {previews.length > 0 ? 'Add more images' : 'Upload images'}
         </p>
@@ -227,9 +225,9 @@ export default function ImageUploader({
             {previews.map((preview, index) => (
               <div key={index} className="relative group">
                 <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
-                  <Image 
-                    src={preview} 
-                    alt={`Preview ${index + 1}`} 
+                  <Image
+                    src={preview}
+                    alt={`Preview ${index + 1}`}
                     className="h-full w-full object-cover"
                     width={200}
                     height={200}

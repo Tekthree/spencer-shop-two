@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 
 import ArtworkDetailClient from './artwork-detail-client';
 import JsonLd, { breadcrumbJsonLd, productJsonLd } from '@/components/shared/json-ld';
-import { supabase } from '@/lib/supabase/client';
+import sql from '@/lib/db/client';
 
 interface SizeOption {
   size: string;
@@ -51,22 +51,19 @@ interface ArtworkData {
 
 async function fetchArtworkBySlug(slug: string): Promise<{ artwork: ArtworkData | null; error: string | null }> {
   try {
-    const { data, error } = await supabase
-      .from('artworks')
-      .select('*, collections(name)')
-      .eq('slug', slug)
-      .maybeSingle();
+    const rows = await sql`
+      SELECT a.*, c.name AS collection_name
+      FROM artworks a
+      LEFT JOIN collections c ON c.id = a.collection_id
+      WHERE a.slug = ${slug}
+      LIMIT 1
+    `;
 
-    if (error) {
-      console.error('Error fetching artwork', error);
-      return { artwork: null, error: 'Failed to load artwork data.' };
-    }
-
-    if (!data) {
+    if (!rows || rows.length === 0) {
       return { artwork: null, error: 'Artwork not found.' };
     }
 
-    const record = data as ArtworkRecord;
+    const record = rows[0] as ArtworkRecord;
 
     const formattedImages: ArtworkImage[] = [];
 
@@ -99,7 +96,7 @@ async function fetchArtworkBySlug(slug: string): Promise<{ artwork: ArtworkData 
       year: record.year,
       medium: record.medium,
       collection_id: record.collection_id,
-      collection_name: record.collection_name ?? record.collections?.name ?? undefined,
+      collection_name: record.collection_name ?? undefined,
       featured: record.featured,
       images: sanitizedImages,
       sizes: record.sizes || [],
