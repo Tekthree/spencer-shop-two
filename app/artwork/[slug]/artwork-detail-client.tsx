@@ -712,14 +712,15 @@ export default function ArtworkDetailClient({ artwork, error }: ArtworkDetailCli
                 title: "MY STORY",
                 content:
                   "This artistic journey began long before I understood what it meant to create. From elementary school comic strips to train-hopping rebellion, from punk rock squats to spiritual awakening, each chapter has shaped the visions that flow through these hands. The name Grey found me during a mushroom-guided conversation with dear friends who recognized the frequency I carried. Since adopting this name at nineteen, I've navigated fatherhood, sobriety, heartbreak, romance, and the beautiful tension between what society calls failure and success. Every experience becomes paint. Every moment becomes portal. This work is the physical manifestation of a life lived fully, consciously, gratefully.",
-                image: "/hero-spencer.jpg",
+                image: "https://pub-772fe1edccf84caaaad1cc92ef203d50.r2.dev/about/my-story.jpg",
+                video: "https://pub-772fe1edccf84caaaad1cc92ef203d50.r2.dev/about/my-story.mp4",
               },
               {
                 id: "process",
                 title: "MY PROCESS",
                 content:
                   "Each piece begins in meditation, allowing cosmic frequencies to reveal themselves before brush touches surface. I work primarily with acrylic ink and acrylic paint, layering intricate details that reward extended viewing. The process demands presence; rushing disrupts the channel. Sometimes a painting manifests in hours during live sessions with music pulsing. Other times, a single piece evolves over months or years as I return to add new dimensions revealed through continued spiritual exploration. My hands serve as conduits. The active imagination that has driven me since childhood combines with decades of technical refinement to translate invisible energies into visible form.",
-                image: "/hero-spencer.jpg",
+                image: "https://pub-772fe1edccf84caaaad1cc92ef203d50.r2.dev/about/my-process.jpg",
               },
               {
                 id: "inspiration",

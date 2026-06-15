@@ -9,6 +9,7 @@ interface TabContent {
   title: string;
   content: string;
   image: string;
+  video?: string;
 }
 
 interface ArtworkStoryTabsProps {
@@ -66,13 +67,25 @@ export default function ArtworkStoryTabs({ tabs }: ArtworkStoryTabsProps) {
               transition={{ duration: 0.5 }}
               className="relative h-[400px] md:h-[500px] w-full rounded-lg overflow-hidden"
             >
-              <Image
-                src={activeTabContent.image}
-                alt={activeTabContent.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
-              />
+              {activeTabContent.video ? (
+                <video
+                  src={activeTabContent.video}
+                  poster={activeTabContent.image}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={activeTabContent.image}
+                  alt={activeTabContent.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover"
+                />
+              )}
             </motion.div>
 
             {/* Content on the right */}
