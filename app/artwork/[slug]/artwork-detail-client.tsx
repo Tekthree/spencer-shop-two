@@ -727,7 +727,7 @@ export default function ArtworkDetailClient({ artwork, error }: ArtworkDetailCli
                 title: "INSPIRATION",
                 content:
                   "Music, dance, mythology, theology, the occult, nature's peace, historical architecture, and ancient books all flow through this work. I draw from the mystical experiences that occur when consciousness expands beyond ordinary perception. The intricate patterns in Gothic cathedrals, the symbolism in old occult texts, the raw energy of electronic music gatherings, the quiet wisdom found alone in forests - these all become source material. But the deepest inspiration comes from Love itself and the desire to share that vibration with fellow travelers. Each painting asks: what lies beyond the veil? The answer emerges through color, line, and form.",
-                image: "/hero-spencer.jpg",
+                image: "https://pub-772fe1edccf84caaaad1cc92ef203d50.r2.dev/about/my-story.jpg",
               },
             ]}
           />
