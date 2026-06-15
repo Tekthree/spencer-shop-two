@@ -345,34 +345,34 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           <span className="clandyFontOverride">LOVE</span> Channeled Through Form
         </MarqueeHeading>
 
-        {/* Full-bleed hero image - no container padding */}
-        <motion.div
-          className="relative w-full overflow-hidden"
-          style={{ aspectRatio: '16/7' }}
-          variants={itemVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <Image
-            src="/hero-spencer.jpg"
-            alt="Spencer Grey artwork installed in a home"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/10" />
-          <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10">
-            <Link
-              href="/shop"
-              className="inline-flex items-center gap-2 text-white bg-black/60 backdrop-blur-sm px-5 py-3 text-sm uppercase tracking-wider hover:bg-black transition-colors"
-            >
-              Shop the Art Prints
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </Link>
-          </div>
-        </motion.div>
+        {/* Contained hero image */}
+        <div className="max-w-[1440px] mx-auto px-6 pb-16 md:pb-24">
+          <motion.div
+            className="relative w-full aspect-[16/9] overflow-hidden"
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <Image
+              src="/hero-spencer.jpg"
+              alt="Spencer Grey artwork installed in a home"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
+              <Link
+                href="/shop"
+                className="inline-flex items-center gap-2 text-white bg-black/60 backdrop-blur-sm px-4 py-2.5 text-xs uppercase tracking-wider hover:bg-black transition-colors"
+              >
+                Shop the Art Prints
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       {/* Creative Process Section */}
