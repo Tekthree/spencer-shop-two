@@ -92,7 +92,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <JsonLd id={`blog-article-${post.slug}`} data={structuredData} />
 
       {/* Article header */}
-      <header className="px-6 pt-14 md:pt-20 pb-10 bg-white border-b border-[#020312]/8">
+      <header className="px-6 pt-14 md:pt-20 pb-10 border-b border-[#020312]/8">
         <div className="max-w-[1400px] mx-auto">
           <nav className="text-xs uppercase tracking-[0.3em] text-[#020312]/50 mb-8 flex gap-2">
             <Link href="/blog" className="hover:text-[#020312] transition-colors">Journal</Link>
@@ -130,7 +130,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       {/* Hero image */}
       {heroImage && (
-        <div className="w-full bg-white">
+        <div className="w-full">
           <div className="max-w-[1400px] mx-auto px-6 pb-0">
             <div className="relative aspect-[16/9] overflow-hidden">
               <Image
