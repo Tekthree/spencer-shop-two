@@ -3,13 +3,13 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
-    domains: ['udanlcylpsvxqlihcppb.supabase.co', 'placehold.co'],
+    domains: ['pub-772fe1edccf84caaaad1cc92ef203d50.r2.dev', 'placehold.co'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'udanlcylpsvxqlihcppb.supabase.co',
+        hostname: 'pub-772fe1edccf84caaaad1cc92ef203d50.r2.dev',
         port: '',
-        pathname: '/storage/v1/object/public/**',
+        pathname: '/**',
       },
     ],
   },
