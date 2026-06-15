@@ -93,7 +93,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       {/* Article header */}
       <header className="px-6 pt-14 md:pt-20 pb-10 bg-white border-b border-[#020312]/8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-[1400px] mx-auto">
           <nav className="text-xs uppercase tracking-[0.3em] text-[#020312]/50 mb-8 flex gap-2">
             <Link href="/blog" className="hover:text-[#020312] transition-colors">Journal</Link>
             <span aria-hidden="true">›</span>
@@ -131,7 +131,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       {/* Hero image */}
       {heroImage && (
         <div className="w-full bg-white">
-          <div className="max-w-6xl mx-auto px-6 pb-0">
+          <div className="max-w-[1400px] mx-auto px-6 pb-0">
             <div className="relative aspect-[16/9] overflow-hidden">
               <Image
                 src={heroImage}
@@ -147,7 +147,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       )}
 
       {/* Article body: content + sticky sidebar */}
-      <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+      <div className="max-w-[1400px] mx-auto px-6 py-16 md:py-24">
         <div className="flex gap-16 xl:gap-24">
 
           {/* Main content */}
@@ -197,7 +197,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       {/* Related posts */}
       {relatedPosts.length > 0 && (
         <section className="border-t border-[#020312]/10 px-6 py-16 md:py-24">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-[1400px] mx-auto">
             <div className="flex items-end justify-between mb-12">
               <h2 className="font-serif text-3xl text-[#020312]">More from the journal</h2>
               <Link href="/blog" className="text-xs uppercase tracking-[0.25em] text-[#020312]/50 hover:text-[#020312] transition-colors">

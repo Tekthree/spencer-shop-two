@@ -18,7 +18,7 @@ export default async function BlogIndexPage() {
     <div className="bg-[#F6F4F0]">
       {/* Header */}
       <div className="px-6 pt-14 md:pt-20 pb-10 border-b border-[#020312]/10">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
             <p className="text-[10px] uppercase tracking-[0.3em] text-[#020312]/40 mb-3">Journal</p>
             <h1 className="font-serif text-5xl md:text-7xl text-[#020312] leading-none">
@@ -31,7 +31,7 @@ export default async function BlogIndexPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-16 md:py-24 space-y-24">
+      <div className="max-w-[1400px] mx-auto px-6 py-16 md:py-24 space-y-24">
 
         {posts.length === 0 ? (
           <div className="py-24 text-center">
