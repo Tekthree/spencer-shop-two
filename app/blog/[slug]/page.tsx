@@ -148,15 +148,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       {/* Article body: content + sticky sidebar */}
       <div className="max-w-[1400px] mx-auto px-6 py-16 md:py-24">
-        <div className="flex gap-16 xl:gap-24">
+        <div className="flex gap-10 xl:gap-12">
 
           {/* Main content */}
-          <main className="min-w-0 flex-1">
+          <main className="min-w-0 flex-1 max-w-[740px]">
             <BlogPostContent blocks={post.content} />
           </main>
 
           {/* Sticky sidebar */}
-          <aside className="hidden lg:block w-64 xl:w-72 shrink-0 sticky top-28 self-start">
+          <aside className="hidden lg:block w-80 xl:w-96 shrink-0 sticky top-28 self-start">
             <div className="space-y-12">
               {tocItems.length > 0 && (
                 <TableOfContents items={tocItems} />
