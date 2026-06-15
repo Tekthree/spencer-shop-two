@@ -422,7 +422,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           >
             <div className="relative w-24 h-24 rounded-full overflow-hidden border border-[#020312]/10">
               <Image 
-                src="https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/headshot.jpg" // TODO: re-upload to R2 and update URL
+                src="https://pub-772fe1edccf84caaaad1cc92ef203d50.r2.dev/artworks/headshot.jpg"
                 alt="Spencer Grey" 
                 fill
                 className="object-cover"
@@ -521,7 +521,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
           >
             <div className="relative w-24 h-24 rounded-full overflow-hidden border border-[#020312]/10">
               <Image
-                src="https://udanlcylpsvxqlihcppb.supabase.co/storage/v1/object/public/artworks/headshot-three.jpg" // TODO: re-upload to R2 and update URL
+                src="https://pub-772fe1edccf84caaaad1cc92ef203d50.r2.dev/artworks/headshot-three.jpg"
                 alt="Spencer Grey"
                 fill
                 className="object-cover"
