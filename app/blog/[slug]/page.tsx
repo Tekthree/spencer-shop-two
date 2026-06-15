@@ -92,7 +92,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <JsonLd id={`blog-article-${post.slug}`} data={structuredData} />
 
       {/* Article header */}
-      <header className="px-6 pt-14 md:pt-20 pb-10 border-b border-[#020312]/8">
+      <header className="px-4 md:px-6 pt-10 md:pt-20 pb-8 md:pb-10 border-b border-[#020312]/8">
         <div className="max-w-[1400px] mx-auto">
           <nav className="text-xs uppercase tracking-[0.3em] text-[#020312]/50 mb-8 flex gap-2">
             <Link href="/blog" className="hover:text-[#020312] transition-colors">Journal</Link>
@@ -147,7 +147,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       )}
 
       {/* Article body: content + sticky sidebar */}
-      <div className="max-w-[1400px] mx-auto px-6 py-16 md:py-24">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-10 md:py-24">
         <div className="flex gap-10 xl:gap-12">
 
           {/* Main content */}
@@ -196,7 +196,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       {/* Related posts */}
       {relatedPosts.length > 0 && (
-        <section className="border-t border-[#020312]/10 px-6 py-16 md:py-24">
+        <section className="border-t border-[#020312]/10 px-4 md:px-6 py-10 md:py-24">
           <div className="max-w-[1400px] mx-auto">
             <div className="flex items-end justify-between mb-12">
               <h2 className="font-serif text-3xl text-[#020312]">More from the journal</h2>

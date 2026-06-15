@@ -7,7 +7,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
-import SpencerLogo from '@/components/shared/spencer-logo';
 
 export default function Header() {
   const pathname = usePathname();
@@ -20,37 +19,29 @@ export default function Header() {
     return false;
   };
 
-  return (
-    <header className="py-5 px-6 border-b border-[#020312]/8 bg-[#F6F4F0]">
-      <div className="max-w-[1440px] mx-auto flex flex-row justify-between items-center">
-        {/* Logo/Brand */}
-        <div>
-          <SpencerLogo size="extra-large" />
-        </div>
+  const navLink = (path: string) =>
+    `${isActive(path) ? 'text-[#020312]' : 'text-[#020312]/60'} hover:text-[#020312] transition-colors`;
 
-        {/* Main Navigation */}
-        <nav className="flex items-center space-x-8 md:space-x-12 text-sm font-medium">
-          <Link 
-            href="/shop" 
-            className={`${isActive('/shop') ? 'text-[#020312]' : 'text-[#020312]/60'} hover:text-[#020312] transition-colors`}
-          >
-            Shop All
-          </Link>
-          <Link 
-            href="/about" 
-            className={`${isActive('/about') ? 'text-[#020312]' : 'text-[#020312]/60'} hover:text-[#020312] transition-colors`}
-          >
-            About
-          </Link>
-          <Link 
-            href="/contact" 
-            className={`${isActive('/contact') ? 'text-[#020312]' : 'text-[#020312]/60'} hover:text-[#020312] transition-colors`}
-          >
-            Contact
-          </Link>
-          
-          {/* Cart Button */}
-          <button 
+  return (
+    <header className="py-4 md:py-5 px-4 md:px-6 border-b border-[#020312]/8 bg-[#F6F4F0]">
+      <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
+        {/* Logo */}
+        <Link
+          href="/"
+          style={{ fontFamily: 'Clandy, serif', fontWeight: 400 }}
+          className="text-xl md:text-2xl lg:text-3xl tracking-tight text-[#020312] shrink-0"
+        >
+          Spencer Grey
+        </Link>
+
+        {/* Navigation */}
+        <nav className="flex items-center gap-5 md:gap-8 lg:gap-12 text-sm font-medium">
+          <Link href="/shop" className={`hidden sm:block ${navLink('/shop')}`}>Shop All</Link>
+          <Link href="/about" className={`hidden md:block ${navLink('/about')}`}>About</Link>
+          <Link href="/contact" className={`hidden lg:block ${navLink('/contact')}`}>Contact</Link>
+
+          {/* Cart */}
+          <button
             onClick={openCart}
             className="relative flex items-center text-[#020312]/60 hover:text-[#020312] transition-colors"
             aria-label="Open cart"
