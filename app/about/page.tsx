@@ -119,11 +119,11 @@ const getFeaturedArtworks = async (): Promise<FeaturedArtwork[]> => {
   try {
     // Get all artworks instead of just featured ones to display more in the Shop section
     const data = await sql`
-      SELECT id, slug, title, images, price
+      SELECT id, slug, title, images, sizes
       FROM artworks
       ORDER BY created_at DESC
       LIMIT 10
-    ` as { id: string; slug: string; title: string; images: unknown; price?: number }[];
+    ` as { id: string; slug: string; title: string; images: unknown; sizes?: { price: number }[] }[];
 
     // Format artworks for ProductCard component
     return data.map((artwork, index: number) => {
@@ -209,7 +209,7 @@ const getFeaturedArtworks = async (): Promise<FeaturedArtwork[]> => {
         slug: artwork.slug,
         title: artwork.title,
         images: formattedImages,
-        price: artwork.price ?? 17500,
+        price: artwork.sizes?.[0]?.price ?? 17500,
         tag: index === 0 ? 'New' : index === 1 ? 'Popular' : undefined
       };
     });
