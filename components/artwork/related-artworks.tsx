@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ProductCard from './product-card';
+import HorizontalScroll from '@/components/ui/horizontal-scroll';
 
 interface Artwork {
   id: string;
@@ -20,17 +21,10 @@ interface RelatedArtworksProps {
   limit?: number;
 }
 
-/**
- * Related Artworks Component
- * Displays a grid of related artworks based on collection or other criteria
- * @param currentArtworkId - ID of the current artwork to exclude from results
- * @param collectionId - Optional collection ID to filter by
- * @param limit - Maximum number of artworks to display
- */
 export default function RelatedArtworks({
   currentArtworkId,
   collectionId = null,
-  limit = 4
+  limit = 6
 }: RelatedArtworksProps) {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,41 +59,44 @@ export default function RelatedArtworks({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {Array.from({ length: limit }).map((_, index) => (
-          <div key={index} className="animate-pulse">
-            <div className="aspect-square bg-gray-200 rounded-md mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-1"></div>
-            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-          </div>
-        ))}
+      <div className="mt-16 pb-16">
+        <div className="h-6 w-40 bg-[#EDEAE4] animate-pulse mb-8" />
+        <div className="flex gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="shrink-0 w-[260px] animate-pulse">
+              <div className="aspect-[3/4] bg-[#EDEAE4] mb-3" />
+              <div className="h-4 bg-[#EDEAE4] w-3/4 mb-2" />
+              <div className="h-3 bg-[#EDEAE4] w-1/2" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
-  if (error) {
-    return null; // Don't show error state to users, just hide the component
-  }
-
-  if (artworks.length === 0) {
-    return null; // Don't show empty state, just hide the component
-  }
+  if (error || artworks.length === 0) return null;
 
   return (
-    <div className="mt-16 pb-32 md:pb-48 lg:pb-56">
-      <h2 className="text-2xl font-serif mb-6">You may also like</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {artworks.map((artwork) => (
-          <ProductCard
-            key={artwork.id}
-            slug={artwork.slug}
-            title={artwork.title}
-            images={artwork.images}
-            price={artwork.sizes && artwork.sizes.length > 0 ? artwork.sizes[0].price : undefined}
-            className="h-full"
-          />
-        ))}
-      </div>
+    <div className="mt-16 pb-16">
+      <h2 className="font-serif text-2xl text-[#020312] mb-8">You may also like</h2>
+      <HorizontalScroll
+        scrollbarTrackClassName="bg-[#020312]/10"
+        scrollbarThumbClassName="bg-[#020312]/40 hover:bg-[#020312]/70"
+      >
+        <div className="flex gap-6 pb-2">
+          {artworks.map((artwork) => (
+            <div key={artwork.id} className="shrink-0 w-[240px] sm:w-[280px]">
+              <ProductCard
+                slug={artwork.slug}
+                title={artwork.title}
+                images={artwork.images}
+                price={artwork.sizes?.[0]?.price}
+                className="h-full"
+              />
+            </div>
+          ))}
+        </div>
+      </HorizontalScroll>
     </div>
   );
 }

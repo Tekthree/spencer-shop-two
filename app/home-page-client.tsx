@@ -47,247 +47,142 @@ interface HomePageClientProps {
  */
 /**
  * TabInterface component for the "Why Collect My Art" section
- * Displays three tabs: Limited Prints, Museum Quality, and Print to Order
  */
+const TAB_DATA = [
+  {
+    id: 'limited' as const,
+    label: 'Limited Prints',
+    heading: 'Limited Edition Prints',
+    media: (
+      <video className="w-full h-full object-cover" autoPlay loop muted playsInline>
+        <source src="/snapsave.mp4" type="video/mp4" />
+      </video>
+    ),
+    body: [
+      'Each piece is part of an exclusive, limited edition collection. Once 150 prints of each artwork are sold, they will never be printed again — making every print a rare addition to your collection.',
+      'Every print is numbered by hand and accompanied by a signed certificate of authenticity.',
+    ],
+  },
+  {
+    id: 'museum' as const,
+    label: 'Museum Quality',
+    heading: 'Museum Quality Materials',
+    media: (
+      <video className="w-full h-full object-cover" autoPlay loop muted playsInline>
+        <source src="/bright_love.mp4" type="video/mp4" />
+      </video>
+    ),
+    body: [
+      'All prints are crafted using museum-quality giclée techniques on premium archival cotton rag. Pigment-based inks resist fading for over 100 years when properly displayed.',
+      'Every print is individually quality-checked before shipping to ensure perfect color and presentation.',
+    ],
+  },
+  {
+    id: 'order' as const,
+    label: 'Print to Order',
+    heading: 'Print to Order Process',
+    media: (
+      <Image src="/hero-spencer.jpg" alt="Print to order" fill className="object-cover" priority />
+    ),
+    body: [
+      'Every print is made fresh once you order — no inventory, no waste. Each piece gets individual attention during production.',
+      'Your print ships directly to your door, typically within 5–7 business days.',
+    ],
+  },
+];
+
 function TabInterface() {
   const [activeTab, setActiveTab] = useState<'limited' | 'museum' | 'order'>('limited');
-  
-  // Animation variants for tab content
-  const tabContentVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
-    },
-    exit: {
-      opacity: 0,
-      y: -20,
-      transition: { duration: 0.3 }
-    }
+  const activeData = TAB_DATA.find(t => t.id === activeTab)!;
+
+  const contentVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+    exit:    { opacity: 0, y: -12, transition: { duration: 0.25 } },
   };
-  
+
   return (
     <div>
-      {/* Three-column layout container */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-center min-h-[500px]">
-        {/* Column 1: Tab Navigation */}
-        <div className="flex flex-col space-y-8 mb-8 lg:mb-0 justify-center">
-          <div className="grid grid-cols-3 lg:grid-cols-1 gap-4 lg:gap-10">
-            <button
-              className={`text-left transition-opacity ${activeTab === 'limited' ? 'opacity-100' : 'opacity-35 hover:opacity-60'}`}
-              onClick={() => setActiveTab('limited')}
-            >
-              <h3 className={`font-serif text-lg md:text-2xl lg:text-4xl tracking-tight ${activeTab === 'limited' ? 'border-b border-[#020312]' : ''}`}>
-                Limited Prints
-              </h3>
-            </button>
-
-            <button
-              className={`text-left transition-opacity ${activeTab === 'museum' ? 'opacity-100' : 'opacity-35 hover:opacity-60'}`}
-              onClick={() => setActiveTab('museum')}
-            >
-              <h3 className={`font-serif text-lg md:text-2xl lg:text-4xl tracking-tight ${activeTab === 'museum' ? 'border-b border-[#020312]' : ''}`}>
-                Museum Quality
-              </h3>
-            </button>
-
-            <button
-              className={`text-left transition-opacity ${activeTab === 'order' ? 'opacity-100' : 'opacity-35 hover:opacity-60'}`}
-              onClick={() => setActiveTab('order')}
-            >
-              <h3 className={`font-serif text-lg md:text-2xl lg:text-4xl tracking-tight ${activeTab === 'order' ? 'border-b border-[#020312]' : ''}`}>
-                Print to Order
-              </h3>
-            </button>
-          </div>
-        </div>
-        
-        {/* Columns 2 & 3: Tab Content */}
-        {/* Tab Content - Limited Prints */}
-        {activeTab === 'limited' && (
-          <>
-            {/* Column 2 - Image/Video */}
-            <motion.div 
-              key="limited-media"
-              className="relative aspect-[9/16] md:aspect-[9/16] w-full max-w-[280px] mx-auto md:max-w-[320px] flex items-center justify-center" 
-              variants={tabContentVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <div className="w-full h-full bg-[#F6F4F0]/50 overflow-hidden rounded-lg">
-                <video 
-                  className="w-full h-full object-cover"
-                  autoPlay 
-                  loop 
-                  muted 
-                  playsInline
-                >
-                  <source src="/snapsave.mp4" type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            </motion.div>
-            
-            {/* Column 3 - Description */}
-            <motion.div 
-              key="limited-content"
-              className="space-y-6 flex flex-col justify-center" 
-              variants={tabContentVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <h3 className="font-serif text-2xl md:text-3xl mb-4">Limited Edition Prints</h3>
-              <p className="text-[#020312] leading-relaxed">
-                Each piece of art is part of an exclusive, limited edition collection. Depending on the size, only a specific number of prints are available, and once a total of 150 prints of each artwork are sold, they will never be printed again. This makes every print a rare and special addition to your collection.
-              </p>
-              <p className="text-[#020312] leading-relaxed">
-                Every print is numbered and accompanied by a certificate of authenticity, ensuring the value and exclusivity of your artwork.
-              </p>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2 }}
-                className="inline-block mt-6"
-              >
-                <Link 
-                  href="/shop"
-                  className="inline-block border border-[#020312]/10 rounded px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
-                >
-                  SHOP NOW
-                </Link>
-              </motion.div>
-            </motion.div>
-          </>
-        )}
-        
-        {/* Tab Content - Museum Quality */}
-        {activeTab === 'museum' && (
-          <>
-            {/* Column 2 - Image/Video */}
-            <motion.div 
-              key="museum-media"
-              className="relative aspect-[9/16] md:aspect-[9/16] w-full max-w-[280px] mx-auto md:max-w-[320px] flex items-center justify-center" 
-              variants={tabContentVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <div className="w-full h-full bg-[#F6F4F0]/50 overflow-hidden rounded-lg">
-                <video 
-                  className="w-full h-full object-cover"
-                  autoPlay 
-                  loop 
-                  muted 
-                  playsInline
-                >
-                  <source src="/bright_love.mp4" type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            </motion.div>
-            
-            {/* Column 3 - Description */}
-            <motion.div 
-              key="museum-content"
-              className="space-y-6 flex flex-col justify-center" 
-              variants={tabContentVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <h3 className="font-serif text-2xl md:text-3xl mb-4">Museum Quality Materials</h3>
-              <p className="text-[#020312] leading-relaxed">
-                All prints are crafted using museum-quality materials and giclée printing techniques to ensure vibrant colors and exceptional detail that will last for generations.
-              </p>
-              <p className="text-[#020312] leading-relaxed">
-                We use only premium archival papers and pigment-based inks that resist fading for over 100 years when properly displayed, ensuring your investment maintains its beauty and value over time.
-              </p>
-              <p className="text-[#020312] leading-relaxed">
-                Each print undergoes a rigorous quality control process before shipping to ensure perfect color reproduction and flawless presentation.
-              </p>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2 }}
-                className="inline-block mt-6"
-              >
-                <Link 
-                  href="/shop"
-                  className="inline-block border border-[#020312]/10 rounded px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
-                >
-                  SHOP NOW
-                </Link>
-              </motion.div>
-            </motion.div>
-          </>
-        )}
-        
-        {/* Tab Content - Print to Order */}
-        {activeTab === 'order' && (
-          <>
-            {/* Column 2 - Image/Video */}
-            <motion.div 
-              key="order-media"
-              className="relative aspect-[9/16] md:aspect-[9/16] w-full max-w-[280px] mx-auto md:max-w-[320px] flex items-center justify-center" 
-              variants={tabContentVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <div className="w-full h-full bg-[#F6F4F0]/50 overflow-hidden rounded-lg">
-                <Image
-                  src="/hero-spencer.jpg"
-                  alt="Print to order process"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-md text-sm">
-                    Print to Order Video
-                  </div>
+      {/* ── Mobile: horizontal drag slider ── */}
+      <div className="lg:hidden">
+        <HorizontalScroll
+          scrollbarTrackClassName="bg-[#020312]/10"
+          scrollbarThumbClassName="bg-[#020312]/40 hover:bg-[#020312]/70"
+        >
+          <div className="flex gap-6 pb-2">
+            {TAB_DATA.map((tab) => (
+              <div key={tab.id} className="shrink-0 w-[80vw] max-w-[320px] flex flex-col gap-6">
+                <div className="relative aspect-[9/14] overflow-hidden bg-[#EDEAE4]">
+                  {tab.media}
+                </div>
+                <div className="space-y-4">
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-[#020312]/40">{tab.label}</p>
+                  <h3 className="font-serif text-2xl text-[#020312] leading-tight">{tab.heading}</h3>
+                  {tab.body.map((para, i) => (
+                    <p key={i} className="text-sm text-[#020312]/75 leading-relaxed">{para}</p>
+                  ))}
+                  <Link
+                    href="/shop"
+                    className="inline-block border border-[#020312]/20 px-5 py-2 text-xs uppercase tracking-[0.2em] hover:bg-[#020312] hover:text-white transition-colors"
+                  >
+                    Shop Now
+                  </Link>
                 </div>
               </div>
-            </motion.div>
-            
-            {/* Column 3 - Description */}
-            <motion.div 
-              key="order-content"
-              className="space-y-6 flex flex-col justify-center" 
-              variants={tabContentVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+            ))}
+          </div>
+        </HorizontalScroll>
+      </div>
+
+      {/* ── Desktop: click tabs ── */}
+      <div className="hidden lg:grid lg:grid-cols-3 gap-12 items-center min-h-[500px]">
+        {/* Col 1: tab nav */}
+        <div className="flex flex-col gap-10 justify-center">
+          {TAB_DATA.map((tab) => (
+            <button
+              key={tab.id}
+              className={`text-left transition-opacity ${activeTab === tab.id ? 'opacity-100' : 'opacity-30 hover:opacity-60'}`}
+              onClick={() => setActiveTab(tab.id)}
             >
-              <h3 className="font-serif text-2xl md:text-3xl mb-4">Print to Order Process</h3>
-              <p className="text-[#020312] leading-relaxed">
-                Every print is made-to-order, meaning it&apos;s freshly printed once you place your order, allowing us to minimize waste and maintain our commitment to sustainability.
-              </p>
-              <p className="text-[#020312] leading-relaxed">
-                This approach ensures that each artwork receives individual attention and care during production, resulting in the highest quality final piece.
-              </p>
-              <p className="text-[#020312] leading-relaxed">
-                Your print will be carefully packaged and shipped directly to your door, typically within 5-7 business days of your order.
-              </p>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2 }}
-                className="inline-block mt-6"
-              >
-                <Link 
-                  href="/shop"
-                  className="inline-block border border-[#020312]/10 rounded px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors"
-                >
-                  SHOP NOW
-                </Link>
-              </motion.div>
-            </motion.div>
-          </>
-        )}
+              <h3 className={`font-serif text-4xl tracking-tight ${activeTab === tab.id ? 'border-b border-[#020312]' : ''}`}>
+                {tab.label}
+              </h3>
+            </button>
+          ))}
+        </div>
+
+        {/* Col 2: media */}
+        <motion.div
+          key={`media-${activeTab}`}
+          className="relative aspect-[9/16] w-full max-w-[320px] mx-auto overflow-hidden bg-[#EDEAE4]"
+          variants={contentVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          {activeData.media}
+        </motion.div>
+
+        {/* Col 3: text */}
+        <motion.div
+          key={`text-${activeTab}`}
+          className="space-y-5 flex flex-col justify-center"
+          variants={contentVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          <h3 className="font-serif text-3xl text-[#020312]">{activeData.heading}</h3>
+          {activeData.body.map((para, i) => (
+            <p key={i} className="text-[#020312]/80 leading-relaxed">{para}</p>
+          ))}
+          <Link
+            href="/shop"
+            className="inline-block border border-[#020312]/10 px-5 py-2 text-sm hover:bg-black hover:text-white transition-colors mt-4"
+          >
+            SHOP NOW
+          </Link>
+        </motion.div>
       </div>
     </div>
   );
