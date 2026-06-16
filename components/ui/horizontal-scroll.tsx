@@ -28,9 +28,7 @@ export default function HorizontalScroll({
   return (
     <div className="hs-root">
       <div ref={emblaRef} className="hs-viewport">
-        <div className={`hs-container ${className}`}>
-          {children}
-        </div>
+        {children}
       </div>
 
       {/* Right-edge fade — hints more content */}
@@ -43,7 +41,6 @@ export default function HorizontalScroll({
         .hs-root { position: relative; overflow: visible; }
         .hs-viewport { overflow: hidden; cursor: grab; }
         .hs-viewport:active { cursor: grabbing; }
-        .hs-container { display: flex; }
         .hs-fade {
           position: absolute;
           top: 0; right: 0; bottom: 0;
