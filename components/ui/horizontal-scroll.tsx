@@ -22,7 +22,7 @@ export default function HorizontalScroll({
     align: 'start',
     loop: false,
     dragFree: true,
-    containScroll: 'trimSnaps',
+    containScroll: false,
   });
 
   return (
