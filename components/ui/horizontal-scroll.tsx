@@ -11,131 +11,127 @@ interface HorizontalScrollProps {
   scrollbarThumbClassName?: string;
 }
 
-/**
- * HorizontalScroll component
- * Creates a horizontally scrollable container with custom scrollbar
- */
 export default function HorizontalScroll({
   children,
   className = '',
   scrollbarClassName = '',
   scrollbarTrackClassName = '',
-  scrollbarThumbClassName = ''
+  scrollbarThumbClassName = '',
 }: HorizontalScrollProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollPercentage, setScrollPercentage] = useState(0);
   const [thumbWidth, setThumbWidth] = useState(20);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [startScrollLeft, setStartScrollLeft] = useState(0);
 
-  // Calculate the thumb width and scroll percentage
+  // Content drag state
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const startScrollLeft = useRef(0);
+  const [grabbing, setGrabbing] = useState(false);
+
+  // Scrollbar thumb drag state
+  const [thumbDragging, setThumbDragging] = useState(false);
+  const thumbStartX = useRef(0);
+  const thumbStartScrollLeft = useRef(0);
+
+  // Update scrollbar on scroll / resize
   useEffect(() => {
-    const updateScrollbar = () => {
-      if (scrollContainerRef.current) {
-        const { scrollWidth, clientWidth, scrollLeft } = scrollContainerRef.current;
-        
-        // Calculate thumb width as a percentage of the visible area
-        const calculatedThumbWidth = (clientWidth / scrollWidth) * 100;
-        setThumbWidth(Math.max(calculatedThumbWidth, 10)); // Minimum thumb width of 10%
-        
-        // Calculate scroll position as a percentage
-        const maxScroll = scrollWidth - clientWidth;
-        const percentage = maxScroll > 0 ? (scrollLeft / maxScroll) * 100 : 0;
-        setScrollPercentage(percentage);
-      }
+    const update = () => {
+      const el = scrollContainerRef.current;
+      if (!el) return;
+      const { scrollWidth, clientWidth, scrollLeft } = el;
+      setThumbWidth(Math.max((clientWidth / scrollWidth) * 100, 10));
+      const maxScroll = scrollWidth - clientWidth;
+      setScrollPercentage(maxScroll > 0 ? (scrollLeft / maxScroll) * 100 : 0);
     };
-
-    // Initial update
-    updateScrollbar();
-
-    // Update on scroll
-    const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', updateScrollbar);
-    }
-
-    // Update on resize
-    window.addEventListener('resize', updateScrollbar);
-
+    update();
+    const el = scrollContainerRef.current;
+    el?.addEventListener('scroll', update);
+    window.addEventListener('resize', update);
     return () => {
-      if (scrollContainer) {
-        scrollContainer.removeEventListener('scroll', updateScrollbar);
-      }
-      window.removeEventListener('resize', updateScrollbar);
+      el?.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
     };
   }, []);
 
-  // Handle scrollbar thumb drag
-  const handleThumbMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-    setStartX(e.clientX);
-    if (scrollContainerRef.current) {
-      setStartScrollLeft(scrollContainerRef.current.scrollLeft);
-    }
+  // ── Content drag (mouse) ──────────────────────────────────────
+  const onContentMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    isDragging.current = true;
+    startX.current = e.pageX - scrollContainerRef.current.offsetLeft;
+    startScrollLeft.current = scrollContainerRef.current.scrollLeft;
+    setGrabbing(true);
   };
 
-  // Handle mouse move while dragging
+  const onContentMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5;
+    scrollContainerRef.current.scrollLeft = startScrollLeft.current - walk;
+  };
+
+  const onContentMouseUp = () => {
+    isDragging.current = false;
+    setGrabbing(false);
+  };
+
+  // ── Scrollbar thumb drag ──────────────────────────────────────
+  const onThumbMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setThumbDragging(true);
+    thumbStartX.current = e.clientX;
+    thumbStartScrollLeft.current = scrollContainerRef.current?.scrollLeft ?? 0;
+  };
+
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging || !scrollContainerRef.current) return;
-      
-      const x = e.clientX;
-      const walk = (x - startX) * 2; // Scroll speed multiplier
+    const onMove = (e: MouseEvent) => {
+      if (!thumbDragging || !scrollContainerRef.current) return;
       const { scrollWidth, clientWidth } = scrollContainerRef.current;
       const maxScroll = scrollWidth - clientWidth;
-      
+      const walk = (e.clientX - thumbStartX.current) * 2;
       scrollContainerRef.current.scrollLeft = Math.max(
         0,
-        Math.min(startScrollLeft + walk, maxScroll)
+        Math.min(thumbStartScrollLeft.current + walk, maxScroll)
       );
     };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+    const onUp = () => setThumbDragging(false);
+    if (thumbDragging) {
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
     }
-
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
     };
-  }, [isDragging, startX, startScrollLeft]);
+  }, [thumbDragging]);
 
   return (
     <div className="relative">
-      {/* Scrollable container */}
       <div
         ref={scrollContainerRef}
-        className={`flex overflow-x-auto scrollbar-hide ${className}`}
-        style={{ scrollBehavior: 'smooth' }}
+        className={`flex overflow-x-auto scrollbar-hide select-none ${grabbing ? 'cursor-grabbing' : 'cursor-grab'} ${className}`}
+        onMouseDown={onContentMouseDown}
+        onMouseMove={onContentMouseMove}
+        onMouseUp={onContentMouseUp}
+        onMouseLeave={onContentMouseUp}
       >
         {children}
       </div>
-      
-      {/* Custom scrollbar */}
-      <div className={`mt-4 relative h-2 ${scrollbarClassName || 'w-full'}`}>
-        <div 
-          className={`absolute h-full rounded-full custom-scrollbar-track ${scrollbarTrackClassName || 'bg-gray-200'}`} 
-          style={{ width: '100%' }}
+
+      {/* Scrollbar */}
+      <div className={`mt-4 relative h-[2px] ${scrollbarClassName || 'w-full'}`}>
+        <div
+          className={`absolute inset-0 rounded-full ${scrollbarTrackClassName || 'bg-gray-200'}`}
         />
         <motion.div
-          className={`absolute h-full rounded-full cursor-pointer ${scrollbarThumbClassName || 'bg-indigo-500 hover:bg-indigo-600'}`}
-          style={{ 
+          className={`absolute h-full rounded-full cursor-pointer ${scrollbarThumbClassName || 'bg-[#020312]/40 hover:bg-[#020312]/70'}`}
+          style={{
             width: `${thumbWidth}%`,
-            left: `${scrollPercentage * (100 - thumbWidth) / 100}%`
+            left: `${(scrollPercentage * (100 - thumbWidth)) / 100}%`,
           }}
-          animate={{ x: 0 }}
-          onMouseDown={handleThumbMouseDown}
+          onMouseDown={onThumbMouseDown}
         />
       </div>
     </div>
   );
 }
-
-// Note: scrollbar-hide utility class is defined in globals.css
