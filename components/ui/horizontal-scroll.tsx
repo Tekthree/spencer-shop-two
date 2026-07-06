@@ -26,7 +26,7 @@ export default function HorizontalScroll({
   });
 
   return (
-    <div className="hs-root">
+    <div className={`hs-root ${className}`.trim()}>
       <div ref={emblaRef} className="hs-viewport">
         {children}
       </div>

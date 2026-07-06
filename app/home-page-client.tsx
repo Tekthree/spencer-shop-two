@@ -237,7 +237,7 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       {/* Hero Section - full-bleed */}
       <section className="pb-0">
         <MarqueeHeading speed="normal" className="" data-component-name="HomePageClient">
-          <span className="clandyFontOverride">LOVE</span> Channeled Through Form
+          <span className="clandyFontOverride">Electric</span> Magnetic Cosmic Dragon Spencer Presence
         </MarqueeHeading>
 
         {/* Contained hero image */}
