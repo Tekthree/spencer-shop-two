@@ -571,7 +571,7 @@ h1, h2, h3, h4, h5, h6, .font-serif {
     width: 100%;
     overflow: hidden;
     user-select: none;
-    padding-bottom: 2.5rem;
+    padding-block: clamp(1.75rem, 3vw, 3rem) clamp(2.5rem, 4vw, 3.75rem);
   }
   
   .marquee-track {
