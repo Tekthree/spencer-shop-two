@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import ProductCard from '@/components/artwork/product-card';
-import HorizontalScroll from '@/components/ui/horizontal-scroll';
+import useEmblaCarousel from 'embla-carousel-react';
 
 // Define types for the content sections
 interface ContentSection {
@@ -38,12 +38,17 @@ interface AboutPageClientProps {
  * About Page Client Component
  * Handles animations and rendering of the about page
  */
-export default function AboutPageClient({ 
-  contentSections, 
-  featuredArtworks 
+export default function AboutPageClient({
+  contentSections,
+  featuredArtworks
 }: AboutPageClientProps) {
-  // Content sections are now properly mapped to their respective display areas
-  
+  const [aboutEmblaRef] = useEmblaCarousel({
+    align: 'start',
+    loop: false,
+    dragFree: true,
+    containScroll: 'trimSnaps',
+  });
+
   // Create fallback content sections in case they're missing from the server
   const fallbackArtistStatement = {
     id: 'statement-fallback',
@@ -304,33 +309,43 @@ export default function AboutPageClient({
         >
           Shop the Art Prints
         </motion.h2>
-        <HorizontalScroll
-          className="pb-2"
-          scrollbarTrackClassName="custom-scrollbar-track"
-          scrollbarThumbClassName="custom-scrollbar-thumb"
-        >
-          <div className="flex gap-8 py-2">
-            {featuredArtworks?.map((artwork) => {
-              return (
-                <motion.div 
-                  key={artwork.slug || artwork.id} 
-                  className="min-w-[280px] sm:min-w-[320px] w-[320px] flex-shrink-0 flex flex-col"
+        <div style={{ position: 'relative' }}>
+          <div ref={aboutEmblaRef} className="aa-vp">
+            <div className="aa-ct">
+              {featuredArtworks?.map((artwork) => (
+                <motion.div
+                  key={artwork.slug || artwork.id}
+                  className="aa-sl"
                   variants={itemVariants}
                   whileHover={{ y: -5 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <ProductCard 
-                    slug={artwork.slug} 
-                    title={artwork.title} 
+                  <ProductCard
+                    slug={artwork.slug}
+                    title={artwork.title}
                     images={artwork.images}
                     price={artwork.price}
                     className="h-full"
                   />
                 </motion.div>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </HorizontalScroll>
+          <div
+            style={{
+              position: 'absolute', top: 0, right: 0, bottom: 0, width: 80,
+              background: 'linear-gradient(to right, transparent, #F6F4F0)',
+              pointerEvents: 'none', zIndex: 2,
+            }}
+          />
+        </div>
+        <style>{`
+          .aa-vp { overflow: hidden; cursor: grab; }
+          .aa-vp:active { cursor: grabbing; }
+          .aa-ct { display: flex; gap: 32px; }
+          .aa-sl { flex-shrink: 0; width: 280px; min-width: 0; display: flex; flex-direction: column; }
+          @media (min-width: 640px) { .aa-sl { width: 320px; } }
+        `}</style>
       </motion.div>
 
       {/* Contact Section */}

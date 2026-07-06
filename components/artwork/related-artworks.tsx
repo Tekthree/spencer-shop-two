@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
 import ProductCard from './product-card';
-import HorizontalScroll from '@/components/ui/horizontal-scroll';
 
 interface Artwork {
   id: string;
@@ -29,6 +29,13 @@ export default function RelatedArtworks({
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [emblaRef] = useEmblaCarousel({
+    align: 'start',
+    loop: false,
+    dragFree: true,
+    containScroll: 'trimSnaps',
+  });
 
   useEffect(() => {
     const fetchRelatedArtworks = async () => {
@@ -63,7 +70,7 @@ export default function RelatedArtworks({
         <div className="h-6 w-40 bg-[#EDEAE4] animate-pulse mb-8" />
         <div className="flex gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="shrink-0 w-[260px] animate-pulse">
+            <div key={i} style={{ flexShrink: 0, width: 260, minWidth: 0 }} className="animate-pulse">
               <div className="aspect-[3/4] bg-[#EDEAE4] mb-3" />
               <div className="h-4 bg-[#EDEAE4] w-3/4 mb-2" />
               <div className="h-3 bg-[#EDEAE4] w-1/2" />
@@ -79,24 +86,37 @@ export default function RelatedArtworks({
   return (
     <div className="mt-16 pb-16">
       <h2 className="font-serif text-2xl text-[#020312] mb-8">You may also like</h2>
-      <HorizontalScroll
-        scrollbarTrackClassName="bg-[#020312]/10"
-        scrollbarThumbClassName="bg-[#020312]/40 hover:bg-[#020312]/70"
-      >
-        <div className="flex gap-6 pb-2">
-          {artworks.map((artwork) => (
-            <div key={artwork.id} className="shrink-0 w-[240px] sm:w-[280px]">
-              <ProductCard
-                slug={artwork.slug}
-                title={artwork.title}
-                images={artwork.images}
-                price={artwork.sizes?.[0]?.price}
-                className="h-full"
-              />
-            </div>
-          ))}
+      <div style={{ position: 'relative' }}>
+        <div ref={emblaRef} className="ra-vp">
+          <div className="ra-ct">
+            {artworks.map((artwork) => (
+              <div key={artwork.id} className="ra-sl">
+                <ProductCard
+                  slug={artwork.slug}
+                  title={artwork.title}
+                  images={artwork.images}
+                  price={artwork.sizes?.[0]?.price}
+                  className="h-full"
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </HorizontalScroll>
+        <div
+          style={{
+            position: 'absolute', top: 0, right: 0, bottom: 0, width: 80,
+            background: 'linear-gradient(to right, transparent, #F6F4F0)',
+            pointerEvents: 'none', zIndex: 2,
+          }}
+        />
+      </div>
+      <style>{`
+        .ra-vp { overflow: hidden; cursor: grab; }
+        .ra-vp:active { cursor: grabbing; }
+        .ra-ct { display: flex; gap: 24px; }
+        .ra-sl { flex-shrink: 0; width: 240px; min-width: 0; }
+        @media (min-width: 640px) { .ra-sl { width: 280px; } }
+      `}</style>
     </div>
   );
 }
