@@ -235,8 +235,8 @@ export default function HomePageClient({ featuredArtworks, recentArtworks }: Hom
       className="min-h-screen bg-[#F6F4F0]"
     >
       {/* Hero Section - full-bleed */}
-      <section className="pb-0">
-        <MarqueeHeading speed="normal" className="" data-component-name="HomePageClient">
+      <section className="pt-6 md:pt-10 lg:pt-12 pb-0">
+        <MarqueeHeading speed="slow" className="" data-component-name="HomePageClient">
           <span className="clandyFontOverride">Electric</span> Magnetic Cosmic Dragon Spencer Presence
         </MarqueeHeading>
 

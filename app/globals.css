@@ -582,7 +582,7 @@ h1, h2, h3, h4, h5, h6, .font-serif {
   }
   
   .marquee-track-slow {
-    animation-duration: 80s;
+    animation-duration: 96s;
   }
   
   .marquee-track-fast {
@@ -596,7 +596,7 @@ h1, h2, h3, h4, h5, h6, .font-serif {
     }
     
     .marquee-track-slow {
-      animation-duration: 70s;
+      animation-duration: 78s;
     }
     
     .marquee-track-fast {
