@@ -33,11 +33,11 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
 
   // Get expanded data for each line item
   const expandedLineItems = await Promise.all(
-    lineItems.data.map(async (item) => {
+    lineItems.data.map(async item => {
       const product = await stripe.products.retrieve(item.price?.product as string);
       return {
         ...item,
-        product,
+        product
       };
     })
   );
@@ -53,14 +53,14 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
   };
 
   // Extract order items from line items
-  const orderItems: OrderItem[] = expandedLineItems.map((item) => {
+  const orderItems: OrderItem[] = expandedLineItems.map(item => {
     const metadata = item.product.metadata;
     return {
       artwork_id: metadata.artwork_id,
       size: metadata.size,
       price: item.amount_total,
       edition_number: parseInt(metadata.edition_number),
-      quantity: item.quantity,
+      quantity: item.quantity
     };
   });
 
@@ -87,12 +87,12 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
           state: 'Unknown',
           postal_code: 'Unknown',
           country: 'Unknown'
-        },
+        }
       },
       items: orderItems,
       total: session.amount_total || 0,
       status: 'paid',
-      payment_intent: (session.payment_intent as string) || `pi_unknown_${Date.now()}`,
+      payment_intent: (session.payment_intent as string) || `pi_unknown_${Date.now()}`
     };
 
     console.log('Inserting order into database...');
@@ -132,17 +132,25 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
         continue;
       }
 
-      const artwork = artworkRows[0] as { sizes: Array<{ size: string; price: number; edition_limit: number; editions_sold: number }>; title: string };
+      const artwork = artworkRows[0] as {
+        sizes: Array<{
+          size: string;
+          price: number;
+          edition_limit: number;
+          editions_sold: number;
+        }>;
+        title: string;
+      };
 
       // Add title to the order item for email template
       item.title = artwork.title;
 
       // Update the editions_sold count for the specific size
-      const updatedSizes = artwork.sizes.map((sizeInfo) => {
+      const updatedSizes = artwork.sizes.map(sizeInfo => {
         if (sizeInfo.size === item.size) {
           return {
             ...sizeInfo,
-            editions_sold: sizeInfo.editions_sold + (item.quantity || 1),
+            editions_sold: sizeInfo.editions_sold + (item.quantity || 1)
           };
         }
         return sizeInfo;
@@ -207,7 +215,7 @@ export async function POST(request: NextRequest) {
   // Debug: Log environment variables (without exposing secrets)
   console.log('Environment check:', {
     hasWebhookSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
-    hasDatabaseUrl: !!process.env.DATABASE_URL,
+    hasDatabaseUrl: !!process.env.DATABASE_URL
   });
 
   const body = await request.text();
@@ -229,11 +237,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Attempting to verify webhook signature...');
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
+    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET);
     console.log('Webhook signature verified successfully');
   } catch (err) {
     const error = err as Error;
@@ -247,6 +251,19 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed': {
         console.log('Received checkout.session.completed event');
         const session = event.data.object as Stripe.Checkout.Session;
+
+        // The diagnostic checkout deliberately exercises Stripe without
+        // creating an order, changing edition inventory, or sending email.
+        // Only trust the marker for sandbox events; a live payment must never
+        // be discarded because client-controlled metadata says it is a test.
+        if (!event.livemode && session.metadata?.test === 'true') {
+          console.log('Sandbox checkout test completed; skipping order processing');
+          return NextResponse.json({
+            received: true,
+            test: true,
+            orderCreated: false
+          });
+        }
 
         console.log('Session details:', {
           id: session.id,
@@ -304,9 +321,6 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     const error = err as Error;
     console.error(`Error processing webhook: ${error.message}`);
-    return NextResponse.json(
-      { error: 'Webhook handler failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 }

@@ -17,7 +17,7 @@ const testCheckoutSchema = z.object({
       quantity: z.number(),
       size: z.string(),
       sizeDisplay: z.string(),
-      imageUrl: z.string(),
+      imageUrl: z.string()
     })
   ),
   customerInfo: z.object({
@@ -29,19 +29,29 @@ const testCheckoutSchema = z.object({
       city: z.string(),
       state: z.string(),
       postal_code: z.string(),
-      country: z.string(),
-    }),
-  }),
+      country: z.string()
+    })
+  })
 });
 
 export async function POST(request: NextRequest) {
   try {
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
+    const isTestMode = stripeSecretKey.startsWith('sk_test_');
+    const isProductionDeployment = process.env.VERCEL_ENV === 'production';
+
+    // Never let this diagnostic endpoint create live-mode Checkout Sessions.
+    // Preview and local environments may use it only with Stripe test keys.
+    if (!isTestMode || isProductionDeployment) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
     // Parse the request body
     const body = await request.json();
-    
+
     // Validate the request body
     const { items, customerInfo } = testCheckoutSchema.parse(body);
-    
+
     // Create line items for Stripe checkout (test mode)
     const lineItems = items.map(item => ({
       price_data: {
@@ -53,12 +63,12 @@ export async function POST(request: NextRequest) {
           metadata: {
             test: 'true',
             artwork_id: item.id,
-            size: item.size,
-          },
+            size: item.size
+          }
         },
-        unit_amount: item.price,
+        unit_amount: item.price
       },
-      quantity: item.quantity,
+      quantity: item.quantity
     }));
 
     // Create a checkout session in test mode
@@ -71,14 +81,14 @@ export async function POST(request: NextRequest) {
       customer_email: customerInfo.email,
       metadata: {
         test: 'true',
-        customer_name: customerInfo.name,
-      },
+        customer_name: customerInfo.name
+      }
     });
 
     // Return the session ID and URL
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      sessionId: session.id, 
+      sessionId: session.id,
       url: session.url,
       message: 'Test checkout session created successfully'
     });
@@ -86,9 +96,6 @@ export async function POST(request: NextRequest) {
     // Define a type for the error
     const error = err as Error;
     console.error('Error creating test checkout session:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to create test checkout session' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: error.message || 'Failed to create test checkout session' }, { status: 400 });
   }
 }
