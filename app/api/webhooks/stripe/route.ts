@@ -11,25 +11,38 @@ import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/lib/em
 import { format } from 'date-fns';
 import { Stripe } from 'stripe';
 
+type OrderItem = {
+  artwork_id: string;
+  title?: string;
+  size: string;
+  price: number;
+  edition_number?: number;
+  quantity: number;
+};
+
+type StoredOrder = {
+  id: string;
+  items: OrderItem[];
+};
+
 /**
  * Process a successful payment
  * Updates inventory and creates an order record
  */
 async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
-  console.log('Starting handleSuccessfulPayment for session:', session.id);
+  const paymentIntentId =
+    typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
 
-  // Test DB connection
-  try {
-    const test = await sql`SELECT COUNT(*)::int AS count FROM orders`;
-    console.log('DB connection successful, found', (test[0] as { count: number }).count, 'orders');
-  } catch (err) {
-    console.error('Error testing DB connection:', err);
-    throw err;
+  if (!paymentIntentId) {
+    throw new Error('Paid checkout session is missing a payment intent');
   }
 
   // Get line items from the session
-  console.log('Fetching line items for session:', session.id);
-  const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+  const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
+
+  if (!lineItems.data.length) {
+    throw new Error('Paid checkout session has no line items');
+  }
 
   // Get expanded data for each line item
   const expandedLineItems = await Promise.all(
@@ -42,131 +55,72 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     })
   );
 
-  // Define the type for order items
-  type OrderItem = {
-    artwork_id: string;
-    size: string;
-    price: number;
-    edition_number: number;
-    quantity: number | null;
-    title?: string; // Add optional title property for email template
-  };
-
   // Extract order items from line items
   const orderItems: OrderItem[] = expandedLineItems.map(item => {
     const metadata = item.product.metadata;
+    const artworkId = metadata.artwork_id;
+    const size = metadata.size;
+    const quantity = item.quantity || 1;
+
+    if (!artworkId || !size || !Number.isInteger(quantity) || quantity < 1) {
+      throw new Error('Checkout line item is missing valid artwork metadata');
+    }
+
     return {
-      artwork_id: metadata.artwork_id,
-      size: metadata.size,
-      price: item.amount_total,
-      edition_number: parseInt(metadata.edition_number),
-      quantity: item.quantity
+      artwork_id: artworkId,
+      size,
+      price: item.amount_total || 0,
+      quantity
     };
   });
 
-  // Log the order data we're about to insert
-  console.log('Creating order with data:', {
-    customerName: session.metadata?.customer_name,
-    customerEmail: session.customer_details?.email,
+  console.log('Fulfilling paid checkout:', {
     hasAddress: !!session.customer_details?.address,
     itemsCount: orderItems.length,
-    total: session.amount_total,
-    paymentIntent: session.payment_intent
+    hasCustomerEmail: !!session.customer_details?.email
   });
 
-  // Create order record in database
-  let createdOrder;
-  try {
-    const orderData = {
-      customer_info: {
-        name: session.metadata?.customer_name || 'Unknown Customer',
-        email: session.customer_details?.email || 'unknown@example.com',
-        address: session.customer_details?.address || {
-          line1: 'Unknown',
-          city: 'Unknown',
-          state: 'Unknown',
-          postal_code: 'Unknown',
-          country: 'Unknown'
-        }
-      },
-      items: orderItems,
-      total: session.amount_total || 0,
-      status: 'paid',
-      payment_intent: (session.payment_intent as string) || `pi_unknown_${Date.now()}`
-    };
-
-    console.log('Inserting order into database...');
-    const rows = await sql`
-      INSERT INTO orders (customer_info, items, total, status, payment_intent)
-      VALUES (
-        ${JSON.stringify(orderData.customer_info)}::jsonb,
-        ${JSON.stringify(orderData.items)}::jsonb,
-        ${orderData.total},
-        ${orderData.status},
-        ${orderData.payment_intent}
-      )
-      RETURNING *
-    `;
-
-    if (!rows.length) {
-      throw new Error('Order was created but no data was returned');
+  const customerInfo = {
+    name: session.metadata?.customer_name || 'Unknown Customer',
+    email: session.customer_details?.email || 'unknown@example.com',
+    address: session.customer_details?.address || {
+      line1: 'Unknown',
+      city: 'Unknown',
+      state: 'Unknown',
+      postal_code: 'Unknown',
+      country: 'Unknown'
     }
+  };
 
-    createdOrder = rows[0];
-    console.log('Order created successfully:', createdOrder.id);
-  } catch (err) {
-    console.error('Exception during order creation:', err);
-    throw err;
+  // The database function claims the payment intent, locks the affected
+  // artwork rows, validates remaining inventory, updates every edition count,
+  // and finalizes the order in one transaction. Its unique index makes Stripe
+  // webhook retries safe even when two invocations arrive concurrently.
+  const fulfillmentRows = await sql`
+    SELECT * FROM fulfill_checkout_order(
+      ${JSON.stringify(customerInfo)}::jsonb,
+      ${JSON.stringify(orderItems)}::jsonb,
+      ${session.amount_total || 0},
+      ${paymentIntentId}
+    )
+  `;
+
+  if (!fulfillmentRows.length) {
+    throw new Error('Checkout fulfillment returned no order');
   }
 
-  // Update artwork editions_sold for each item
-  for (const item of orderItems) {
-    try {
-      console.log(`Processing artwork update for item: ${item.artwork_id}`);
+  const result = fulfillmentRows[0] as {
+    order_data: StoredOrder;
+    created: boolean;
+  };
+  const createdOrder = result.order_data;
 
-      // Get the current artwork data
-      const artworkRows = await sql`SELECT sizes, title FROM artworks WHERE id = ${item.artwork_id} LIMIT 1`;
-
-      if (!artworkRows.length) {
-        console.warn(`Artwork ${item.artwork_id} not found in database`);
-        continue;
-      }
-
-      const artwork = artworkRows[0] as {
-        sizes: Array<{
-          size: string;
-          price: number;
-          edition_limit: number;
-          editions_sold: number;
-        }>;
-        title: string;
-      };
-
-      // Add title to the order item for email template
-      item.title = artwork.title;
-
-      // Update the editions_sold count for the specific size
-      const updatedSizes = artwork.sizes.map(sizeInfo => {
-        if (sizeInfo.size === item.size) {
-          return {
-            ...sizeInfo,
-            editions_sold: sizeInfo.editions_sold + (item.quantity || 1)
-          };
-        }
-        return sizeInfo;
-      });
-
-      // Update the artwork record
-      console.log(`Updating sizes for artwork: ${item.artwork_id}`);
-      await sql`
-        UPDATE artworks SET sizes = ${JSON.stringify(updatedSizes)}::jsonb WHERE id = ${item.artwork_id}
-      `;
-      console.log(`Successfully updated artwork: ${item.artwork_id}`);
-    } catch (err) {
-      console.error(`Exception processing artwork ${item.artwork_id}:`, err);
-      // Continue with other items
-    }
+  if (!result.created) {
+    console.log('Duplicate checkout webhook ignored');
+    return { order: createdOrder, created: false };
   }
+
+  console.log('Order and inventory committed successfully');
 
   // Send order confirmation email
   try {
@@ -184,17 +138,17 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
         orderNumber,
         customerName,
         customerEmail,
-        items: orderItems.map(item => ({
+        items: createdOrder.items.map(item => ({
           title: item.title || 'Artwork',
           size: item.size,
           price: item.price,
-          quantity: item.quantity || 1
+          quantity: item.quantity
         })),
         total: session.amount_total || 0,
         date: format(new Date(), 'MMMM d, yyyy')
       };
 
-      console.log('Sending order confirmation email to:', customerEmail);
+      console.log('Sending order confirmation emails');
       await sendOrderConfirmationEmail(emailData);
       await sendAdminOrderNotification(emailData);
       console.log('Order confirmation emails sent successfully');
@@ -206,7 +160,7 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     // Don't throw error here to prevent webhook failure
   }
 
-  return createdOrder;
+  return { order: createdOrder, created: true };
 }
 
 export async function POST(request: NextRequest) {
@@ -265,13 +219,11 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        console.log('Session details:', {
-          id: session.id,
+        console.log('Checkout session received:', {
           paymentStatus: session.payment_status,
-          customerId: session.customer,
-          customerEmail: session.customer_details?.email,
+          hasCustomer: !!session.customer,
+          hasCustomerEmail: !!session.customer_details?.email,
           hasPaymentIntent: !!session.payment_intent,
-          metadata: session.metadata,
           amountTotal: session.amount_total
         });
 
@@ -279,9 +231,12 @@ export async function POST(request: NextRequest) {
         if (session.payment_status === 'paid') {
           console.log('Payment status is paid, processing order...');
           try {
-            const order = await handleSuccessfulPayment(session);
-            console.log('Order created successfully:', order.id);
-            return NextResponse.json({ success: true, order });
+            const result = await handleSuccessfulPayment(session);
+            return NextResponse.json({
+              received: true,
+              orderCreated: result.created,
+              duplicate: !result.created
+            });
           } catch (error) {
             console.error('Failed to create order:', error);
             throw error; // Re-throw to be caught by the outer try/catch
@@ -294,22 +249,20 @@ export async function POST(request: NextRequest) {
 
       // Handle payment_intent events
       case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log(`PaymentIntent ${paymentIntent.id} was successful!`);
+        console.log('Payment intent succeeded');
         // No need to process this separately as we handle checkout.session.completed
         break;
       }
 
       case 'payment_intent.created': {
-        const createdIntent = event.data.object as Stripe.PaymentIntent;
-        console.log(`PaymentIntent ${createdIntent.id} was created`);
+        console.log('Payment intent created');
         break;
       }
 
       // Handle charge events
       case 'charge.succeeded': {
         const charge = event.data.object as Stripe.Charge;
-        console.log(`Charge ${charge.id} succeeded for amount ${charge.amount}`);
+        console.log(`Charge succeeded for amount ${charge.amount}`);
         break;
       }
 

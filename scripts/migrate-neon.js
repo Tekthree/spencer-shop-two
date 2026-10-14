@@ -4,6 +4,7 @@
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
+import { readFileSync } from 'fs';
 const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -202,6 +203,27 @@ async function run() {
   }
 
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_artworks_slug ON artworks(slug)`;
+  console.log('  done.');
+
+  // ── Migration 05: Atomic checkout fulfillment ───────────────────────────────
+  console.log('05_checkout_security...');
+  const checkoutSecurityMigration = readFileSync(
+    resolve(__dirname, '../supabase/migrations/05_checkout_security.sql'),
+    'utf8'
+  );
+  const checkoutIndexSql = checkoutSecurityMigration.match(/CREATE UNIQUE INDEX[\s\S]*?;/)?.[0];
+  const checkoutFunctionSql = checkoutSecurityMigration.match(/CREATE OR REPLACE FUNCTION[\s\S]*?\n\$\$;/)?.[0];
+  const checkoutRevokeSql = checkoutSecurityMigration.match(/REVOKE ALL ON FUNCTION[\s\S]*?;/)?.[0];
+
+  if (!checkoutIndexSql || !checkoutFunctionSql || !checkoutRevokeSql) {
+    throw new Error('Could not parse 05_checkout_security.sql');
+  }
+
+  await sql.transaction([
+    sql.query(checkoutIndexSql),
+    sql.query(checkoutFunctionSql),
+    sql.query(checkoutRevokeSql)
+  ]);
   console.log('  done.');
 
   // ── Verify ───────────────────────────────────────────────────────────────────
