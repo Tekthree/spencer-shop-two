@@ -6,7 +6,12 @@ import sql from '@/lib/db/client';
  * @param params - The route parameters
  * @returns Metadata for the artwork page
  */
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateArtworkMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
   // Base URL from environment variable or default
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spencergrey.com';
 
@@ -16,7 +21,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       SELECT a.*, c.name AS collection_name
       FROM artworks a
       LEFT JOIN collections c ON c.id = a.collection_id
-      WHERE a.slug = ${params.slug}
+      WHERE a.slug = ${slug}
       LIMIT 1
     `;
 
@@ -93,7 +98,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       openGraph: {
         title: `${artwork.title} | Spencer Grey Art`,
         description: description.substring(0, 160),
-        url: `${baseUrl}/artwork/${params.slug}`,
+        url: `${baseUrl}/artwork/${slug}`,
         siteName: 'Spencer Grey Art',
         images: [{
           url: absoluteImageUrl,
@@ -112,7 +117,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
         creator: '@spencergreyart',
       },
       alternates: {
-        canonical: `${baseUrl}/artwork/${params.slug}`,
+        canonical: `${baseUrl}/artwork/${slug}`,
       },
       other: {
         'og:price:amount': formattedPrice,

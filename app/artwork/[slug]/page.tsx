@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 
 import ArtworkDetailClient from './artwork-detail-client';
+import { generateArtworkMetadata } from './metadata';
 import JsonLd, { breadcrumbJsonLd, productJsonLd } from '@/components/shared/json-ld';
 import sql from '@/lib/db/client';
 
@@ -116,6 +117,8 @@ async function fetchArtworkBySlug(slug: string): Promise<{ artwork: ArtworkData 
 interface ArtworkPageProps {
   params: Promise<{ slug: string }>;
 }
+
+export const generateMetadata = generateArtworkMetadata;
 
 export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
   const { slug } = await params;
