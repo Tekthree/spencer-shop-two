@@ -121,6 +121,7 @@ const getFeaturedArtworks = async (): Promise<FeaturedArtwork[]> => {
     const data = await sql`
       SELECT id, slug, title, images, sizes
       FROM artworks
+      WHERE is_hidden = FALSE
       ORDER BY created_at DESC
       LIMIT 10
     ` as { id: string; slug: string; title: string; images: unknown; sizes?: { price: number }[] }[];

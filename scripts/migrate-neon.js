@@ -226,6 +226,17 @@ async function run() {
   ]);
   console.log('  done.');
 
+  // ── Migration 06: Private/non-shipping artworks ─────────────────────────────
+  console.log('06_private_nonshipping_artworks...');
+  await sql`ALTER TABLE public.artworks ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`ALTER TABLE public.artworks ADD COLUMN IF NOT EXISTS requires_shipping BOOLEAN NOT NULL DEFAULT TRUE`;
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_artworks_public_visibility
+    ON public.artworks (created_at DESC)
+    WHERE is_hidden = FALSE
+  `;
+  console.log('  done.');
+
   // ── Verify ───────────────────────────────────────────────────────────────────
   const tables = await sql`
     SELECT tablename FROM pg_tables

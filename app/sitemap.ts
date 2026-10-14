@@ -57,7 +57,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const artworks = await sql`
-      SELECT id, slug, created_at FROM artworks ORDER BY created_at DESC
+      SELECT id, slug, created_at
+      FROM artworks
+      WHERE is_hidden = FALSE
+      ORDER BY created_at DESC
     ` as { id: string; slug: string; created_at: string }[];
     artworkRoutes = artworks.map((artwork) => ({
       url: `${baseUrl}/artwork/${artwork.slug || artwork.id}`,

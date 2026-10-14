@@ -35,6 +35,7 @@ interface Artwork {
   collection_id: string | null;
   collection_name?: string;
   featured: boolean;
+  is_hidden: boolean;
   images: ArtworkImage[];
   sizes: SizeOption[];
   created_at: string;

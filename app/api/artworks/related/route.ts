@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       const sameCollection = await sql`
         SELECT id, slug, title, year, medium, images, collection_id, sizes
         FROM artworks
-        WHERE id != ${currentId} AND collection_id = ${collectionId}
+        WHERE id != ${currentId} AND collection_id = ${collectionId} AND is_hidden = FALSE
         ORDER BY created_at DESC
         LIMIT ${limit}
       `;
@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
         const others = await sql`
           SELECT id, slug, title, year, medium, images, collection_id, sizes
           FROM artworks
-          WHERE id != ${currentId} AND (collection_id != ${collectionId} OR collection_id IS NULL)
+          WHERE id != ${currentId}
+            AND (collection_id != ${collectionId} OR collection_id IS NULL)
+            AND is_hidden = FALSE
           ORDER BY created_at DESC
           LIMIT ${needed}
         `;
@@ -46,7 +48,7 @@ export async function GET(request: NextRequest) {
       artworks = await sql`
         SELECT id, slug, title, year, medium, images, collection_id, sizes
         FROM artworks
-        WHERE id != ${currentId}
+        WHERE id != ${currentId} AND is_hidden = FALSE
         ORDER BY created_at DESC
         LIMIT ${limit}
       `;

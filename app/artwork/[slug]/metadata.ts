@@ -28,12 +28,28 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       images?: { url: string }[];
       sizes?: { price: number }[];
       collection_name?: string;
+      is_hidden: boolean;
     } | undefined;
 
     if (!artwork) {
       return {
         title: 'Artwork Not Found',
         description: 'The requested artwork could not be found.',
+      };
+    }
+
+    if (artwork.is_hidden) {
+      return {
+        title: artwork.title,
+        description: artwork.description || 'Private checkout test product.',
+        robots: {
+          index: false,
+          follow: false,
+          googleBot: {
+            index: false,
+            follow: false,
+          },
+        },
       };
     }
 

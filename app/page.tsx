@@ -51,6 +51,7 @@ export default async function Home() {
     const featuredArtworksData = await sql`
       SELECT id, slug, title, images, sizes, featured
       FROM artworks
+      WHERE is_hidden = FALSE
       ORDER BY created_at DESC
       LIMIT 4
     ` as Artwork[];
@@ -59,6 +60,7 @@ export default async function Home() {
     const recentArtworksData = await sql`
       SELECT id, slug, title, images, sizes
       FROM artworks
+      WHERE is_hidden = FALSE
       ORDER BY created_at DESC
       LIMIT 5
     ` as Artwork[];

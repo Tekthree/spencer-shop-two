@@ -46,6 +46,7 @@ type ArtworkRow = {
   title: string;
   images: Array<{ url?: string }> | null;
   sizes: SizeInfo[];
+  requires_shipping: boolean;
 };
 
 const getBaseUrl = (request: NextRequest) => {
@@ -93,7 +94,10 @@ export async function POST(request: NextRequest) {
       groupedItems.map(async item => {
         // Check if the artwork exists and has available editions
         const rows = await sql`
-          SELECT id, title, images, sizes FROM artworks WHERE id = ${item.id} LIMIT 1
+          SELECT id, title, images, sizes, requires_shipping
+          FROM artworks
+          WHERE id = ${item.id}
+          LIMIT 1
         `;
 
         if (!rows.length) {
@@ -126,6 +130,8 @@ export async function POST(request: NextRequest) {
 
         // Return the line item for Stripe
         return {
+          requiresShipping: artwork.requires_shipping,
+          stripeLineItem: {
           price_data: {
             currency: 'usd',
             product_data: {
@@ -143,23 +149,30 @@ export async function POST(request: NextRequest) {
             unit_amount: sizeInfo.price
           },
           quantity: item.quantity
+          }
         };
       })
     );
+
+    const requiresShipping = lineItems.some(item => item.requiresShipping);
 
     const baseUrl = getBaseUrl(request);
 
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: lineItems,
+      line_items: lineItems.map(item => item.stripeLineItem),
       mode: 'payment',
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/checkout`,
       customer_email: customerInfo.email,
-      shipping_address_collection: {
-        allowed_countries: ['US', 'CA', 'GB', 'AU']
-      },
+      ...(requiresShipping
+        ? {
+            shipping_address_collection: {
+              allowed_countries: ['US', 'CA', 'GB', 'AU'] as Array<'US' | 'CA' | 'GB' | 'AU'>
+            }
+          }
+        : {}),
       metadata: {
         customer_name: customerInfo.name
       }

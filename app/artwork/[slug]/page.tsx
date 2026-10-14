@@ -26,6 +26,7 @@ interface ArtworkRecord {
   collection_id: string | null;
   collection_name?: string | null;
   featured: boolean;
+  is_hidden: boolean;
   images: Array<{ url?: string; alt?: string } | string> | string | null;
   sizes: SizeOption[] | null;
   created_at: string;
@@ -44,6 +45,7 @@ interface ArtworkData {
   collection_id: string | null;
   collection_name?: string;
   featured: boolean;
+  is_hidden: boolean;
   images: ArtworkImage[];
   sizes: SizeOption[];
   created_at: string;
@@ -98,6 +100,7 @@ async function fetchArtworkBySlug(slug: string): Promise<{ artwork: ArtworkData 
       collection_id: record.collection_id,
       collection_name: record.collection_name ?? undefined,
       featured: record.featured,
+      is_hidden: record.is_hidden,
       images: sanitizedImages,
       sizes: record.sizes || [],
       created_at: record.created_at,
@@ -132,7 +135,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkPageProps) {
 
   return (
     <>
-      {artwork && (
+      {artwork && !artwork.is_hidden && (
         <>
           <JsonLd id={`product-${artwork.slug}`} data={productJsonLd(artwork)} />
           <JsonLd id={`breadcrumb-${artwork.slug}`} data={breadcrumbJsonLd(breadcrumbItems)} />

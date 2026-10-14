@@ -21,6 +21,7 @@ export default async function ShopAllArtPage() {
     const artworks = await sql`
       SELECT id, slug, title, year, medium, images, collection_id, sizes
       FROM artworks
+      WHERE is_hidden = FALSE
       ORDER BY created_at DESC
     ` as Artwork[];
 
