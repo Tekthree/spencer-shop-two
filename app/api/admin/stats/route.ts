@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/db/client';
+import { requireAdminApi } from '@/lib/auth/admin-api';
 
 export async function GET() {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const [artworksResult, collectionsResult, ordersResult] = await Promise.all([
       sql`SELECT COUNT(*)::int AS count FROM artworks`,

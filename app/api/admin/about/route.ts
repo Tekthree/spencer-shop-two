@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db/client';
+import { requireAdminApi } from '@/lib/auth/admin-api';
 
 export async function GET() {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const sections = await sql`
       SELECT * FROM page_content
@@ -16,6 +19,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const body = await request.json();
     const { sections } = body as {

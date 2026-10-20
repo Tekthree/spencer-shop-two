@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Order } from '@/types/artwork';
+import { formatOrderNumber } from '@/lib/orders/order-number';
 
 /**
  * Admin Orders Page
@@ -65,32 +66,6 @@ export default function AdminOrdersPage() {
   };
 
   /**
-   * Update order status
-   */
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    try {
-      const response = await fetch(`/api/admin/orders/${orderId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!response.ok) throw new Error('Failed to update order status');
-
-      // Update the order in the local state
-      setOrders(prevOrders =>
-        prevOrders.map(order =>
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update order status';
-      console.error('Error updating order status:', err);
-      setError(errorMessage);
-    }
-  };
-
-  /**
    * Get status badge color
    */
   const getStatusColor = (status: string) => {
@@ -147,8 +122,9 @@ export default function AdminOrdersPage() {
         <div className="flex items-center space-x-4">
           {/* Status filter */}
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Filter:</span>
+            <label htmlFor="status-filter" className="text-sm text-gray-600">Filter:</label>
             <select
+              id="status-filter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-black"
@@ -201,7 +177,7 @@ export default function AdminOrdersPage() {
                 <tr key={order.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">
                     <Link href={`/admin/orders/${order.id}`} className="text-blue-600 hover:underline">
-                      {order.id.substring(0, 8)}...
+                      {formatOrderNumber(order.order_number, order.created_at) || order.id.substring(0, 8)}
                     </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -214,7 +190,7 @@ export default function AdminOrdersPage() {
                     {formatDate(order.created_at)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {order.items?.length || 0} item(s)
+                    {order.items?.reduce((sum, item) => sum + (item.quantity || 1), 0) || 0} item(s)
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {formatPrice(order.total || 0)}
@@ -225,17 +201,9 @@ export default function AdminOrdersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <select
-                      value={order.status}
-                      onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                      className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-                    >
-                      <option value="paid">Paid</option>
-                      <option value="processing">Processing</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
+                    <Link href={`/admin/orders/${order.id}`} className="inline-flex min-h-11 items-center px-2 text-black underline underline-offset-4">
+                      View order
+                    </Link>
                   </td>
                 </tr>
               ))}

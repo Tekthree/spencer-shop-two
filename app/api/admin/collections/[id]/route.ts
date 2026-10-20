@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db/client';
+import { requireAdminApi } from '@/lib/auth/admin-api';
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const { id } = await params;
     const rows = await sql`
@@ -29,6 +32,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const { id } = await params;
     const body = await request.json();
@@ -55,6 +60,8 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const { id } = await params;
 

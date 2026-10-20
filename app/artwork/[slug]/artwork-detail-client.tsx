@@ -314,7 +314,7 @@ export default function ArtworkDetailClient({ artwork, error }: ArtworkDetailCli
       content: (
         <ul className="space-y-2 text-sm leading-relaxed text-neutral-600">
           <li>
-            <span className="font-semibold text-neutral-900">Free shipping:</span> All orders ship free.
+            <span className="font-semibold text-neutral-900">Free shipping:</span> Available to the US, Canada, UK, and Australia.
           </li>
           <li>
             <span className="font-semibold text-neutral-900">Shipping time:</span> Shipped in 5-7 business days.

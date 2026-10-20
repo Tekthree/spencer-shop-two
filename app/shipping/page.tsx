@@ -25,7 +25,7 @@ export default function ShippingPage() {
           <h2 className="text-lg font-medium text-[#020312] mb-4">Packaging</h2>
           <div className="space-y-4 text-sm text-[#020312]/70 leading-relaxed">
             <p>Prints are rolled in acid-free tissue paper, placed in a protective tube, and shipped in a sturdy outer box. We take care to ensure your print arrives in perfect condition.</p>
-            <p>We ship carbon-neutral worldwide.</p>
+            <p>We currently ship free to the United States, Canada, the United Kingdom, and Australia.</p>
           </div>
         </section>
 

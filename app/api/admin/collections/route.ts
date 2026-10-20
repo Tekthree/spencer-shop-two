@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db/client';
+import { requireAdminApi } from '@/lib/auth/admin-api';
 
 export async function GET() {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const collections = await sql`
       SELECT
@@ -20,6 +23,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const body = await request.json();
     const { name, description, order, featured, cover_image } = body;

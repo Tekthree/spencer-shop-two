@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db/client';
+import { requireAdminApi } from '@/lib/auth/admin-api';
 
 export async function GET(request: NextRequest) {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -28,6 +31,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const body = await request.json();
     const { customer_info, items, total, status, payment_intent } = body;

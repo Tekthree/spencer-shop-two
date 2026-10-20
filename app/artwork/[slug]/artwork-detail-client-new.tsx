@@ -305,7 +305,7 @@ export default function ArtworkDetailClient({
                 </button>
                 {expandedSection === 'shipping' && (
                   <div className="pt-4 prose prose-sm max-w-none space-y-2">
-                    <p><span className="font-medium">Free shipping:</span> All orders ship free.</p>
+                    <p><span className="font-medium">Free shipping:</span> Available to the US, Canada, UK, and Australia.</p>
                     <p><span className="font-medium">Shipping time:</span> Shipped in 5-7 business days.</p>
                     <p><span className="font-medium">No import fees:</span> Shipped from USA, UK, and EU.</p>
                     <p><span className="font-medium">Returns:</span> We accept returns within 30 days of delivery.</p>

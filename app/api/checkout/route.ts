@@ -1,189 +1,160 @@
-/**
- * Stripe checkout API route
- * Creates a checkout session for the cart items
- */
-
 import { NextRequest, NextResponse } from 'next/server';
 import stripe from '@/lib/stripe/stripe-server';
 import sql from '@/lib/db/client';
 import { z } from 'zod';
 
-// Define the schema for the checkout request
 const checkoutSchema = z.object({
-  items: z
-    .array(
-      z.object({
-        id: z.string().uuid(),
-        size: z.string().min(1),
-        quantity: z.number().int().positive()
-      })
-    )
-    .min(1)
-    .max(20),
+  items: z.array(z.object({
+    id: z.string().uuid(),
+    size: z.string().trim().min(1).max(100),
+    quantity: z.number().int().positive().max(20)
+  })).min(1).max(20),
   customerInfo: z.object({
-    name: z.string(),
-    email: z.string().email(),
-    address: z.object({
-      line1: z.string(),
-      line2: z.string().optional(),
-      city: z.string(),
-      state: z.string(),
-      postal_code: z.string(),
-      country: z.string()
-    })
+    name: z.string().trim().min(2).max(150),
+    email: z.string().trim().email().max(254)
   })
 });
 
-type SizeInfo = {
-  size: string;
-  price: number;
-  edition_limit: number;
-  editions_sold: number;
-};
-
+type SizeInfo = { size: string; price: number; edition_limit: number; editions_sold: number };
 type ArtworkRow = {
   id: string;
   title: string;
-  images: Array<{ url?: string }> | null;
+  images: Array<{ url?: string }> | string[] | { main?: string } | string | null;
   sizes: SizeInfo[];
   requires_shipping: boolean;
 };
 
-const getBaseUrl = (request: NextRequest) => {
-  if (process.env.VERCEL_ENV === 'production') {
-    return 'https://www.spencergreyart.com';
+function getImageUrl(images: ArtworkRow['images']) {
+  if (typeof images === 'string') return images.startsWith('https://') ? images : undefined;
+  if (Array.isArray(images)) {
+    for (const image of images) {
+      const url = typeof image === 'string' ? image : image?.url;
+      if (url?.startsWith('https://')) return url;
+    }
   }
+  if (images && !Array.isArray(images) && images.main?.startsWith('https://')) return images.main;
+  return undefined;
+}
 
-  const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined;
-  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL;
-  const fallbackUrl = request.nextUrl.origin || 'http://localhost:3000';
-
-  const base = vercelUrl || configuredUrl || fallbackUrl;
-
-  return base.endsWith('/') ? base.slice(0, -1) : base;
-};
+function getBaseUrl(request: NextRequest) {
+  if (process.env.VERCEL_ENV === 'production') return 'https://www.spencergreyart.com';
+  const base = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+  return base.replace(/\/$/, '');
+}
 
 export async function POST(request: NextRequest) {
+  let reservationId: string | null = null;
+  let stripeSessionId: string | null = null;
+
   try {
-    // Parse the request body
-    const body = await request.json();
+    const { items, customerInfo } = checkoutSchema.parse(await request.json());
+    const groupedItems = Array.from(items.reduce((grouped, item) => {
+      const key = `${item.id}:${item.size}`;
+      const existing = grouped.get(key);
+      grouped.set(key, { ...item, quantity: (existing?.quantity || 0) + item.quantity });
+      return grouped;
+    }, new Map<string, { id: string; size: string; quantity: number }>()).values());
 
-    // Validate the request body
-    const { items, customerInfo } = checkoutSchema.parse(body);
+    const catalogItems = await Promise.all(groupedItems.map(async item => {
+      const rows = await sql`
+        SELECT id, title, images, sizes, requires_shipping
+        FROM artworks WHERE id = ${item.id} LIMIT 1
+      `;
+      if (!rows.length) throw new Error('An item in your cart is no longer available.');
 
-    // Collapse duplicate artwork/size entries before checking inventory. This
-    // prevents a crafted request from splitting an over-limit quantity across
-    // multiple otherwise-valid line items.
-    const groupedItems = Array.from(
-      items
-        .reduce((grouped, item) => {
-          const key = `${item.id}:${item.size}`;
-          const existing = grouped.get(key);
-          grouped.set(key, {
-            id: item.id,
-            size: item.size,
-            quantity: (existing?.quantity || 0) + item.quantity
-          });
-          return grouped;
-        }, new Map<string, { id: string; size: string; quantity: number }>())
-        .values()
-    );
+      const artwork = rows[0] as ArtworkRow;
+      const sizeInfo = artwork.sizes.find(size => size.size === item.size);
+      if (!sizeInfo) throw new Error(`${artwork.title} is no longer available in that size.`);
+      if (!Number.isInteger(sizeInfo.price) || sizeInfo.price <= 0) {
+        throw new Error(`${artwork.title} cannot be purchased right now.`);
+      }
 
-    // Create line items for Stripe checkout
-    const lineItems = await Promise.all(
-      groupedItems.map(async item => {
-        // Check if the artwork exists and has available editions
-        const rows = await sql`
-          SELECT id, title, images, sizes, requires_shipping
-          FROM artworks
-          WHERE id = ${item.id}
-          LIMIT 1
-        `;
+      return { item, artwork, sizeInfo };
+    }));
 
-        if (!rows.length) {
-          throw new Error(`Artwork with ID ${item.id} not found`);
-        }
+    const reservedItems = catalogItems.map(({ item, sizeInfo }) => ({
+      artwork_id: item.id,
+      size: item.size,
+      quantity: item.quantity,
+      price: sizeInfo.price
+    }));
+    reservationId = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 31 * 60 * 1000);
 
-        const artwork = rows[0] as ArtworkRow;
+    await sql`SELECT reserve_checkout_inventory(
+      ${reservationId}::uuid,
+      ${JSON.stringify(reservedItems)}::jsonb,
+      ${expiresAt.toISOString()}::timestamptz
+    )`;
 
-        const sizeInfo = artwork.sizes.find((s: SizeInfo) => s.size === item.size);
-
-        if (!sizeInfo) {
-          throw new Error(`Size ${item.size} not available for artwork ${item.id}`);
-        }
-
-        // Check if there are enough editions available
-        const remaining = sizeInfo.edition_limit - sizeInfo.editions_sold;
-        if (item.quantity > remaining) {
-          throw new Error(
-            remaining > 0
-              ? `Only ${remaining} edition${remaining === 1 ? '' : 's'} of ${artwork.title} in size ${sizeInfo.size} remain`
-              : `No more editions are available for ${artwork.title} in size ${sizeInfo.size}`
-          );
-        }
-
-        if (!Number.isInteger(sizeInfo.price) || sizeInfo.price <= 0) {
-          throw new Error(`Invalid catalog price for ${artwork.title} in size ${sizeInfo.size}`);
-        }
-
-        const imageUrl = artwork.images?.find(image => image.url?.startsWith('https://'))?.url;
-
-        // Return the line item for Stripe
+    const requiresShipping = catalogItems.some(({ artwork }) => artwork.requires_shipping);
+    const baseUrl = getBaseUrl(request);
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: catalogItems.map(({ item, artwork, sizeInfo }) => {
+        const imageUrl = getImageUrl(artwork.images);
         return {
-          requiresShipping: artwork.requires_shipping,
-          stripeLineItem: {
           price_data: {
             currency: 'usd',
             product_data: {
               name: `${artwork.title} - ${sizeInfo.size}`,
-              description: `Limited Edition Print (${sizeInfo.editions_sold + 1}/${sizeInfo.edition_limit})`,
+              description: `Limited edition print, ${sizeInfo.edition_limit} total`,
               ...(imageUrl ? { images: [imageUrl] } : {}),
-              metadata: {
-                artwork_id: item.id,
-                size: item.size,
-                edition_number: sizeInfo.editions_sold + 1
-              }
+              metadata: { artwork_id: item.id, size: item.size }
             },
-            // Price is always read from Neon. Values supplied by the browser
-            // are intentionally ignored.
             unit_amount: sizeInfo.price
           },
           quantity: item.quantity
-          }
         };
-      })
-    );
-
-    const requiresShipping = lineItems.some(item => item.requiresShipping);
-
-    const baseUrl = getBaseUrl(request);
-
-    // Create a checkout session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: lineItems.map(item => item.stripeLineItem),
+      }),
       mode: 'payment',
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/checkout`,
       customer_email: customerInfo.email,
-      ...(requiresShipping
-        ? {
-            shipping_address_collection: {
-              allowed_countries: ['US', 'CA', 'GB', 'AU'] as Array<'US' | 'CA' | 'GB' | 'AU'>
-            }
-          }
-        : {}),
+      expires_at: Math.floor(expiresAt.getTime() / 1000),
+      ...(requiresShipping ? {
+        shipping_address_collection: {
+          allowed_countries: ['US', 'CA', 'GB', 'AU'] as Array<'US' | 'CA' | 'GB' | 'AU'>
+        },
+        phone_number_collection: { enabled: true }
+      } : {}),
       metadata: {
-        customer_name: customerInfo.name
+        customer_name: customerInfo.name,
+        reservation_id: reservationId,
+        requires_shipping: String(requiresShipping)
       }
     });
+    stripeSessionId = session.id;
 
-    // Return the session ID
+    await sql`SELECT attach_checkout_session(${reservationId}::uuid, ${session.id})`;
     return NextResponse.json({ sessionId: session.id, url: session.url });
-  } catch (err) {
-    // Define a type for the error
-    const error = err as Error;
+  } catch (error) {
+    if (stripeSessionId) {
+      try {
+        await stripe.checkout.sessions.expire(stripeSessionId);
+      } catch (expireError) {
+        console.error('Failed to expire incomplete Stripe session:', expireError);
+      }
+    }
+    if (reservationId) {
+      try {
+        await sql`SELECT release_checkout_reservation(${reservationId}::uuid, 'released')`;
+      } catch (releaseError) {
+        console.error('Failed to release checkout reservation:', releaseError);
+      }
+    }
+
     console.error('Error creating checkout session:', error);
-    return NextResponse.json({ error: error.message || 'Failed to create checkout session' }, { status: 400 });
+    const safeCatalogError = error instanceof Error && (
+      error.message.includes('no longer available') || error.message.includes('cannot be purchased')
+    );
+    const message = error instanceof z.ZodError
+      ? 'Please enter a valid name and email address.'
+      : error instanceof Error && error.message.includes('Insufficient inventory')
+        ? 'One of these editions was just reserved by another collector. Please review your cart.'
+        : safeCatalogError ? error.message : 'Checkout could not be started. Please try again.';
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }

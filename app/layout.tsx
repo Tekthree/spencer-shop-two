@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 // Import layout components
@@ -86,6 +86,9 @@ export const metadata: Metadata = {
     apple: "/images/webclip.png",
   },
   manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
   themeColor: "#020312",
 };
 

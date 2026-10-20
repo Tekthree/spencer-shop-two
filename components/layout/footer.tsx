@@ -24,7 +24,7 @@ export default function Footer() {
             <div className="flex justify-center mb-3">
               <Leaf className="w-6 h-6 text-white/80" />
             </div>
-            <p className="text-sm md:text-base text-white/80 font-serif">Carbon neutral worldwide shipping</p>
+            <p className="text-sm md:text-base text-white/80 font-serif">Free shipping to the US, Canada, UK, and Australia</p>
           </div>
           <div className="py-4 md:py-6 border-r border-white/10 px-4">
             <div className="flex justify-center mb-3">

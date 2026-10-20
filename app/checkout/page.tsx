@@ -13,17 +13,10 @@ import Link from 'next/link';
 export default function CheckoutPage() {
   const { cartItems, subtotal, updateQuantity, removeFromCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
-    email: '',
-    address: {
-      line1: '',
-      line2: '',
-      city: '',
-      state: '',
-      postal_code: '',
-      country: 'US',
-    },
+    email: ''
   });
 
   // Format price from cents to dollars
@@ -38,31 +31,15 @@ export default function CheckoutPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
-    if (name.includes('.')) {
-      // Handle nested properties (e.g., address.line1)
-      const [parent, child] = name.split('.');
-      if (parent === 'address') {
-        setCustomerInfo(prev => ({
-          ...prev,
-          address: {
-            ...prev.address,
-            [child]: value,
-          },
-        }));
-      }
-    } else {
-      // Handle top-level properties
-      setCustomerInfo(prev => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    setCustomerInfo(prev => ({ ...prev, [name]: value }));
   };
 
   // Handle checkout process
-  const handleCheckout = async () => {
+  const handleCheckout = async (event: React.FormEvent) => {
+    event.preventDefault();
     try {
       setIsLoading(true);
+      setCheckoutError(null);
       
       // Create a checkout session through the API
       const response = await fetch('/api/checkout', {
@@ -94,7 +71,7 @@ export default function CheckoutPage() {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred during checkout';
       console.error('Checkout error:', error);
-      alert(errorMessage);
+      setCheckoutError(errorMessage);
       setIsLoading(false);
     }
   };
@@ -123,7 +100,7 @@ export default function CheckoutPage() {
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-3xl font-serif mb-10">Checkout</h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <form onSubmit={handleCheckout} className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         {/* Cart Items (Left Column) */}
         <div className="lg:col-span-2">
           <div className="border-b border-gray-200 pb-4 mb-4">
@@ -155,18 +132,20 @@ export default function CheckoutPage() {
                   <div className="flex items-center mt-2">
                     <button
                       onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
-                      className="w-8 h-8 flex items-center justify-center border border-gray-300 text-gray-500 hover:bg-gray-100"
-                      aria-label="Decrease quantity"
+                      type="button"
+                      className="w-11 h-11 flex items-center justify-center border border-gray-300 text-gray-600 hover:bg-gray-100"
+                      aria-label={`Decrease quantity of ${item.title}`}
                     >
                       −
                     </button>
-                    <span className="w-8 h-8 flex items-center justify-center border-t border-b border-gray-300">
+                    <span className="w-11 h-11 flex items-center justify-center border-t border-b border-gray-300" aria-live="polite">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
-                      className="w-8 h-8 flex items-center justify-center border border-gray-300 text-gray-500 hover:bg-gray-100"
-                      aria-label="Increase quantity"
+                      type="button"
+                      className="w-11 h-11 flex items-center justify-center border border-gray-300 text-gray-600 hover:bg-gray-100"
+                      aria-label={`Increase quantity of ${item.title}`}
                     >
                       +
                     </button>
@@ -174,6 +153,7 @@ export default function CheckoutPage() {
                     {/* Remove Button */}
                     <button
                       onClick={() => removeFromCart(item.id, item.size)}
+                      type="button"
                       className="ml-auto text-sm text-gray-500 hover:text-black underline"
                       aria-label="Remove item"
                     >
@@ -222,6 +202,7 @@ export default function CheckoutPage() {
                     onChange={handleInputChange}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
                     placeholder="Your full name"
+                    autoComplete="name"
                     required
                   />
                 </div>
@@ -237,17 +218,24 @@ export default function CheckoutPage() {
                     onChange={handleInputChange}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-black"
                     placeholder="your@email.com"
+                    autoComplete="email"
                     required
                   />
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                Shipping address will be collected during payment.
+                Stripe will collect the shipping address and phone number for physical artwork.
               </p>
             </div>
+
+            {checkoutError && (
+              <div role="alert" className="mb-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                {checkoutError}
+              </div>
+            )}
             
             <button
-              onClick={handleCheckout}
+              type="submit"
               disabled={isLoading || !customerInfo.name || !customerInfo.email}
               className="w-full bg-black text-white py-3 px-6 rounded-md hover:bg-gray-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             >
@@ -259,13 +247,13 @@ export default function CheckoutPage() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                <p>Secure payment processing</p>
+                <p>Secure checkout powered by Stripe</p>
               </div>
               <div className="flex items-start">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                 </svg>
-                <p>Free shipping on all orders</p>
+                <p>Free shipping to the US, Canada, UK, and Australia</p>
               </div>
               <div className="flex items-start">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -276,7 +264,7 @@ export default function CheckoutPage() {
             </div>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

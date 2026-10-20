@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db/client';
+import { requireAdminApi } from '@/lib/auth/admin-api';
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const { slug } = await params;
     const rows = await sql`SELECT * FROM blog_posts WHERE slug = ${slug} LIMIT 1`;
@@ -22,6 +25,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const { slug } = await params;
     const body = await request.json();

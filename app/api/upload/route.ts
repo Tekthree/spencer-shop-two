@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { uploadImage } from '@/lib/storage/r2';
+import { requireAdminApi } from '@/lib/auth/admin-api';
 
 export async function POST(req: NextRequest) {
+  const unauthorized = await requireAdminApi();
+  if (unauthorized) return unauthorized;
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;

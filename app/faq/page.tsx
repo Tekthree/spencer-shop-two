@@ -39,7 +39,7 @@ const faqSections = [
       {
         question: 'Do you ship internationally?',
         answer:
-          'Yes, we ship worldwide. International shipping rates are calculated at checkout based on destination and package dimensions.',
+          'We currently offer free shipping to the United States, Canada, the United Kingdom, and Australia. If you are elsewhere, contact us before ordering and we will confirm whether delivery is available.',
       },
       {
         question: 'How are prints packaged for shipping?',
