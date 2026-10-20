@@ -4,7 +4,7 @@ This document explains how to set up and configure email confirmations for the S
 
 ## Overview
 
-The website uses Nodemailer to send transactional emails for:
+The website uses the Resend Email API to send transactional emails for:
 - Order confirmations to customers
 - Order notifications to administrators
 
@@ -13,34 +13,33 @@ The website uses Nodemailer to send transactional emails for:
 Add the following variables to your `.env.local` file:
 
 ```
-# Email Configuration
-EMAIL_HOST=live.smtp.mailtrap.io
-EMAIL_PORT=587
-EMAIL_USERNAME=api_spencergrey
-EMAIL_PASSWORD=YOUR_API_TOKEN
-EMAIL_FROM=orders@spencergrey.com
-EMAIL_SECURE=false
-ADMIN_EMAIL=admin@spencergrey.com
+# Resend
+RESEND_API_KEY=re_your_domain_scoped_key
+RESEND_FROM_EMAIL="Spencer Grey Art <orders@mail.spencergreyart.com>"
+RESEND_REPLY_TO=your_monitored_inbox@example.com
+ORDER_NOTIFICATION_EMAIL=your_order_alert_inbox@example.com
 ```
 
-## Email Service Configuration
+## Resend Configuration
 
-Based on the Mailtrap configuration shown in your screenshot:
+1. Add `mail.spencergreyart.com` in the Resend Domains dashboard.
+2. Add the SPF, DKIM, and MX records shown by Resend to the domain's GoDaddy DNS settings.
+3. Wait for the Resend domain status to show that sending is verified.
+4. Create a new API key named `Spencer Grey Production` with **Sending access** restricted to the Spencer Grey domain.
+5. Add the key to Vercel as the `RESEND_API_KEY` Production secret. Add the sender and reply-to values as Production configuration variables.
+6. Redeploy after changing Vercel environment variables.
 
-1. **Host**: `live.smtp.mailtrap.io`
-2. **Port**: `587` (or `25` or `2525`)
-3. **Username**: `api_spencergrey`
-4. **Password**: Your API token from Mailtrap
-5. **Auth**: `PLAIN, LOGIN`
-6. **TLS**: Required, STARTTLS on ports 587, 2525 and 25, SSL on port 465
+Do not reuse a full-access account key. A domain-scoped sending key limits the impact if the application credential is ever exposed.
 
 ## Testing Email Functionality
 
 To test if emails are working correctly:
 
 1. Make a test purchase on the website
-2. Check your Mailtrap inbox for the confirmation email
-3. Verify that both customer and admin emails are being sent
+2. Confirm the customer receives the order confirmation
+3. Confirm the address in `ORDER_NOTIFICATION_EMAIL` receives the new-order notification
+4. Check the Resend Emails dashboard for delivery status for both messages
+5. Check the Vercel webhook logs for `Purchase emails accepted by Resend`
 
 ## Email Templates
 
@@ -58,10 +57,11 @@ The system includes two email templates:
 
 If emails are not being sent:
 
-1. Check that all environment variables are correctly set
+1. Check that all Resend environment variables are correctly set and scoped to Production
 2. Verify that the Stripe webhook is receiving the `checkout.session.completed` event
 3. Look for any errors in the console logs related to email sending
 4. Ensure the customer email is being captured during checkout
+5. Confirm the sending domain is verified in Resend and the From address uses that domain
 
 ## Implementation Details
 
@@ -75,6 +75,7 @@ The email functionality is implemented in:
 Potential improvements for the email system:
 
 1. Add email templates for shipping notifications
-2. Implement abandoned cart reminder emails
-3. Create a newsletter subscription system
-4. Add email verification for customer accounts (if implemented)
+2. Add a Resend webhook to record delivered, bounced, and complained events
+3. Implement abandoned cart reminder emails
+4. Create a newsletter subscription system
+5. Add email verification for customer accounts (if implemented)

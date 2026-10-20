@@ -31,6 +31,10 @@ Ensure these environment variables are set in your deployment platform:
 - [ ] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - [ ] `STRIPE_SECRET_KEY`
 - [ ] `STRIPE_WEBHOOK_SECRET`
+- [ ] `RESEND_API_KEY`
+- [ ] `RESEND_FROM_EMAIL`
+- [ ] `RESEND_REPLY_TO`
+- [ ] `ORDER_NOTIFICATION_EMAIL`
 - [ ] `NEXT_PUBLIC_APP_URL`
 
 ## Build and Deploy
@@ -50,6 +54,7 @@ Ensure these environment variables are set in your deployment platform:
 - [ ] Contact form submits correctly
 - [ ] Image uploads work in admin sections (R2)
 - [ ] Stripe webhooks are receiving events
+- [ ] Resend delivers both the customer confirmation and admin order notification
 - [ ] 404 and error pages display correctly
 
 ## Performance and Security

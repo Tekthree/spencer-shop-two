@@ -36,6 +36,12 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
 STRIPE_SECRET_KEY=your_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 
+# Transactional email (Resend)
+RESEND_API_KEY=your_domain_scoped_resend_key
+RESEND_FROM_EMAIL="Spencer Grey Art <orders@mail.spencergreyart.com>"
+RESEND_REPLY_TO=your_monitored_reply_address
+ORDER_NOTIFICATION_EMAIL=your_order_alert_inbox
+
 # Site
 NEXT_PUBLIC_APP_URL=your_production_site_url
 ```
@@ -83,6 +89,7 @@ NEXT_PUBLIC_APP_URL=your_production_site_url
 2. Test the checkout process with Stripe's test mode
 3. Confirm that the admin dashboard is working
 4. Check that image uploads to R2 are functioning
+5. Confirm customer and admin purchase emails are accepted and delivered by Resend
 
 ## Optimizations
 

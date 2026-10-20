@@ -68,6 +68,7 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
 
     return {
       artwork_id: artworkId,
+      title: item.product.name,
       size,
       price: item.amount_total || 0,
       quantity
@@ -115,12 +116,11 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
   };
   const createdOrder = result.order_data;
 
-  if (!result.created) {
-    console.log('Duplicate checkout webhook ignored');
-    return { order: createdOrder, created: false };
-  }
-
-  console.log('Order and inventory committed successfully');
+  console.log(
+    result.created
+      ? 'Order and inventory committed successfully'
+      : 'Existing order found; retrying idempotent purchase emails'
+  );
 
   // Send order confirmation email
   try {
@@ -148,19 +148,26 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
         date: format(new Date(), 'MMMM d, yyyy')
       };
 
-      console.log('Sending order confirmation emails');
-      await sendOrderConfirmationEmail(emailData);
-      await sendAdminOrderNotification(emailData);
-      console.log('Order confirmation emails sent successfully');
+      console.log('Sending idempotent purchase emails');
+      const [customerEmailResult, adminEmailResult] = await Promise.all([
+        sendOrderConfirmationEmail(emailData),
+        sendAdminOrderNotification(emailData)
+      ]);
+      console.log('Purchase emails accepted by Resend', {
+        customerEmailId: customerEmailResult.id,
+        adminEmailId: adminEmailResult.id
+      });
     } else {
       console.error('Cannot send order confirmation: customer email missing');
     }
   } catch (emailError) {
-    console.error('Error sending order confirmation email:', emailError);
-    // Don't throw error here to prevent webhook failure
+    console.error('Purchase email delivery request failed:', emailError);
+    // Return a failure to Stripe so it retries this webhook. Order fulfillment
+    // is idempotent, and the stable Resend keys prevent duplicate emails.
+    throw emailError;
   }
 
-  return { order: createdOrder, created: true };
+  return { order: createdOrder, created: result.created };
 }
 
 export async function POST(request: NextRequest) {

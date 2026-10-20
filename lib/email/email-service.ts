@@ -1,24 +1,10 @@
 /**
- * Email service for sending transactional emails
- * Handles order confirmations and other notifications
+ * Transactional purchase emails sent through Resend.
  */
 
-import nodemailer from 'nodemailer';
-import { z } from 'zod';
+const RESEND_ENDPOINT = 'https://api.resend.com/emails';
+const DEFAULT_SITE_URL = 'https://www.spencergreyart.com';
 
-// Email configuration schema
-const EmailConfigSchema = z.object({
-  host: z.string(),
-  port: z.number(),
-  username: z.string(),
-  password: z.string(),
-  from: z.string().email(),
-  secure: z.boolean().optional().default(true),
-});
-
-type EmailConfig = z.infer<typeof EmailConfigSchema>;
-
-// Email template data
 export interface OrderConfirmationData {
   orderNumber: string;
   customerName: string;
@@ -33,216 +19,154 @@ export interface OrderConfirmationData {
   date: string;
 }
 
-/**
- * Initialize email transporter with configuration
- * @param config - Email service configuration
- * @returns Nodemailer transporter
- */
-function createTransporter(config: EmailConfig) {
-  try {
-    const validatedConfig = EmailConfigSchema.parse(config);
-    
-    return nodemailer.createTransport({
-      host: validatedConfig.host,
-      port: validatedConfig.port,
-      secure: validatedConfig.secure,
-      auth: {
-        user: validatedConfig.username,
-        pass: validatedConfig.password,
-      },
-    });
-  } catch (error) {
-    console.error('Invalid email configuration:', error);
-    throw new Error('Failed to create email transporter');
+type EmailMessage = {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  idempotencyKey: string;
+};
+
+type EmailOptions = {
+  apiKey?: string;
+  from?: string;
+  replyTo?: string;
+  adminEmail?: string;
+  siteUrl?: string;
+  fetcher?: typeof fetch;
+};
+
+const escapeHtml = (value: string) =>
+  value.replace(/[&<>'"]/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  })[character] ?? character);
+
+const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+function getEmailConfig(options: EmailOptions = {}) {
+  const apiKey = options.apiKey ?? process.env.RESEND_API_KEY;
+  const from = options.from ?? process.env.RESEND_FROM_EMAIL;
+  const replyTo = options.replyTo ?? process.env.RESEND_REPLY_TO;
+
+  if (!apiKey || !from || !replyTo) {
+    throw new Error('Resend email service is not configured');
   }
+
+  return { apiKey, from, replyTo };
 }
 
-/**
- * Get email configuration from environment variables
- * @returns Email configuration object
- */
-function getEmailConfig(): EmailConfig {
-  return {
-    host: process.env.EMAIL_HOST || '',
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    username: process.env.EMAIL_USERNAME || '',
-    password: process.env.EMAIL_PASSWORD || '',
-    from: process.env.EMAIL_FROM || 'orders@spencergrey.com',
-    secure: process.env.EMAIL_SECURE === 'true',
-  };
+export async function sendEmail(message: EmailMessage, options: EmailOptions = {}) {
+  const { apiKey, from, replyTo } = getEmailConfig(options);
+  const response = await (options.fetcher ?? fetch)(RESEND_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'Idempotency-Key': message.idempotencyKey
+    },
+    body: JSON.stringify({
+      from,
+      to: [message.to],
+      reply_to: replyTo,
+      subject: message.subject,
+      html: message.html,
+      text: message.text
+    }),
+    signal: AbortSignal.timeout(10_000)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Resend rejected email with status ${response.status}`);
+  }
+
+  const result = await response.json() as { id?: string };
+  if (!result.id) {
+    throw new Error('Resend accepted the request without returning an email ID');
+  }
+
+  return { id: result.id };
 }
 
-/**
- * Generate HTML for order confirmation email
- * @param data - Order confirmation data
- * @returns HTML string for email body
- */
-function generateOrderConfirmationHTML(data: OrderConfirmationData): string {
+function generateOrderConfirmationHTML(data: OrderConfirmationData) {
+  const customerName = escapeHtml(data.customerName);
+  const orderNumber = escapeHtml(data.orderNumber);
   const itemsHTML = data.items.map(item => `
     <tr>
-      <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">${item.title}</td>
-      <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">${item.size}</td>
-      <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">${item.quantity}</td>
-      <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">$${(item.price / 100).toFixed(2)}</td>
+      <td style="padding:12px 0;border-bottom:1px solid #e5e5e5;">${escapeHtml(item.title)}</td>
+      <td style="padding:12px 0;border-bottom:1px solid #e5e5e5;">${escapeHtml(item.size)}</td>
+      <td style="padding:12px 0;border-bottom:1px solid #e5e5e5;text-align:center;">${item.quantity}</td>
+      <td style="padding:12px 0;border-bottom:1px solid #e5e5e5;text-align:right;">${formatPrice(item.price)}</td>
     </tr>
   `).join('');
 
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Order Confirmation</title>
-      <style>
-        body {
-          font-family: 'Helvetica', 'Arial', sans-serif;
-          line-height: 1.6;
-          color: #020312;
-          background-color: #F6F4F0;
-          margin: 0;
-          padding: 0;
-        }
-        .container {
-          max-width: 600px;
-          margin: 0 auto;
-          padding: 20px;
-          background-color: #ffffff;
-        }
-        .header {
-          text-align: center;
-          padding: 20px 0;
-          border-bottom: 1px solid #e2e8f0;
-        }
-        .logo {
-          font-size: 24px;
-          font-weight: bold;
-          color: #000000;
-        }
-        .content {
-          padding: 20px 0;
-        }
-        .order-details {
-          margin-top: 20px;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        th {
-          text-align: left;
-          padding: 12px 0;
-          border-bottom: 2px solid #000000;
-        }
-        .footer {
-          margin-top: 40px;
-          padding-top: 20px;
-          border-top: 1px solid #e2e8f0;
-          text-align: center;
-          font-size: 14px;
-          color: #64748b;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <div class="logo">Spencer Grey</div>
-        </div>
-        <div class="content">
-          <h2>Thank You for Your Order</h2>
-          <p>Hello ${data.customerName},</p>
-          <p>Thank you for your purchase. We're preparing your order and will notify you once it ships.</p>
-          
-          <div class="order-details">
-            <p><strong>Order Number:</strong> ${data.orderNumber}</p>
-            <p><strong>Order Date:</strong> ${data.date}</p>
-            
-            <h3>Order Summary</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>Size</th>
-                  <th>Qty</th>
-                  <th style="text-align: right;">Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsHTML}
-                <tr>
-                  <td colspan="3" style="padding: 12px 0; text-align: right;"><strong>Total:</strong></td>
-                  <td style="padding: 12px 0; text-align: right;"><strong>$${(data.total / 100).toFixed(2)}</strong></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          
-          <p>If you have any questions about your order, please contact us at <a href="mailto:support@spencergrey.com">support@spencergrey.com</a>.</p>
-        </div>
-        <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} Spencer Grey. All rights reserved.</p>
-          <p>This email was sent to ${data.customerEmail}</p>
+  return `<!doctype html>
+  <html lang="en">
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Order confirmation</title></head>
+    <body style="margin:0;background:#f6f4f0;color:#161616;font-family:Arial,Helvetica,sans-serif;">
+      <div style="max-width:640px;margin:0 auto;padding:32px 20px;">
+        <div style="background:#fff;padding:40px 32px;border:1px solid #e5e2dc;">
+          <p style="margin:0 0 32px;font-size:22px;font-weight:700;letter-spacing:.04em;">SPENCER GREY</p>
+          <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;">Thank you for your order</h1>
+          <p style="margin:0 0 24px;line-height:1.6;">Hi ${customerName}, your payment was received and your order is now being prepared.</p>
+          <p style="margin:0 0 8px;"><strong>Order:</strong> ${orderNumber}</p>
+          <p style="margin:0 0 28px;"><strong>Date:</strong> ${escapeHtml(data.date)}</p>
+          <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;">
+            <thead><tr><th align="left" style="padding-bottom:10px;border-bottom:2px solid #161616;">Artwork</th><th align="left" style="padding-bottom:10px;border-bottom:2px solid #161616;">Size</th><th style="padding-bottom:10px;border-bottom:2px solid #161616;">Qty</th><th align="right" style="padding-bottom:10px;border-bottom:2px solid #161616;">Price</th></tr></thead>
+            <tbody>${itemsHTML}</tbody>
+          </table>
+          <p style="margin:24px 0 0;text-align:right;font-size:18px;"><strong>Total: ${formatPrice(data.total)}</strong></p>
+          <p style="margin:36px 0 0;line-height:1.6;color:#555;">Questions about your order? Reply to this email and we’ll help.</p>
         </div>
       </div>
     </body>
-    </html>
-  `;
+  </html>`;
 }
 
-/**
- * Send order confirmation email
- * @param data - Order confirmation data
- * @returns Promise resolving to send result
- */
-export async function sendOrderConfirmationEmail(data: OrderConfirmationData) {
-  try {
-    const config = getEmailConfig();
-    const transporter = createTransporter(config);
-    
-    const result = await transporter.sendMail({
-      from: `"Spencer Grey" <${config.from}>`,
-      to: data.customerEmail,
-      subject: `Order Confirmation #${data.orderNumber}`,
-      html: generateOrderConfirmationHTML(data),
-    });
-    
-    console.log('Order confirmation email sent:', result.messageId);
-    return { success: true, messageId: result.messageId };
-  } catch (error) {
-    console.error('Failed to send order confirmation email:', error);
-    return { success: false, error };
-  }
+function generateOrderConfirmationText(data: OrderConfirmationData) {
+  const items = data.items.map(item =>
+    `${item.title} — ${item.size} × ${item.quantity}: ${formatPrice(item.price)}`
+  ).join('\n');
+
+  return `Thank you for your order, ${data.customerName}.\n\nYour payment was received and your order is now being prepared.\n\nOrder: ${data.orderNumber}\nDate: ${data.date}\n\n${items}\n\nTotal: ${formatPrice(data.total)}\n\nQuestions about your order? Reply to this email and we’ll help.`;
 }
 
-/**
- * Send admin notification about new order
- * @param data - Order data
- * @returns Promise resolving to send result
- */
-export async function sendAdminOrderNotification(data: OrderConfirmationData) {
-  try {
-    const config = getEmailConfig();
-    const transporter = createTransporter(config);
-    
-    const result = await transporter.sendMail({
-      from: `"Spencer Grey Orders" <${config.from}>`,
-      to: process.env.ADMIN_EMAIL || 'admin@spencergrey.com',
-      subject: `New Order #${data.orderNumber}`,
-      html: `
-        <h2>New Order Received</h2>
-        <p>Customer: ${data.customerName} (${data.customerEmail})</p>
-        <p>Order #: ${data.orderNumber}</p>
-        <p>Total: $${(data.total / 100).toFixed(2)}</p>
-        <p>Date: ${data.date}</p>
-        <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/orders">View in Admin Dashboard</a></p>
-      `,
-    });
-    
-    console.log('Admin notification email sent:', result.messageId);
-    return { success: true, messageId: result.messageId };
-  } catch (error) {
-    console.error('Failed to send admin notification email:', error);
-    return { success: false, error };
+export async function sendOrderConfirmationEmail(
+  data: OrderConfirmationData,
+  options: EmailOptions = {}
+) {
+  return sendEmail({
+    to: data.customerEmail,
+    subject: `Order confirmation ${data.orderNumber}`,
+    idempotencyKey: `order/${data.orderNumber}/customer`,
+    html: generateOrderConfirmationHTML(data),
+    text: generateOrderConfirmationText(data)
+  }, options);
+}
+
+export async function sendAdminOrderNotification(
+  data: OrderConfirmationData,
+  options: EmailOptions = {}
+) {
+  const adminEmail = options.adminEmail ?? process.env.ORDER_NOTIFICATION_EMAIL;
+  if (!adminEmail) {
+    throw new Error('ORDER_NOTIFICATION_EMAIL is not configured');
   }
+
+  const siteUrl = options.siteUrl ?? process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_SITE_URL;
+  const orderNumber = escapeHtml(data.orderNumber);
+  const customerName = escapeHtml(data.customerName);
+  const customerEmail = escapeHtml(data.customerEmail);
+  const ordersUrl = `${siteUrl.replace(/\/$/, '')}/admin/orders`;
+
+  return sendEmail({
+    to: adminEmail,
+    subject: `New order ${data.orderNumber}`,
+    idempotencyKey: `order/${data.orderNumber}/admin`,
+    html: `<h1>New order received</h1><p><strong>Order:</strong> ${orderNumber}</p><p><strong>Customer:</strong> ${customerName} (${customerEmail})</p><p><strong>Total:</strong> ${formatPrice(data.total)}</p><p><strong>Date:</strong> ${escapeHtml(data.date)}</p><p><a href="${escapeHtml(ordersUrl)}">View orders in the admin dashboard</a></p>`,
+    text: `New order received\n\nOrder: ${data.orderNumber}\nCustomer: ${data.customerName} (${data.customerEmail})\nTotal: ${formatPrice(data.total)}\nDate: ${data.date}\n\nView orders: ${ordersUrl}`
+  }, options);
 }
