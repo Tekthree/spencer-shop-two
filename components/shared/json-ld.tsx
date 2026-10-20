@@ -82,7 +82,7 @@ export function organizationJsonLd() {
         contactType: 'customer service',
         email: 'support@spencergrey.com',
         availableLanguage: ['English'],
-        areaServed: 'Worldwide',
+        areaServed: ['US', 'CA', 'GB', 'AU'],
       },
     ],
   };

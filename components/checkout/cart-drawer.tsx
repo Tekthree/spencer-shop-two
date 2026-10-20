@@ -154,7 +154,7 @@ export default function CartDrawer() {
                 <span className="text-xl font-medium">{formatPrice(subtotal)}</span>
               </div>
               <p className="text-xs text-gray-500 mb-4 text-center">
-                (Shipping and taxes calculated at checkout)
+                (Shipping details are collected securely at payment for physical orders)
               </p>
 
               {/* Checkout Button */}

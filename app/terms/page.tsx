@@ -10,7 +10,7 @@ export default function TermsPage() {
     <main className="min-h-screen bg-white pt-24 pb-24 px-6">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-serif text-[#020312] mb-4">Terms & Conditions</h1>
-        <p className="text-sm text-[#020312]/50 mb-12">Last updated: January 2025</p>
+        <p className="text-sm text-[#020312]/50 mb-12">Last updated: October 20, 2026</p>
 
         <section className="mb-10">
           <h2 className="text-lg font-medium text-[#020312] mb-4">Overview</h2>
@@ -32,6 +32,7 @@ export default function TermsPage() {
           <div className="space-y-4 text-sm text-[#020312]/70 leading-relaxed">
             <p>By placing an order, you confirm that you are authorized to use the payment method provided. All payments are processed securely through Stripe.</p>
             <p>We reserve the right to cancel any order for reasons including pricing errors, stock issues, or suspected fraud. If we cancel your order, you will receive a full refund.</p>
+            <p>An order is accepted when payment is confirmed and an order confirmation is issued. If we cannot ship within the stated processing time, we will contact you with a revised date and the option to accept the delay or cancel for a full refund.</p>
           </div>
         </section>
 
@@ -59,7 +60,7 @@ export default function TermsPage() {
         <section className="mb-10">
           <h2 className="text-lg font-medium text-[#020312] mb-4">Changes to These Terms</h2>
           <div className="space-y-4 text-sm text-[#020312]/70 leading-relaxed">
-            <p>We may update these terms from time to time. Continued use of the site after changes are posted means you accept the updated terms.</p>
+            <p>We may update these terms from time to time. Changes apply prospectively from the date posted and do not alter the terms governing an order already accepted.</p>
           </div>
         </section>
 

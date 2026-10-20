@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * Fetches about page content from Supabase
+ * Fetches about page content from Neon
  */
 async function getAboutContent() {
   try {
@@ -50,7 +50,7 @@ async function getAboutContent() {
 
     return data;
   } catch (err) {
-    console.error('Error connecting to Supabase:', err);
+    console.error('Error connecting to Neon:', err);
     return getFallbackContentSections();
   }
 }

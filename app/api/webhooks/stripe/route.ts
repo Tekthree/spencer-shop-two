@@ -6,6 +6,7 @@ import stripe from '@/lib/stripe/stripe-server';
 import sql from '@/lib/db/client';
 import { sendAdminOrderNotification, sendOrderConfirmationEmail } from '@/lib/email/email-service';
 import { formatOrderNumber } from '@/lib/orders/order-number';
+import { reportOperationalError } from '@/lib/operations/report';
 
 type OrderItem = {
   artwork_id: string;
@@ -165,6 +166,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error(`Stripe webhook ${event.id} failed:`, error);
+    try {
+      await reportOperationalError({
+        source: 'stripe-webhook',
+        eventKey: `stripe-webhook:${event.id}`,
+        message: 'A Stripe webhook could not finish processing. Stripe will retry it automatically.',
+        error,
+        metadata: { stripe_event_id: event.id, stripe_event_type: event.type }
+      });
+    } catch (reportError) {
+      console.error('Could not record the webhook failure:', reportError);
+    }
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 }

@@ -9,7 +9,13 @@ export interface SessionData {
 const sessionOptions = {
   password: process.env.SESSION_SECRET!,
   cookieName: 'sg-admin-session',
-  cookieOptions: { secure: process.env.NODE_ENV === 'production' },
+  cookieOptions: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'strict' as const,
+    path: '/',
+    maxAge: 60 * 60 * 8,
+  },
 };
 
 export async function signIn(email: string, password: string): Promise<void> {

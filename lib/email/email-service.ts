@@ -30,6 +30,13 @@ export interface ShippingConfirmationData {
   trackingNumber: string;
 }
 
+export interface OperationalAlertData {
+  eventId: number;
+  source: string;
+  message: string;
+  occurredAt: string;
+}
+
 type EmailMessage = {
   to: string;
   subject: string;
@@ -195,5 +202,23 @@ export async function sendShippingConfirmationEmail(
     idempotencyKey: `order/${data.orderNumber}/shipped/${data.trackingNumber}`,
     html: `<h1>Your artwork is on its way</h1><p>Hi ${escapeHtml(data.customerName)}, order <strong>${escapeHtml(data.orderNumber)}</strong> has shipped.</p><p><strong>Carrier:</strong> ${carrier}<br><strong>Tracking number:</strong> ${tracking}</p><p>Questions? Reply to this email and we’ll help.</p>`,
     text: `Your artwork is on its way\n\nHi ${data.customerName}, order ${data.orderNumber} has shipped.\n\nCarrier: ${data.carrier}\nTracking number: ${data.trackingNumber}\n\nQuestions? Reply to this email and we’ll help.`
+  }, options);
+}
+
+export async function sendOperationalAlertEmail(
+  data: OperationalAlertData,
+  options: EmailOptions = {}
+) {
+  const adminEmail = options.adminEmail ?? process.env.ORDER_NOTIFICATION_EMAIL;
+  if (!adminEmail) throw new Error('ORDER_NOTIFICATION_EMAIL is not configured');
+  const siteUrl = options.siteUrl ?? process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_SITE_URL;
+  const dashboardUrl = `${siteUrl.replace(/\/$/, '')}/admin`;
+
+  return sendEmail({
+    to: adminEmail,
+    subject: `Store alert: ${data.source}`,
+    idempotencyKey: `operations/${data.eventId}`,
+    html: `<h1>Spencer Grey Art store alert</h1><p><strong>Source:</strong> ${escapeHtml(data.source)}</p><p><strong>Time:</strong> ${escapeHtml(data.occurredAt)}</p><p>${escapeHtml(data.message)}</p><p><a href="${escapeHtml(dashboardUrl)}">Open the admin dashboard</a></p>`,
+    text: `Spencer Grey Art store alert\n\nSource: ${data.source}\nTime: ${data.occurredAt}\n${data.message}\n\nAdmin dashboard: ${dashboardUrl}`
   }, options);
 }

@@ -51,7 +51,7 @@ export function generateOrganizationSchema() {
         contactType: 'customer service',
         email: 'support@spencergrey.com',
         availableLanguage: ['English'],
-        areaServed: 'Worldwide',
+        areaServed: ['US', 'CA', 'GB', 'AU'],
       },
     ],
   };
@@ -267,7 +267,7 @@ export function generateLocalBusinessSchema() {
       addressRegion: 'WA',
       addressCountry: 'US',
     },
-    areaServed: 'Worldwide',
+    areaServed: ['US', 'CA', 'GB', 'AU'],
     sameAs: [
       'https://instagram.com/spencergreyart',
       'https://twitter.com/spencergreyart',

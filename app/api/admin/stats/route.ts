@@ -6,16 +6,24 @@ export async function GET() {
   const unauthorized = await requireAdminApi();
   if (unauthorized) return unauthorized;
   try {
-    const [artworksResult, collectionsResult, ordersResult] = await Promise.all([
+    const [artworksResult, collectionsResult, ordersResult, operationsResult] = await Promise.all([
       sql`SELECT COUNT(*)::int AS count FROM artworks`,
       sql`SELECT COUNT(*)::int AS count FROM collections`,
       sql`SELECT COUNT(*)::int AS count FROM orders`,
+      sql`
+        SELECT id, severity, source, message, created_at
+        FROM operational_events
+        WHERE resolved_at IS NULL AND created_at >= now() - INTERVAL '30 days'
+        ORDER BY created_at DESC
+        LIMIT 10
+      `,
     ]);
 
     return NextResponse.json({
       artworks: (artworksResult[0] as { count: number }).count,
       collections: (collectionsResult[0] as { count: number }).count,
       orders: (ordersResult[0] as { count: number }).count,
+      operationalEvents: operationsResult,
     });
   } catch (error) {
     console.error('Error fetching admin stats:', error);

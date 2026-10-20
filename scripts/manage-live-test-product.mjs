@@ -32,8 +32,8 @@ if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL must be injected into this process');
 }
 
-if (!['create', 'update', 'status', 'remove'].includes(command)) {
-  throw new Error('Usage: node scripts/manage-live-test-product.mjs <create|update|status|remove>');
+if (!['create', 'update', 'status', 'enable-shipping', 'disable-shipping', 'remove'].includes(command)) {
+  throw new Error('Usage: node scripts/manage-live-test-product.mjs <create|update|status|enable-shipping|disable-shipping|remove>');
 }
 
 const sql = neon(process.env.DATABASE_URL);
@@ -161,6 +161,34 @@ async function showStatus() {
   }, null, 2));
 }
 
+async function setShippingTest(enabled) {
+  const product = await getProduct();
+  if (!product || product.slug !== TEST_PRODUCT.slug || product.is_hidden !== true) {
+    throw new Error('The guarded private test product was not found');
+  }
+
+  const updated = await sql`
+    UPDATE artworks
+    SET requires_shipping = ${enabled},
+        description = ${enabled
+          ? 'Private checkout verification item. Stripe will collect a shipping address and phone number, but no physical artwork will be sent.'
+          : TEST_PRODUCT.description}
+    WHERE id = ${TEST_PRODUCT.id}
+      AND slug = ${TEST_PRODUCT.slug}
+      AND is_hidden = TRUE
+    RETURNING id, slug, title, sizes, is_hidden, requires_shipping
+  `;
+
+  if (updated.length !== 1 || updated[0].requires_shipping !== enabled) {
+    throw new Error('Guarded shipping-test update did not reach the expected state');
+  }
+
+  console.log(JSON.stringify({
+    state: enabled ? 'shipping-test-enabled' : 'shipping-test-disabled',
+    product: updated[0]
+  }, null, 2));
+}
+
 async function removeProduct() {
   if (process.env.CONFIRM_REMOVE_LIVE_TEST_PRODUCT !== 'YES') {
     throw new Error('Set CONFIRM_REMOVE_LIVE_TEST_PRODUCT=YES to remove the product');
@@ -187,6 +215,10 @@ if (command === 'create') {
   await updateProduct();
 } else if (command === 'status') {
   await showStatus();
+} else if (command === 'enable-shipping') {
+  await setShippingTest(true);
+} else if (command === 'disable-shipping') {
+  await setShippingTest(false);
 } else {
   await removeProduct();
 }

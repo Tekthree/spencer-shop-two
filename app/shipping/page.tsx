@@ -10,7 +10,8 @@ export default function ShippingPage() {
   return (
     <main className="min-h-screen bg-white pt-24 pb-24 px-6">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-serif text-[#020312] mb-12">Shipping & Returns</h1>
+        <h1 className="text-3xl md:text-4xl font-serif text-[#020312] mb-4">Shipping & Returns</h1>
+        <p className="text-sm text-[#020312]/50 mb-12">Last updated: October 20, 2026</p>
 
         <section className="mb-12">
           <h2 className="text-lg font-medium text-[#020312] mb-4">Processing & Delivery</h2>
@@ -18,6 +19,7 @@ export default function ShippingPage() {
             <p>Each print is made to order. Most orders ship within 5–7 business days of purchase.</p>
             <p>Domestic delivery typically takes an additional 3–5 business days. International orders take 7–14 business days depending on destination.</p>
             <p>Once your order ships, you&apos;ll receive a tracking number via email.</p>
+            <p>If an order cannot ship within the stated processing time, we&apos;ll email you with a revised date and let you choose whether to wait or cancel for a full refund.</p>
           </div>
         </section>
 
@@ -35,6 +37,7 @@ export default function ShippingPage() {
             <p>We accept returns within 30 days of delivery for prints in original, undamaged condition. Custom framed prints are not eligible for return unless damaged in transit.</p>
             <p>To initiate a return, please contact us before sending anything back. We&apos;ll walk you through the process.</p>
             <p>Size exchanges are possible within 14 days of delivery, subject to availability. A price difference may apply when exchanging for a larger size.</p>
+            <p>Approved refunds are returned to the original payment method. Your bank or card provider may require additional time to post the credit.</p>
           </div>
         </section>
 
