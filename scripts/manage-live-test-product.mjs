@@ -5,7 +5,7 @@ import { neon } from '@neondatabase/serverless';
 const TEST_PRODUCT = {
   id: 'c2e91c13-3c12-4c3f-91a8-ec7cc7910001',
   slug: 'private-checkout-test-2026',
-  title: 'Private Checkout Test — $1',
+  title: 'Private Checkout Test - $0.50',
   description: 'Temporary direct-link product for verifying the live checkout flow. This is not a physical artwork.',
   year: 2026,
   medium: 'Checkout test',
@@ -19,7 +19,7 @@ const TEST_PRODUCT = {
   sizes: [
     {
       size: 'Test purchase',
-      price: 100,
+      price: 50,
       edition_limit: 3,
       editions_sold: 0
     }
@@ -32,8 +32,8 @@ if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL must be injected into this process');
 }
 
-if (!['create', 'status', 'remove'].includes(command)) {
-  throw new Error('Usage: node scripts/manage-live-test-product.mjs <create|status|remove>');
+if (!['create', 'update', 'status', 'remove'].includes(command)) {
+  throw new Error('Usage: node scripts/manage-live-test-product.mjs <create|update|status|remove>');
 }
 
 const sql = neon(process.env.DATABASE_URL);
@@ -91,7 +91,7 @@ async function createProduct() {
     && product.slug === TEST_PRODUCT.slug
     && product.is_hidden === true
     && product.requires_shipping === false
-    && size?.price === 100
+    && size?.price === TEST_PRODUCT.sizes[0].price
     && size?.edition_limit === 3;
 
   if (!valid) {
@@ -107,6 +107,46 @@ async function createProduct() {
     editions_sold: size.editions_sold,
     is_hidden: product.is_hidden,
     requires_shipping: product.requires_shipping
+  }, null, 2));
+}
+
+async function updateProduct() {
+  const product = await getProduct();
+  const orderReferences = await getOrderReferences();
+  const size = product?.sizes?.[0];
+  const safeToUpdate = product
+    && product.slug === TEST_PRODUCT.slug
+    && product.is_hidden === true
+    && product.requires_shipping === false
+    && product.sizes?.length === 1
+    && size?.size === 'Test purchase'
+    && size?.edition_limit === 3
+    && size?.editions_sold === 0
+    && orderReferences === 0;
+
+  if (!safeToUpdate) {
+    throw new Error('The live test product is not in a safe state for a price update');
+  }
+
+  const updated = await sql`
+    UPDATE artworks
+    SET title = ${TEST_PRODUCT.title},
+        sizes = ${JSON.stringify(TEST_PRODUCT.sizes)}::jsonb
+    WHERE id = ${TEST_PRODUCT.id}
+      AND slug = ${TEST_PRODUCT.slug}
+      AND is_hidden = TRUE
+      AND requires_shipping = FALSE
+    RETURNING id, slug, title, sizes, is_hidden, requires_shipping
+  `;
+
+  if (updated.length !== 1 || updated[0].sizes?.[0]?.price !== TEST_PRODUCT.sizes[0].price) {
+    throw new Error('Guarded update did not set the expected test price');
+  }
+
+  console.log(JSON.stringify({
+    state: 'updated',
+    product: updated[0],
+    order_references: orderReferences
   }, null, 2));
 }
 
@@ -143,6 +183,8 @@ async function removeProduct() {
 
 if (command === 'create') {
   await createProduct();
+} else if (command === 'update') {
+  await updateProduct();
 } else if (command === 'status') {
   await showStatus();
 } else {
