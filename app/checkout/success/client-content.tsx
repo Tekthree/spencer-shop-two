@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
+import { Check, LoaderCircle } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 
 type OrderDetails = {
@@ -16,6 +18,7 @@ type OrderDetails = {
   items: Array<{
     artwork_id: string;
     title?: string;
+    image_url?: string;
     size: string;
     price: number;
     edition_number?: number;
@@ -91,7 +94,7 @@ export function ClientSuccessContent() {
   if (!details) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-20 text-center" aria-live="polite">
-        <div className="mx-auto mb-6 h-9 w-9 animate-spin rounded-full border-2 border-gray-200 border-t-black" />
+        <LoaderCircle className="mx-auto mb-6 h-9 w-9 animate-spin text-gray-700" aria-hidden="true" />
         <h1 className="mb-3 font-serif text-3xl">Confirming your order</h1>
         <p className="text-gray-600">Please keep this page open for a moment.</p>
       </main>
@@ -103,7 +106,7 @@ export function ClientSuccessContent() {
     <main className="mx-auto max-w-3xl px-4 py-14 sm:py-20">
       <header className="mb-10 text-center" aria-live="polite">
         <div className={`mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full ${confirmed ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`} aria-hidden="true">
-          {confirmed ? '✓' : '…'}
+          {confirmed ? <Check className="h-6 w-6" strokeWidth={1.75} /> : <LoaderCircle className="h-6 w-6 animate-spin" strokeWidth={1.75} />}
         </div>
         <h1 className="mb-3 font-serif text-3xl sm:text-4xl">
           {confirmed ? 'Thank you for your order' : 'Your payment is being confirmed'}
@@ -126,21 +129,62 @@ export function ClientSuccessContent() {
           <div><dt className="text-gray-500">Status</dt><dd className="capitalize">{details.status}</dd></div>
         </dl>
 
-        <div className="space-y-5">
+        <div className="divide-y divide-gray-200 border-y border-gray-200">
           {details.items.map((item, index) => (
-            <div key={`${item.artwork_id}-${item.size}-${index}`} className="flex flex-col justify-between gap-2 border-b border-gray-100 pb-5 last:border-0 sm:flex-row">
-              <div className="min-w-0">
-                <h3 className="break-words font-medium">{item.title || 'Artwork'}</h3>
-                <p className="text-sm text-gray-600">{item.size} · Quantity {item.quantity}</p>
-                {item.edition_numbers?.length ? (
-                  <p className="text-sm text-gray-600">Edition{item.edition_numbers.length > 1 ? 's' : ''} {item.edition_numbers.join(', ')}{item.edition_limit ? ` of ${item.edition_limit}` : ''}</p>
-                ) : null}
+            <article key={`${item.artwork_id}-${item.size}-${index}`} className="grid gap-5 py-6 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-7">
+              <div className="relative aspect-[4/5] w-full overflow-hidden bg-stone-100 sm:w-36">
+                {item.image_url ? (
+                  <Image
+                    src={item.image_url}
+                    alt={`${item.title || 'Purchased artwork'} by Spencer Grey`}
+                    fill
+                    sizes="(max-width: 639px) calc(100vw - 72px), 144px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center px-4 text-center text-xs text-gray-500">
+                    Artwork image unavailable
+                  </div>
+                )}
               </div>
-              <p className="shrink-0 font-medium">{money(item.price * item.quantity)}</p>
-            </div>
+              <div className="flex min-w-0 flex-col">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <h3 className="break-words font-serif text-2xl leading-tight">{item.title || 'Artwork by Spencer Grey'}</h3>
+                    <p className="mt-1 text-sm text-gray-600">Limited edition fine art print by Spencer Grey</p>
+                  </div>
+                  <p className="shrink-0 font-medium">{money(item.price * item.quantity)}</p>
+                </div>
+
+                <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                  <div>
+                    <dt className="text-gray-500">Print size</dt>
+                    <dd className="mt-0.5 font-medium">{item.size}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-gray-500">Quantity</dt>
+                    <dd className="mt-0.5 font-medium">{item.quantity}</dd>
+                  </div>
+                  {(item.edition_numbers?.length || item.edition_number) ? (
+                    <div className="col-span-2">
+                      <dt className="text-gray-500">Your edition{(item.edition_numbers?.length || 1) > 1 ? 's' : ''}</dt>
+                      <dd className="mt-0.5 font-medium">
+                        {item.edition_numbers?.length ? item.edition_numbers.join(', ') : item.edition_number}
+                        {item.edition_limit ? ` of ${item.edition_limit}` : ''}
+                      </dd>
+                    </div>
+                  ) : null}
+                </dl>
+
+                <p className="mt-5 border-t border-gray-100 pt-4 text-sm leading-6 text-gray-600">
+                  Hand-numbered and signed by the artist. A signed certificate of authenticity is included.
+                </p>
+              </div>
+            </article>
           ))}
         </div>
-        <div className="mt-6 flex justify-between border-t border-black pt-4 text-lg font-medium"><span>Total</span><span>{money(details.total)}</span></div>
+        <div className="flex justify-between border-b border-black py-5 text-lg font-medium"><span>Total paid</span><span>{money(details.total)}</span></div>
       </section>
 
       {confirmed && (

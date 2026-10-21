@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
       return {
         artwork_id: product?.metadata?.artwork_id || 'unknown',
         title: product?.name?.replace(new RegExp(` - ${product?.metadata?.size || ''}$`), '') || 'Artwork',
+        image_url: product?.images?.[0],
         size: product?.metadata?.size || 'Standard',
         price: item.price?.unit_amount || 0,
         quantity: item.quantity || 1
