@@ -18,6 +18,7 @@ type OrderItem = {
   edition_limit?: number;
   quantity: number;
   requires_shipping?: boolean;
+  image_url?: string;
 };
 
 type StoredOrder = {
@@ -106,7 +107,10 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
       title: item.title || 'Artwork',
       size: item.size,
       price: item.price,
-      quantity: item.quantity
+      quantity: item.quantity,
+      imageUrl: item.image_url,
+      editionNumbers: item.edition_numbers?.length ? item.edition_numbers : item.edition_number ? [item.edition_number] : undefined,
+      editionLimit: item.edition_limit
     })),
     total: session.amount_total || 0,
     date: format(new Date(session.created * 1000), 'MMMM d, yyyy'),
