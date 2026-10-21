@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { signIn } from '@/lib/auth/session';
 import { createHash } from 'node:crypto';
 import sql from '@/lib/db/client';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().trim().email().max(254),
+  password: z.string().min(1).max(256),
+});
 
 function getLoginIdentifier(req: NextRequest) {
   const forwarded = req.headers.get('x-vercel-forwarded-for') || req.headers.get('x-forwarded-for') || 'unknown';
@@ -25,7 +31,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email, password } = await req.json();
+    const { email, password } = loginSchema.parse(await req.json());
     await signIn(email, password);
     await sql`SELECT clear_admin_login_failures(${identifier})`;
     return NextResponse.json({ success: true });

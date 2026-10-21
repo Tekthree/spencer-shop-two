@@ -18,13 +18,20 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const unauthorized = await requireAdminApi();
+  const unauthorized = await requireAdminApi(req);
   if (unauthorized) return unauthorized;
   try {
     const { key } = await req.json() as { key?: string };
 
     if (!key) {
       return NextResponse.json({ error: 'No key provided' }, { status: 400 });
+    }
+
+    const root = key.split('/')[0];
+    if (!['uploads', 'artworks', 'collections', 'blog', 'about'].includes(root)
+      || !/^[a-zA-Z0-9/_.-]+$/.test(key)
+      || key.includes('..')) {
+      return NextResponse.json({ error: 'Invalid image key' }, { status: 400 });
     }
 
     await deleteImage(key);

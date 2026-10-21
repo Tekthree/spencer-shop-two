@@ -29,29 +29,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
   }
 }
-
-export async function POST(request: NextRequest) {
-  const unauthorized = await requireAdminApi();
-  if (unauthorized) return unauthorized;
-  try {
-    const body = await request.json();
-    const { customer_info, items, total, status, payment_intent } = body;
-
-    const rows = await sql`
-      INSERT INTO orders (customer_info, items, total, status, payment_intent)
-      VALUES (
-        ${JSON.stringify(customer_info)}::jsonb,
-        ${JSON.stringify(items)}::jsonb,
-        ${total},
-        ${status ?? 'paid'},
-        ${payment_intent ?? null}
-      )
-      RETURNING *
-    `;
-
-    return NextResponse.json(rows[0]);
-  } catch (error) {
-    console.error('Error creating order:', error);
-    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
-  }
-}

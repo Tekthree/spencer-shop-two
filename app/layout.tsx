@@ -141,12 +141,6 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
-          {/* Debug script to help identify styling issues - temporarily disabled */}
-          {/* <Script
-            id="style-debugger"
-            src="/debug-styles.js"
-            strategy="afterInteractive"
-          /> */}
         </CartProvider>
       </body>
     </html>

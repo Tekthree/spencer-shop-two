@@ -76,6 +76,20 @@ function looksLikeUrl(value: string) {
   return /^https?:\/\//i.test(value);
 }
 
+function normalizeImageUrl(value: string) {
+  const trimmed = value.trim();
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) {
+    return trimmed;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === 'https:' ? parsed.href : '';
+  } catch {
+    return '';
+  }
+}
+
 function deriveAltFromUrl(url: string) {
   if (!url) {
     return 'Article image';
@@ -116,7 +130,7 @@ function formatImage(text: string) {
     altText = bracketValue;
   }
 
-  const safeUrl = url.trim();
+  const safeUrl = normalizeImageUrl(url);
   if (!safeUrl) {
     return '';
   }
@@ -127,7 +141,7 @@ function formatImage(text: string) {
   return `
 <figure class="rte-image">
   <div class="rte-image__media">
-    <img src="${safeUrl}" alt="${safeAlt}" loading="lazy" decoding="async" />
+    <img src="${escapeHtml(safeUrl)}" alt="${safeAlt}" loading="lazy" decoding="async" />
   </div>
   ${figureCaption}
 </figure>`.trim();

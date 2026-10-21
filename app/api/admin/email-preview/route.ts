@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db/client';
 import { requireAdminApi } from '@/lib/auth/admin-api';
 import { sendOrderConfirmationEmail } from '@/lib/email/email-service';
@@ -26,8 +26,8 @@ function getImageUrl(images: ArtworkPreview['images']) {
   return value.startsWith('https://') ? value : `https://www.spencergreyart.com${value.startsWith('/') ? '' : '/'}${value}`;
 }
 
-export async function POST() {
-  const unauthorized = await requireAdminApi();
+export async function POST(request: NextRequest) {
+  const unauthorized = await requireAdminApi(request);
   if (unauthorized) return unauthorized;
 
   try {

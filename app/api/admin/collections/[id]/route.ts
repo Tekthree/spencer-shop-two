@@ -32,7 +32,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const unauthorized = await requireAdminApi();
+  const unauthorized = await requireAdminApi(request);
   if (unauthorized) return unauthorized;
   try {
     const { id } = await params;
@@ -57,10 +57,10 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const unauthorized = await requireAdminApi();
+  const unauthorized = await requireAdminApi(request);
   if (unauthorized) return unauthorized;
   try {
     const { id } = await params;

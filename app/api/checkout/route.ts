@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import stripe from '@/lib/stripe/stripe-server';
 import sql from '@/lib/db/client';
 import { z } from 'zod';
+import { enforceRateLimit } from '@/lib/security/rate-limit';
 
 const checkoutSchema = z.object({
   items: z.array(z.object({
@@ -49,6 +50,9 @@ export async function POST(request: NextRequest) {
   let stripeSessionId: string | null = null;
 
   try {
+    const rateLimited = await enforceRateLimit(request, 'checkout-create', 12, 600);
+    if (rateLimited) return rateLimited;
+
     const { items, customerInfo } = checkoutSchema.parse(await request.json());
     const groupedItems = Array.from(items.reduce((grouped, item) => {
       const key = `${item.id}:${item.size}`;

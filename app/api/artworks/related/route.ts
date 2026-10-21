@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const currentId = searchParams.get('currentId');
     const collectionId = searchParams.get('collectionId') || null;
-    const limit = parseInt(searchParams.get('limit') || '4', 10);
+    const requestedLimit = Number.parseInt(searchParams.get('limit') || '4', 10);
+    const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 12) : 4;
 
     if (!currentId) {
       return NextResponse.json({ error: 'currentId is required' }, { status: 400 });

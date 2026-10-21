@@ -4,6 +4,7 @@ import Image from 'next/image';
 import type { BlogContentBlock } from '@/types/blog';
 import { resolveCoverImage } from './blog-post-card';
 import { slugifyHeading, injectHeadingIds } from '@/lib/blog/headings';
+import { createRichTextHtml } from '@/lib/blog/rich-text';
 
 function isRichTextBlock(block: BlogContentBlock): block is Extract<BlogContentBlock, { type: 'rich_text' }> {
   return block.type === 'rich_text';
@@ -14,10 +15,15 @@ export default function BlogPostContent({ blocks }: { blocks: BlogContentBlock[]
 
   const richTextBlock = blocks.find(isRichTextBlock);
   if (richTextBlock) {
+    // Never trust stored HTML. The editor stores the source text as `raw`, so
+    // regenerate the small, escaped markup subset at the render boundary.
+    const safeHtml = typeof richTextBlock.raw === 'string'
+      ? createRichTextHtml(richTextBlock.raw).html
+      : '';
     return (
       <div
         className="rte"
-        dangerouslySetInnerHTML={{ __html: injectHeadingIds(richTextBlock.html) }}
+        dangerouslySetInnerHTML={{ __html: injectHeadingIds(safeHtml) }}
       />
     );
   }

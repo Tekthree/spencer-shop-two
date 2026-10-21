@@ -3,8 +3,12 @@ import Stripe from 'stripe';
 import stripe from '@/lib/stripe/stripe-server';
 import sql from '@/lib/db/client';
 import { formatOrderNumber } from '@/lib/orders/order-number';
+import { enforceRateLimit } from '@/lib/security/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const rateLimited = await enforceRateLimit(request, 'checkout-session', 60, 600);
+  if (rateLimited) return rateLimited;
+
   const sessionId = request.nextUrl.searchParams.get('session_id');
   if (!sessionId || !sessionId.startsWith('cs_')) {
     return NextResponse.json({ error: 'A valid checkout session is required.' }, { status: 400 });

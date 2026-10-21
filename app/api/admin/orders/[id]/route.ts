@@ -56,7 +56,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const unauthorized = await requireAdminApi();
+  const unauthorized = await requireAdminApi(request);
   if (unauthorized) return unauthorized;
 
   try {
