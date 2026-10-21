@@ -150,13 +150,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.error('Error creating checkout session:', error);
     const safeCatalogError = error instanceof Error && (
       error.message.includes('no longer available') || error.message.includes('cannot be purchased')
     );
+    const insufficientInventory = error instanceof Error && error.message.includes('Insufficient inventory');
+    if (!(error instanceof z.ZodError) && !safeCatalogError && !insufficientInventory) {
+      console.error('Error creating checkout session:', error);
+    }
     const message = error instanceof z.ZodError
       ? 'Please enter a valid name and email address.'
-      : error instanceof Error && error.message.includes('Insufficient inventory')
+      : insufficientInventory
         ? 'One of these editions was just reserved by another collector. Please review your cart.'
         : safeCatalogError ? error.message : 'Checkout could not be started. Please try again.';
     return NextResponse.json({ error: message }, { status: 400 });
