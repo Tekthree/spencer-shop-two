@@ -63,7 +63,7 @@ async function fetchArtworkBySlug(slug: string): Promise<{ artwork: ArtworkData 
     `;
 
     if (!rows || rows.length === 0) {
-      return { artwork: null, error: 'Artwork not found.' };
+      return { artwork: null, error: null };
     }
 
     const record = rows[0] as ArtworkRecord;
